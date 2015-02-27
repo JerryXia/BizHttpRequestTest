@@ -29,22 +29,22 @@ namespace RestHttpClient
 
         private static Task<HttpResponseMessage> RequestHelper(HttpRequest request)
         {
-            if (!request.Headers.ContainsKey("user-agent"))
+            if (!request.HttpHeaders.ContainsKey("user-agent"))
             {
-                request.Headers.Add("user-agent", USER_AGENT);
+                request.HttpHeaders.Add("user-agent", USER_AGENT);
             }
 
             var client = new HttpClient();
             var msg = new HttpRequestMessage(request.HttpMethod, request.URL);
 
-            foreach (var header in request.Headers)
+            foreach (var header in request.HttpHeaders)
             {
                 msg.Headers.Add(header.Key, header.Value);
             }
 
-            if (request.Body.Any())
+            if (request.HttpBody.Any())
             {
-                msg.Content = request.Body;
+                msg.Content = request.HttpBody;
             }
 
             return client.SendAsync(msg);

@@ -44,12 +44,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Controls\PostParamsControl.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Include="Controls\PostParamsControl.Designer.cs">
-      <DependentUpon>PostParamsControl.cs</DependentUpon>
-    </Compile>
     <Compile Include="Controls\TipListBox.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -61,9 +55,7 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <EmbeddedResource Include="Controls\PostParamsControl.resx">
-      <DependentUpon>PostParamsControl.cs</DependentUpon>
-    </EmbeddedResource>
+    <Compile Include="Uitls.cs" />
     <EmbeddedResource Include="MainForm.resx">
       <DependentUpon>MainForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -92,6 +84,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\delete.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\RestHttpClient\RestHttpClient.csproj">
+      <Project>{3466ad38-32fb-4121-80d7-bf620a28ffb8}</Project>
+      <Name>RestHttpClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

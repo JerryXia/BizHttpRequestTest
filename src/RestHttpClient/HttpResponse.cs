@@ -5,10 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-using Newtonsoft.Json;
-
 namespace RestHttpClient
 {
+    using Newtonsoft.Json;
+
     public class HttpResponse<T>
     {
         public int Code { get; private set; }

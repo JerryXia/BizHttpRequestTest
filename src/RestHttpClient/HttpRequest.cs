@@ -1,16 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 
-using System.Net.Http;
-using System.Net.Http.Headers;
-using System.IO;
-using Newtonsoft.Json;
-
 namespace RestHttpClient
 {
+    using Newtonsoft.Json;
+
     public class HttpRequest
     {
         private bool hasFields;
@@ -21,9 +21,9 @@ namespace RestHttpClient
 
         public HttpMethod HttpMethod { get; protected set; }
 
-        public Dictionary<String, String> Headers { get; protected set; }
+        public Dictionary<String, String> HttpHeaders { get; protected set; }
 
-        public MultipartFormDataContent Body { get; private set; }
+        public MultipartFormDataContent HttpBody { get; private set; }
 
         // Should add overload that takes URL object
         public HttpRequest(HttpMethod method, string url)
@@ -47,31 +47,30 @@ namespace RestHttpClient
 
             URL = locurl;
             HttpMethod = method;
-            Headers = new Dictionary<string, string>();
-            Body = new MultipartFormDataContent();
-
+            HttpHeaders = new Dictionary<string, string>();
+            HttpBody = new MultipartFormDataContent();
         }
 
-        public HttpRequest header(string name, string value)
+        public HttpRequest Header(string name, string value)
         {
-            Headers.Add(name, value);
+            HttpHeaders.Add(name, value);
             return this;
         }
 
-        public HttpRequest headers(Dictionary<string, string> headers)
+        public HttpRequest Headers(Dictionary<string, string> headers)
         {
             if (headers != null)
             {
                 foreach (var header in headers)
                 {
-                    Headers.Add(header.Key, header.Value);
+                    HttpHeaders.Add(header.Key, header.Value);
                 }
             }
 
             return this;
         }
 
-        public HttpRequest field(string name, string value)
+        public HttpRequest Field(string name, string value)
         {
             if (HttpMethod == HttpMethod.Get)
             {
@@ -83,13 +82,13 @@ namespace RestHttpClient
                 throw new InvalidOperationException("Can't add fields to a request with an explicit body");
             }
 
-            Body.Add(new StringContent(value), name);
+            HttpBody.Add(new StringContent(value), name);
 
             hasFields = true;
             return this;
         }
 
-        public HttpRequest field(string name, byte[] data)
+        public HttpRequest Field(string name, byte[] data)
         {
             if (HttpMethod == HttpMethod.Get)
             {
@@ -102,16 +101,15 @@ namespace RestHttpClient
             }
             //    here you can specify boundary if you need---^
             var imageContent = new ByteArrayContent(data);
-            imageContent.Headers.ContentType =
-                MediaTypeHeaderValue.Parse("image/jpeg");
+            imageContent.Headers.ContentType = MediaTypeHeaderValue.Parse("image/jpeg");
 
-            Body.Add(imageContent, name, "image.jpg");
+            HttpBody.Add(imageContent, name, "image.jpg");
 
             hasFields = true;
             return this;
         }
 
-        public HttpRequest field(Stream value)
+        public HttpRequest Field(Stream value)
         {
             if (HttpMethod == HttpMethod.Get)
             {
@@ -123,12 +121,12 @@ namespace RestHttpClient
                 throw new InvalidOperationException("Can't add fields to a request with an explicit body");
             }
 
-            Body.Add(new StreamContent(value));
+            HttpBody.Add(new StreamContent(value));
             hasFields = true;
             return this;
         }
 
-        public HttpRequest fields(Dictionary<string, object> parameters)
+        public HttpRequest Fields(Dictionary<string, object> parameters)
         {
             if (HttpMethod == HttpMethod.Get)
             {
@@ -140,18 +138,18 @@ namespace RestHttpClient
                 throw new InvalidOperationException("Can't add fields to a request with an explicit body");
             }
 
-            Body.Add(new FormUrlEncodedContent(parameters.Where(kv => kv.Value is String).Select(kv => new KeyValuePair<string, string>(kv.Key, kv.Value as String))));
+            HttpBody.Add(new FormUrlEncodedContent(parameters.Where(kv => kv.Value is String).Select(kv => new KeyValuePair<string, string>(kv.Key, kv.Value as String))));
 
             foreach (var stream in parameters.Where(kv => kv.Value is Stream).Select(kv => kv.Value))
             {
-                Body.Add(new StreamContent(stream as Stream));
+                HttpBody.Add(new StreamContent(stream as Stream));
             }
 
             hasFields = true;
             return this;
         }
 
-        public HttpRequest body(string body)
+        public HttpRequest Body(string body)
         {
             if (HttpMethod == HttpMethod.Get)
             {
@@ -163,12 +161,12 @@ namespace RestHttpClient
                 throw new InvalidOperationException("Can't add explicit body to request with fields");
             }
 
-            Body = new MultipartFormDataContent { new StringContent(body) };
+            HttpBody = new MultipartFormDataContent { new StringContent(body) };
             hasExplicitBody = true;
             return this;
         }
 
-        public HttpRequest body<T>(T body)
+        public HttpRequest Body<T>(T body)
         {
             if (HttpMethod == HttpMethod.Get)
             {
@@ -180,7 +178,7 @@ namespace RestHttpClient
                 throw new InvalidOperationException("Can't add explicit body to request with fields");
             }
 
-            Body = new MultipartFormDataContent { new StringContent(JsonConvert.SerializeObject(body)) };
+            HttpBody = new MultipartFormDataContent { new StringContent(JsonConvert.SerializeObject(body)) };
             hasExplicitBody = true;
             return this;
         }
