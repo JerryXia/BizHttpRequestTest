@@ -217,35 +217,46 @@ namespace BizHttpTest
         private void btn_send_Click(object sender, EventArgs e)
         {
             string url = this.txt_RequestUrl.Text.Trim();
-            if(!Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute))
+            if (!Uri.IsWellFormedUriString(url, UriKind.RelativeOrAbsolute))
             {
                 this.lbl_resultTips.Text = "Url格式不正确";
             }
             string httpMethod = HttpMethods[this.combox_httpMethod.SelectedIndex];
 
+            var httpRequest = BuildRquest(url, httpMethod, DefaultHeaders.ToDictionary(), RequestParams.ToDictionary<string, string, object>());
+
             var task = new Task(() =>
             {
-                var httpRequest = BuildRquest(url, httpMethod)
-                    .Headers(DefaultHeaders.ToDictionary())
-                    .Fields(RequestParams.ToDictionary<string, string, object>());
                 this.BeginInvoke(exexRequestBackup, httpRequest);
             });
             task.Start();
         }
 
-        HttpRequest BuildRquest(string url, string method)
+        HttpRequest BuildRquest(string url, string method, Dictionary<string, string> headers, Dictionary<string, object> fields)
         {
             switch (method)
             {
                 case "GET":
-                    return UriRest.Get(url);
+                    string getUrl = BuildGetUrl(url, fields);
+                    return UriRest.Get(getUrl).Headers(headers);
                 case "POST":
-                    return UriRest.Get(url);
+                    return UriRest.Get(url).Headers(headers).Fields(fields);
                 default:
                     throw new ArgumentOutOfRangeException("Method参数异常");
             }
         }
+        string BuildGetUrl(string baseUrl, Dictionary<string, object> fields)
+        {
+            var sb = new System.Text.StringBuilder();
+            sb.Append(baseUrl);
+            sb.Append('?');
+            foreach (var item in fields)
+            {
+                sb.AppendFormat("{0}={1}&", item.Key, System.Web.HttpUtility.UrlEncode(item.Value.ToString()));
+            }
 
+            return sb.ToString().TrimEnd('&');
+        }
 
         private void RunHttpRequestBackup(HttpRequest httpRequest)
         {
@@ -253,7 +264,10 @@ namespace BizHttpTest
 
             var sb = new System.Text.StringBuilder();
             sb.AppendFormat("{0}{1}", httpResponse.Code, System.Environment.NewLine);
-            sb.AppendFormat("{0}{1}", httpResponse.Headers, System.Environment.NewLine);
+            foreach (var item in httpResponse.Headers)
+            {
+                sb.AppendFormat("{0}: {1}{2}", item.Key, item.Value, System.Environment.NewLine);
+            }
             sb.AppendFormat("{0}{1}", httpResponse.Body, System.Environment.NewLine);
 
             this.txt_response.Text = sb.ToString();

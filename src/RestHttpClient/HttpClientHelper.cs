@@ -29,9 +29,9 @@ namespace RestHttpClient
 
         private static Task<HttpResponseMessage> RequestHelper(HttpRequest request)
         {
-            if (!request.HttpHeaders.ContainsKey("user-agent"))
+            if (!request.HttpHeaders.ContainsKey("User-Agent"))
             {
-                request.HttpHeaders.Add("user-agent", USER_AGENT);
+                request.HttpHeaders.Add("User-Agent", USER_AGENT);
             }
 
             var client = new HttpClient();
