@@ -5,6 +5,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class JSONParser {
     private String text;
     private int    index = 0;
@@ -321,20 +325,62 @@ public class JSONParser {
     }
 
     enum Token {
-        INT, //
-        DOUBLE, //
-        STRING, //
-        BOOLEAN, //
-        TRUE, //
-        FALSE, //
+        /**
+         * 
+         */
+        INT,
+        /**
+         * 
+         */
+        DOUBLE,
+        /**
+         * 
+         */
+        STRING,
+        /**
+         * 
+         */
+        BOOLEAN,
+        /**
+         * 
+         */
+        TRUE,
+        /**
+         * 
+         */
+        FALSE,
+        /**
+         * 
+         */
         NULL, //
-        EOF, //
+        /**
+         * 
+         */
+        EOF,
 
-        LBRACE("{"), //
-        RBRACE("}"), //
-        LBRACKET("["), //
-        RBRACKET("]"), //
-        COMMA(","), //
+        /**
+         * 
+         */
+        LBRACE("{"),
+        /**
+         * 
+         */
+        RBRACE("}"),
+        /**
+         * 
+         */
+        LBRACKET("["),
+        /**
+         * 
+         */
+        RBRACKET("]"),
+        /**
+         * 
+         */
+        COMMA(","),
+        /**
+         * 
+         */
         COLON(":"),
 
         ;

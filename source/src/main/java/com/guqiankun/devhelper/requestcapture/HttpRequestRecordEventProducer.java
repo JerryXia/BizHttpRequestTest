@@ -2,6 +2,10 @@ package com.guqiankun.devhelper.requestcapture;
 
 import com.lmax.disruptor.RingBuffer;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class HttpRequestRecordEventProducer {
 
     private final RingBuffer<HttpRequestRecordEvent> ringBuffer;

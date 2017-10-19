@@ -9,12 +9,17 @@ import java.util.Map;
 import javax.servlet.ServletException;
 
 import com.guqiankun.devhelper.requestcapture.log.LogEntry;
+import com.guqiankun.devhelper.requestcapture.Constants;
 import com.guqiankun.devhelper.requestcapture.HttpRequestRecord;
 import com.guqiankun.devhelper.requestcapture.RecordManager;
 import com.guqiankun.devhelper.requestcapture.support.json.JSONWriter;
 
+/**
+ * @author guqiankun
+ *
+ */
 @SuppressWarnings("serial")
-public class RequestCaptureWebServlet extends ResourceServlet {
+public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
     private final static int RESULT_CODE_SUCCESS = 1;
     private final static int RESULT_CODE_ERROR   = -1;
@@ -34,16 +39,16 @@ public class RequestCaptureWebServlet extends ResourceServlet {
 
         String resp = null;
         Map<String, String> parameters = getParameters(url);
-        if (url.equals("/alllogs.json")) {
-            List<LogEntry> alllogs = RecordManager.getInstance().currentRecordLogList().getAll();
+        if ("/alllogs.json".equals(url)) {
+            List<LogEntry> alllogs = Constants.RECORD_MANAGER.currentRecordLogList().getAll();
             resp = returnJSONResult(RESULT_CODE_SUCCESS, alllogs, getServerStat(startTime));
         }
-        if (url.equals("/apirecords.json")) {
-            List<HttpRequestRecord> allRecords = RecordManager.getInstance().currentRecordStorage().queryAll();
+        if ("/apirecords.json".equals(url)) {
+            List<HttpRequestRecord> allRecords = Constants.RECORD_MANAGER.currentRecordStorage().queryAll();
             resp = returnJSONResult(RESULT_CODE_SUCCESS, allRecords, getServerStat(startTime));
         }
         if (url.startsWith("/apirecordlogs.json")) {
-            List<LogEntry> alllogs = RecordManager.getInstance().currentRecordLogList().getAll();
+            List<LogEntry> alllogs = Constants.RECORD_MANAGER.currentRecordLogList().getAll();
             String id = parameters.get("id");
             if (id != null && id.length() > 0) {
                 resp = returnJSONResult(RESULT_CODE_SUCCESS, filterById(alllogs, id), getServerStat(startTime));

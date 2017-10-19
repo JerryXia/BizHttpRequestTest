@@ -8,9 +8,11 @@ import com.lmax.disruptor.SleepingWaitStrategy;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class RecordManager {
-
-    private final static RecordManager instance = new RecordManager();
 
     private Disruptor<HttpRequestRecordEvent> disruptor;
     private HttpRequestRecordEventHandler     consumer;
@@ -18,17 +20,13 @@ public class RecordManager {
     private RecordStorage                     recordStorage;
     private LogEntryList                      recordLogList;
 
-    private RecordManager() {
+    public RecordManager() {
         this.recordStorage = new MemoryStorage();
         this.recordStat = new RecordStat();
         this.recordLogList = new LogEntryList();
         this.disruptor = new Disruptor<>(new HttpRequestRecordEventFactory(), 1024, Executors.defaultThreadFactory(),
                 ProducerType.MULTI, new SleepingWaitStrategy());
         this.consumer = new HttpRequestRecordEventHandler(this.recordStat, this.recordStorage);
-    }
-
-    public static RecordManager getInstance() {
-        return instance;
     }
 
     @SuppressWarnings("unchecked")

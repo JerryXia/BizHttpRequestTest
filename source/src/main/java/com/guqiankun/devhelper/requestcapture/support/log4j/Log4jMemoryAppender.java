@@ -6,10 +6,14 @@ import java.net.UnknownHostException;
 import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
-import com.guqiankun.devhelper.Constants;
+import com.guqiankun.devhelper.requestcapture.Constants;
 import com.guqiankun.devhelper.requestcapture.RecordManager;
 import com.guqiankun.devhelper.requestcapture.log.LogEntry;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class Log4jMemoryAppender extends AppenderSkeleton {
 
     private InetAddress      localHost;
@@ -53,6 +57,6 @@ public class Log4jMemoryAppender extends AppenderSkeleton {
         log.setThreadName(event.getThreadName());
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
-        RecordManager.getInstance().currentRecordLogList().insert(log);
+        Constants.RECORD_MANAGER.currentRecordLogList().insert(log);
     }
 }

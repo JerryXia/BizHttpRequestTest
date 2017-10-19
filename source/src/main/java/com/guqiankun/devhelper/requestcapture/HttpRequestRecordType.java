@@ -1,8 +1,25 @@
 package com.guqiankun.devhelper.requestcapture;
 
+/**
+ * @author guqiankun
+ *
+ */
 public enum HttpRequestRecordType {
 
-    UNKNOWN("未知", 0), NORMAL("常规请求", 1), REPLAY("重放请求", 2);
+    /**
+     * 未知
+     */
+    UNKNOWN("未知", 0), 
+
+    /**
+     * 常规请求
+     */
+    NORMAL("常规请求", 1), 
+
+    /**
+     * 重放请求
+     */
+    REPLAY("重放请求", 2);
 
     private String name;
     private int value;

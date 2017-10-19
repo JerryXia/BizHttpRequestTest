@@ -13,10 +13,13 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
-import com.guqiankun.devhelper.Constants;
+import com.guqiankun.devhelper.requestcapture.Constants;
 import com.guqiankun.devhelper.requestcapture.HttpRequestRecord;
-import com.guqiankun.devhelper.requestcapture.RecordManager;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements Filter {
 
     private static final String PARAM_NAME_EXCLUSIONS = "exclusions";
@@ -39,7 +42,7 @@ public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements 
             this.excludesPattern = new HashSet<String>(Arrays.asList(exclusions.split("\\s*,\\s*")));
         }
 
-        RecordManager.getInstance().init();
+        Constants.RECORD_MANAGER.init();
     }
 
     @Override
@@ -55,14 +58,14 @@ public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements 
         HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
         Constants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
         Constants.HTTP_REQUEST_RECORD_REQUEST_ID.set(httpRequestRecord.getReplayingRequestId());
-        RecordManager.getInstance().allocEventProducer().publish(httpRequestRecord);
+        Constants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
 
         chain.doFilter(request, response);
     }
 
     @Override
     public void destroy() {
-        RecordManager.getInstance().shutdown();
+        Constants.RECORD_MANAGER.shutdown();
     }
 
     private boolean isExclusion(String requestURI) {

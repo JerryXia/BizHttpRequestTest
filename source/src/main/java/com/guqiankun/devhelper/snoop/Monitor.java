@@ -6,6 +6,10 @@ import java.lang.management.MemoryPoolMXBean;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class Monitor {
 
     private MemoryMXBean           memoryMXBean;

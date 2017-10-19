@@ -3,6 +3,10 @@ package com.guqiankun.devhelper.snoop;
 import java.lang.management.MemoryType;
 import java.lang.management.MemoryUsage;
 
+/**
+ * @author guqiankun
+ *
+ */
 public class MemoryPoolMXBeanInfo {
 
     private String    name;

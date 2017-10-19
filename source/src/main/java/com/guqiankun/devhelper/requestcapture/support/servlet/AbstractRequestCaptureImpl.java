@@ -7,6 +7,10 @@ import javax.servlet.http.HttpServletRequest;
 import com.guqiankun.devhelper.requestcapture.HttpRequestRecord;
 import com.guqiankun.devhelper.requestcapture.HttpRequestRecordType;
 
+/**
+ * @author guqiankun
+ *
+ */
 public abstract class AbstractRequestCaptureImpl {
 
     protected static final String REPLAYHTTPREQUEST_HEADERNAME = "X-ReplayHttpRequest-Id";
@@ -21,9 +25,9 @@ public abstract class AbstractRequestCaptureImpl {
         Map<String, String[]> parameterMap = new HashMap<String, String[]>(httpRequest.getParameterMap());
 
         HttpRequestRecord httpRequestRecord = null;
-        String replayHeader_ReqId = httpRequest.getHeader(REPLAYHTTPREQUEST_HEADERNAME);
-        if (replayHeader_ReqId != null && replayHeader_ReqId.length() > 0) {
-            httpRequestRecord = new HttpRequestRecord(HttpRequestRecordType.REPLAY, replayHeader_ReqId);
+        String replayHeaderReqId = httpRequest.getHeader(REPLAYHTTPREQUEST_HEADERNAME);
+        if (replayHeaderReqId != null && replayHeaderReqId.length() > 0) {
+            httpRequestRecord = new HttpRequestRecord(HttpRequestRecordType.REPLAY, replayHeaderReqId);
         } else {
             httpRequestRecord = new HttpRequestRecord(HttpRequestRecordType.NORMAL, null);
         }

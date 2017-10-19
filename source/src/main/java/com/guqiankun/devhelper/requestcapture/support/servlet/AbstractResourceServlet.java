@@ -15,13 +15,17 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/**
+ * @author guqiankun
+ *
+ */
 @SuppressWarnings("serial")
-public abstract class ResourceServlet extends HttpServlet {
+public abstract class AbstractResourceServlet extends HttpServlet {
 
     public final static int DEFAULT_BUFFER_SIZE = 1024 * 4;
     protected final String resourcePath;
 
-    public ResourceServlet(String resourcePath) {
+    public AbstractResourceServlet(String resourcePath) {
         this.resourcePath = resourcePath;
     }
 
@@ -74,7 +78,7 @@ public abstract class ResourceServlet extends HttpServlet {
         String path = requestURI.substring(contextPath.length() + servletPath.length());
 
         if ("".equals(path)) {
-            if (contextPath.equals("") || contextPath.equals("/")) {
+            if ("".equals(contextPath) || "/".equals(contextPath)) {
                 response.sendRedirect("/requestcapture/index.html");
             } else {
                 response.sendRedirect("requestcapture/index.html");
@@ -123,9 +127,8 @@ public abstract class ResourceServlet extends HttpServlet {
         return output.toByteArray();
     }
 
+    private final int EOF = -1;
     private long copy(InputStream input, OutputStream output) throws IOException {
-        final int EOF = -1;
-
         byte[] buffer = new byte[DEFAULT_BUFFER_SIZE];
 
         long count = 0;
@@ -142,7 +145,7 @@ public abstract class ResourceServlet extends HttpServlet {
         try {
             in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
             if (in == null) {
-                in = ResourceServlet.class.getResourceAsStream(resource);
+                in = AbstractResourceServlet.class.getResourceAsStream(resource);
             }
 
             if (in == null) {
