@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>menu tree</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+<style type="text/css">
+.w100{width:100px;}
+.w150{width:150px;}
+.w200{width:200px;}
+[v-cloak] { display: none !important; }
+html, body {
+    height: 100%;
+}
+body {
+    padding-top: 70px;
+}
+hr{ margin-top:1px;margin-bottom:1px; }
+#wrap {
+    min-height: 100%;
+    padding-bottom: 60px;
+    margin: 0 auto -60px;
+}
+#loglevels .list-group-item.active,
+#loglevels .list-group-item.active:hover,
+#loglevels .list-group-item.active:focus {
+    color: #555;
+    background-color: #e7e7e7;
+    border-color: #e7e7e7;
+}
+span.metric {
+    display: inline-block;
+    min-width: 10px;
+    padding: 2px 6px;
+    font-size: 12px;
+    line-height: 1;
+    text-align: center;
+    white-space: nowrap;
+    vertical-align: baseline;
+    background-color: transparent;
+    border-radius: 10px;
+    border: solid 1px;
+    -webkit-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -moz-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -ms-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    -o-transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+    transition: color .1s ease-out, background .1s ease-out, border .1s ease-out;
+}
+span.metric-default {
+    color: #777;
+    border-color: #777;
+}
+.page-header {
+    margin-top: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+.btn-toolbar-top {
+    margin-bottom: 10px;
+}
+.btn-toolbar {
+    margin-left: -5px;
+}
+.btn-toolbar-label {
+    padding: 7px 0;
+    vertical-align: middle;
+    display: inline-block;
+    margin-left: 5px;
+}
+.footer {
+    background-color: #f5f5f5;
+}
+.footer .container .credit {
+    margin: 20px 0;
+}
+</style>
+</head>
+<body>
+    <div id="wrap" v-cloak>
+        <nav class="navbar navbar-default navbar-fixed-top"
+            role="navigation">
+            <div class="container">
+                <div class="navbar-header">
+                    <button type="button"
+                        class="navbar-toggle collapsed"
+                        data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span> <span
+                            class="icon-bar"></span> <span
+                            class="icon-bar"></span> <span
+                            class="icon-bar"></span>
+                    </button>
+                    <a class="navbar-brand" href="#">Request Capture</a>
+                </div>
+                <div id="navbar" class="navbar-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <router-link to="/apirecords" tag="li" active-class="active"> <a>Api Records</a></router-link>
+                        <router-link to="/apilogs" tag="li" active-class="active"> <a>Api Logs</a></router-link>
+                        <router-link to="/alllogs" tag="li" active-class="active"> <a>All Logs</a></router-link>
+                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Settings <span class="caret"></span></a>
+                            <ul class="dropdown-menu" role="menu">
+                                <router-link to="/settings_replay" tag="li" active-class="active"><a>Replay</a></router-link>
+                                <!-- <li><a href="#">Another action</a></li>
+                                <li><a href="#">Something else here</a></li>
+                                <li class="divider"></li>
+                                <li class="dropdown-header">Nav header</li>
+                                <li><a href="#">Separated link</a></li>
+                                <li><a href="#">One more separated link</a></li> -->
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <div class="container" style="margin-bottom: 20px;">
+            <router-view></router-view>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <ul class="list-inline credit" style="display:none;">
+                <li>
+                    <a href="http://hangfire.io/" target="_blank">xxxxx.xxx</a>
+                </li>
+                <li>xxxxxxxxxxxxxxxxx</li>
+                <li>Server Time: 2016/12/12 7:14:17 GMT</li>
+                <li>Generated: 1.29ms</li>
+            </ul>
+        </div>
+    </div>
+
+
+    <template id="apiRecords">
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <div class="table-responsive">
+                    <label><input type="checkbox" v-model="logTbShow.id" /> Id</label>
+                    <label><input type="checkbox" v-model="logTbShow.requestId" /> RequestId</label>
+                    <label><input type="checkbox" v-model="logTbShow.timeStamp" /> timeStamp</label>
+                    <label><input type="checkbox" v-model="logTbShow.method" /> method</label>
+                    <label><input type="checkbox" v-model="logTbShow.requestAndQuery" /> requestAndQuery</label>
+                    <label><input type="checkbox" v-model="logTbShow.parameter" />Post Parameter</label>
+                    <table class="table table-condensed table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th v-show="logTbShow.id" style="min-width:116px;width:116px;word-break: break-all;">id</th>
+                                <th v-show="logTbShow.requestId" style="min-width:160px;width:160px;word-break: break-all;">RequestId</th>
+                                <th v-show="logTbShow.timeStamp" style="min-width:90px;width:90px;word-break: break-all;">timeStamp</th>
+                                <th v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;">method</th>
+                                <th v-show="logTbShow.requestAndQuery" style="min-width:400px;width:400px;word-break: break-all;">requestAndQuery</th>
+                                <th v-show="logTbShow.parameter" style="width:400px;word-break: break-all;">Post Parameter</th>
+                                <th style="width: 60px;">action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="apiRecord in apiRecordsPagedList">
+                                <td v-show="logTbShow.id" style="min-width:116px;width:116px;word-break: break-all;">{{apiRecord.id}}</td>
+                                <td v-show="logTbShow.requestId" style="min-width:160px;width:160px;word-break: break-all;">{{apiRecord.requestId}}</td>
+                                <td v-show="logTbShow.timeStamp" style="min-width:90px;width:90px;word-break: break-all;">{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</td>
+                                <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;">{{apiRecord.method}}</td>
+                                <td v-show="logTbShow.requestAndQuery" style="min-width:400px;width:400px;word-break: break-all;">{{apiRecord.requestURI + ( (apiRecord.queryString!=null && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : '') }}</td>
+                                <td v-show="logTbShow.parameter" style="width:400px;word-break: break-all;">{{ apiRecord.parameterMap | parameterFormater }}</td>
+                                <td style="width: 60px;">
+                                    <input type="button" class="btn btn-xs btn-info" value="Log" data-loading-text="Loading..." v-on:click="showLogs(apiRecord.id, apiRecord.requestId, $event)" /><hr/>
+                                    <input type="button" class="btn btn-xs btn-success" value="replay" data-loading-text="pending..." v-on:click="replay(apiRecord, $event)" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="modal bs-example-modal-lg" tabindex="-1" role="dialog" aria-labelledby="apiRecordLogsTitle" aria-hidden="true">
+                  <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                          <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                          <h4 class="modal-title" id="apiRecordLogsTitle">Api Request Logs</h4>
+                        </div>
+                        <div class="modal-body">
+                            <table class="table table-condensed table-bordered table-hover">
+                                <tbody>
+                                  <tr v-for="log in apiRecordLogs">
+                                    <td><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></td>
+                                    <td style="width: 100%; word-break: break-all;">{{ log.message }}</td>
+                                  </tr>
+                                </tbody>
+                             </table>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </template>
+
+    <template id="allLogs">
+    <div class="row">
+        <div class="col-md-2">
+            <div id="loglevels" class="list-group">
+                <router-link :to="{ query: { level: 'ALL', from: 0, count: 10 } }" class="list-group-item" active-class="active" append exact>ALL
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.ALL}}</span></span>
+                </router-link>
+                <router-link :to="{ query: { level: 'DEBUG', from: 0, count: 10 } }" class="list-group-item" active-class="active" append exact>DEBUG
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.DEBUG}}</span></span>
+                </router-link>
+                <router-link :to="{ query: { level: 'INFO', from: 0, count: 10 } }" class="list-group-item" active-class="active" append exact>INFO
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.INFO}}</span></span>
+                </router-link>
+                <router-link :to="{ query: { level: 'WARN', from: 0, count: 10 } }" class="list-group-item" active-class="active" append exact>WARN
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.WARN}}</span></span>
+                </router-link>
+                <router-link :to="{ query: { level: 'ERROR', from: 0, count: 10 } }" class="list-group-item" active-class="active" append exact>ERROR
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.ERROR}}</span></span>
+                </router-link>
+                <router-link :to="{ query: { level: 'FATAL', from: 0, count: 10 } }" class="list-group-item" active-class="active" append exact>FATAL
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.FATAL}}</span></span>
+                </router-link>
+            </div>
+        </div>
+        <div class="col-md-10">
+            <h1 class="page-header">{{queryLevel}} Logs</h1>
+            <div>
+                <div class="btn-toolbar btn-toolbar-top">
+                    <button class="btn btn-sm btn-primary" data-loading-text="Enqueueing..." disabled="disabled">
+                        <span class="glyphicon glyphicon-repeat"></span>view details
+                    </button>
+                    <div class="btn-group pull-right paginator">
+                        <router-link :to="{ query: { level: queryLevel, from: 0, count: 10 } }" class="btn btn-sm btn-default" active-class="active" append exact>10</router-link>
+                        <router-link :to="{ query: { level: queryLevel, from: 0, count: 20 } }" class="btn btn-sm btn-default" active-class="active" append exact>20</router-link>
+                        <router-link :to="{ query: { level: queryLevel, from: 0, count: 50 } }" class="btn btn-sm btn-default" active-class="active" append exact>50</router-link>
+                        <router-link :to="{ query: { level: queryLevel, from: 0, count: 100 } }" class="btn btn-sm btn-default" active-class="active" append exact>100</router-link>
+                        <router-link :to="{ query: { level: queryLevel, from: 0, count: 500 } }" class="btn btn-sm btn-default" active-class="active" append exact>500</router-link>
+                    </div>
+                    <div class="btn-toolbar-spacer pull-right"></div>
+                    <div class="btn-toolbar-label btn-toolbar-label-sm pull-right">Items per page:</div>
+                </div>
+    
+                <div class="table-responsive">
+                    <label><input type="checkbox" v-model="logTbShow.id" /> id</label>
+                    <label><input type="checkbox" v-model="logTbShow.httpRequestRecordId" /> httpRequestRecordId</label>
+                    <label><input type="checkbox" v-model="logTbShow.httpRequestRecordRequestId" /> httpRequestRecordRequestId</label>
+                    <label><input type="checkbox" v-model="logTbShow.timeStamp" /> timeStamp</label>
+                    <label><input type="checkbox" v-model="logTbShow.level" /> level</label>
+                    <label><input type="checkbox" v-model="logTbShow.threadName" /> threadName</label>
+                    <label><input type="checkbox" v-model="logTbShow.loggerName" /> loggerName</label>
+                    <label><input type="checkbox" v-model="logTbShow.message" /> message</label>
+                    <label><input type="checkbox" v-model="logTbShow.host" /> host</label>
+                    <label><input type="checkbox" v-model="logTbShow.ip" /> ip</label>
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th v-show="logTbShow.id" style="min-width:50px;width:50px;word-break: break-all;">id</th>
+                                <th v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;">httpRequestRecordId</th>
+                                <th v-show="logTbShow.httpRequestRecordRequestId" style="min-width:100px;width:100px;word-break: break-all;">httpRequestRecordRequestId</th>
+                                <th v-show="logTbShow.timeStamp" style="width:70px;word-break: break-all;">timeStamp</th>
+                                <th v-show="logTbShow.level" style="min-width:50px;width:50px;word-break: break-all;">level</th>
+                                <th v-show="logTbShow.threadName">threadName</th>
+                                <th v-show="logTbShow.loggerName" style="width:150px;word-break: break-all;">loggerName</th>
+                                <th v-show="logTbShow.message" style="width:400px;word-break: break-all;">message</th>
+                                <th v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;">host</th>
+                                <th v-show="logTbShow.ip" style="min-width:100px;width:100px;word-break: break-all;">ip</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="log in queryedLogPagedList">
+                                <td v-show="logTbShow.id" style="min-width:50px;width:50px;word-break: break-all;">{{log.id}}</td>
+                                <td v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;">{{log.httpRequestRecordId}}</td>
+                                <td v-show="logTbShow.httpRequestRecordRequestId" style="min-width:100px;width:100px;word-break: break-all;">{{log.httpRequestRecordRequestId}}</td>
+                                <td v-show="logTbShow.timeStamp" style="width:70px;word-break: break-all;">{{log.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</td>
+                                <td v-show="logTbShow.level" style="min-width:50px;width:50px;word-break: break-all;">{{log.level}}</td>
+                                <td v-show="logTbShow.threadName">{{log.threadName}}</td>
+                                <td v-show="logTbShow.loggerName" style="width:150px;word-break: break-all;">{{log.loggerName}}</td>
+                                <td v-show="logTbShow.message" style="width:400px;word-break: break-all;">{{log.message}}</td>
+                                <td v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;">{{log.host}}</td>
+                                <td v-show="logTbShow.ip" style="min-width:100px;width:100px;word-break: break-all;">{{log.ip}}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="btn-toolbar">
+                    <div class="btn-group paginator">
+                        <router-link :to="{ query: { level: queryLevel, from: queryFrom - queryCount, count: queryCount } }" class="btn btn-default" active-class="active" append exact>Prev</router-link>
+                        <router-link :to="{ query: { level: queryLevel, from: queryFrom + queryCount, count: queryCount } }" class="btn btn-default" active-class="active" append exact>Next</router-link>
+                    </div>
+                    <div class="btn-toolbar-spacer"></div>
+                    <div class="btn-toolbar-label">Total items: {{logCount[queryLevel]}}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </template>
+    <template id="settings_replay">
+        <div>
+            <h1>重放的配置如下：</h1>
+            <pre>
+                <code>
+&lt;mvc:cors&gt;
+    &lt;mvc:mapping path=&quot;/**&quot;
+        allowed-origins=&quot;*&quot; 
+        allowed-methods=&quot;GET,POST,PUT,DELETE,OPTIONS&quot;
+        allowed-headers=&quot;X-Requested-With&quot; /&gt;
+&lt;/mvc:cors&gt;
+                </code>
+            </pre>
+        <p>注：以上是spring mvc项目的参考配置，其它项目请自行配置</p>
+<form class="form-horizontal" role="form">
+  <div class="form-group">
+    <label for="replayUrlHost" class="col-sm-2 control-label">url地址前缀：</label>
+    <div class="col-sm-9">
+      <input type="text" class="form-control" id="replayUrlHost" v-model="replayUrlHost" placeholder="url地址前缀, 示例：http://localhost:8080">
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-sm-offset-2 col-sm-10">
+      <button type="button" class="btn btn-primary" v-on:click="saveToLocalDb()">Save</button>
+    </div>
+  </div>
+</form>
+        </div>
+    </template>
+
+    <script src="https://cdn.bootcss.com/jquery/2.2.2/jquery.js"></script>
+    <script src="https://cdn.bootcss.com/underscore.js/1.8.3/underscore-min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue/2.1.5/vue.min.js"></script>
+    <script src="https://cdn.bootcss.com/vue-router/2.1.1/vue-router.min.js"></script>
+    <script src="js/app.js" type="text/javascript" charset="utf8"></script>
+</body>
+</html>
