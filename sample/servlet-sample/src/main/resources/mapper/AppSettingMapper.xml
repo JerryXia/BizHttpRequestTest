@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.guqiankun.ssmtemplate.mapper.AppSettingMapper">
+  <resultMap id="BaseResultMap" type="com.guqiankun.ssmtemplate.model.po.AppSetting">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    <result column="key" jdbcType="VARCHAR" property="key" />
+    <result column="value" jdbcType="VARCHAR" property="value" />
+    <result column="cn_mark" jdbcType="VARCHAR" property="cnMark" />
+  </resultMap>
+  <insert id="insert" parameterType="com.guqiankun.ssmtemplate.model.po.AppSetting">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    insert into app_setting (`key`, `value`, cn_mark
+      )
+    values (#{key,jdbcType=VARCHAR}, #{value,jdbcType=VARCHAR}, #{cnMark,jdbcType=VARCHAR}
+      )
+  </insert>
+  <select id="selectAll" resultMap="BaseResultMap">
+    <!--
+      WARNING - @mbg.generated
+    -->
+    select `key`, `value`, cn_mark
+    from app_setting
+  </select>
+
+</mapper>

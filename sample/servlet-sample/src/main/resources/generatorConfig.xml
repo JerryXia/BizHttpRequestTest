@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd">
+<generatorConfiguration>
+  <!-- mvn mybatis-generator:generate -->
+  <!-- <classPathEntry location="${user.home}/.m2/repository/mysql/mysql-connector-java/5.1.40/mysql-connector-java-5.1.40.jar" 
+    /> -->
+  <context id="appdefault" defaultModelType="flat"
+    targetRuntime="MyBatis3Simple">
+    <property name="autoDelimitKeywords" value="true" />
+    <property name="beginningDelimiter" value="`" />
+    <property name="endingDelimiter" value="`" />
+    <property name="javaFileEncoding" value="UTF-8" />
+    <!-- <plugin type="org.mybatis.generator.plugins.ToStringPlugin"></plugin> -->
+    <commentGenerator
+      type="com.guqiankun.devhelper.mybatis.generator.MapperCommentGenerator">
+      <property name="suppressAllComments" value="false" />
+      <property name="suppressDate" value="true" />
+    </commentGenerator>
+
+    <jdbcConnection driverClass="com.mysql.jdbc.Driver"
+      connectionURL="jdbc:mysql://localhost:3306/test" userId="root"
+      password="Aa123456">
+    </jdbcConnection>
+
+    <javaTypeResolver>
+      <property name="forceBigDecimals" value="false" />
+    </javaTypeResolver>
+
+    <javaModelGenerator targetPackage="com.guqiankun.ssmtemplate.model.po"
+      targetProject="src/main/java">
+    </javaModelGenerator>
+
+    <sqlMapGenerator targetPackage="mapper"
+      targetProject="src/main/resources">
+    </sqlMapGenerator>
+
+    <javaClientGenerator type="XMLMAPPER"
+      targetPackage="com.guqiankun.ssmtemplate.mapper" targetProject="src/main/java">
+      <property name="rootInterface"
+        value="com.guqiankun.ssmtemplate.common.SysCommonMapper" />
+    </javaClientGenerator>
+
+    <table tableName="app_setting" delimitAllColumns="false"
+      enableSelectByExample="false" enableDeleteByExample="false"
+      enableCountByExample="false" enableUpdateByExample="false">
+      <!-- <property name="useActualColumnNames" value="true" /> <generatedKey 
+        column="ID" sqlStatement="DB2" identity="true" /> <columnOverride column="DATE_FIELD" 
+        property="startDate" /> <ignoreColumn column="FRED" /> <columnOverride column="LONG_VARCHAR_FIELD" 
+        jdbcType="VARCHAR" /> -->
+    </table>
+  </context>
+</generatorConfiguration>
