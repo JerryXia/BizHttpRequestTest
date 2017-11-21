@@ -51,8 +51,6 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
         Constants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
-        Constants.HTTP_REQUEST_RECORD_ID.remove();
-        Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.remove();
     }
 
 }

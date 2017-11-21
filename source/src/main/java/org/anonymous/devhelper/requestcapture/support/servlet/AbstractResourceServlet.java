@@ -39,7 +39,7 @@ public abstract class AbstractResourceServlet extends HttpServlet {
         String filePath = getFilePath(fileName);
 
         if (filePath.endsWith(".html")) {
-            response.setContentType("text/html; charset=utf-8");
+            response.setContentType("text/html;charset=utf-8");
         }
         if (fileName.endsWith(".jpg")) {
             byte[] bytes = readByteArrayFromResource(filePath);

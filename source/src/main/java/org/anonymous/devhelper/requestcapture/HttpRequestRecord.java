@@ -3,7 +3,6 @@ package org.anonymous.devhelper.requestcapture;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import org.anonymous.devhelper.util.Assert;
 import org.anonymous.devhelper.util.ObjectId;
@@ -15,8 +14,8 @@ import org.anonymous.devhelper.util.ObjectId;
 public class HttpRequestRecord {
 
     private final String                id;
-    private final String                replayingRequestId;
     private final HttpRequestRecordType type;
+    private final String                replayingRequestId;
     private List<HttpRequestRecord>     replayedHttpRequestRecords;
     private String                      method;
     private String                      requestURL;
@@ -30,13 +29,14 @@ public class HttpRequestRecord {
         this.id = ObjectId.get().toString();
         switch (type) {
         case NORMAL:
-            this.type = HttpRequestRecordType.NORMAL;
-            this.replayingRequestId = UUID.randomUUID().toString();
+            this.type = type;
+            //this.replayingRequestId = UUID.randomUUID().toString();
+            this.replayingRequestId = replayingRequestId;
             this.replayedHttpRequestRecords = new LinkedList<HttpRequestRecord>();
             break;
         case REPLAY:
             Assert.hasLength(replayingRequestId);
-            this.type = HttpRequestRecordType.REPLAY;
+            this.type = type;
             this.replayingRequestId = replayingRequestId;
             break;
         case UNKNOWN:

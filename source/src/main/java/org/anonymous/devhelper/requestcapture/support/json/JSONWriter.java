@@ -278,9 +278,9 @@ public class JSONWriter {
         writeObject(logEntryData.getHttpRequestRecordId());
         write(',');
 
-        writeString("httpRequestRecordRequestId");
+        writeString("httpRequestRecordReplayingRequestId");
         write(':');
-        writeObject(logEntryData.getHttpRequestRecordRequestId());
+        writeObject(logEntryData.getHttpRequestRecordReplayingRequestId());
         write(',');
 
         writeString("host");

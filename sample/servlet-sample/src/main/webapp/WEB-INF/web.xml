@@ -22,19 +22,6 @@
         <url-pattern>/*</url-pattern>
     </filter-mapping>
 
-    <!-- RequestCapture filter -->
-    <filter>
-        <filter-name>RequestCaptureFilter</filter-name>
-        <filter-class>org.anonymous.devhelper.requestcapture.support.servlet.RequestCaptureFilter</filter-class>
-        <init-param>
-            <param-name>exclusions</param-name>
-            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/requestcapture/*,/druid/*</param-value>
-        </init-param>
-    </filter>
-    <filter-mapping>
-        <filter-name>RequestCaptureFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
     <!-- UTF-8 encoding filter -->
     <filter>
         <filter-name>characterEncodingFilter</filter-name>
@@ -90,28 +77,7 @@
         <servlet-name>DruidStatView</servlet-name>
         <url-pattern>/druid/*</url-pattern>
     </servlet-mapping>
-    <!-- RequestCapture Servlet -->
-    <servlet>
-        <servlet-name>RequestCaptureWebStat</servlet-name>
-        <servlet-class>org.anonymous.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet</servlet-class>
-        <init-param>  
-            <param-name>resetEnable</param-name>
-            <param-value>true</param-value>
-        </init-param>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>RequestCaptureWebStat</servlet-name>
-        <url-pattern>/requestcapture/*</url-pattern>
-    </servlet-mapping>
-    <!-- Snoop Servlet -->
-    <servlet>
-        <servlet-name>snoop</servlet-name>
-        <servlet-class>org.anonymous.devhelper.snoop.support.servlet.SnoopServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>snoop</servlet-name>
-        <url-pattern>/snoop</url-pattern>
-    </servlet-mapping>
+    
     <!-- SpringMVC Servlet -->
     <servlet>
         <servlet-name>ssmtemplate</servlet-name>

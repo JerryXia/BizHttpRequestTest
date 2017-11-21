@@ -4,6 +4,10 @@ package org.anonymous.devhelper.requestcapture.log;
  * @author Administrator
  *
  */
+/**
+ * @author guqk
+ *
+ */
 public class LogEntry {
     private long   id;
     private String httpRequestRecordId;
@@ -30,7 +34,7 @@ public class LogEntry {
         return httpRequestRecordId;
     }
 
-    public String getHttpRequestRecordRequestId() {
+    public String getHttpRequestRecordReplayingRequestId() {
         return httpRequestRecordReplayingRequestId;
     }
 

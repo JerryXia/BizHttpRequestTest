@@ -8,7 +8,7 @@ const apiRecords = {
             logTbShow: {
                 id: false,
                 replayingRequestId: false,
-                timeStamp: false,
+                timeStamp: true,
                 method: true,
                 requestAndQuery: true,
                 parameter: true
@@ -150,7 +150,7 @@ const allLogs = {
            logTbShow: {
                id: false,
                httpRequestRecordId: false,
-               httpRequestRecordRequestId: false,
+               httpRequestRecordReplayingRequestId: false,
                timeStamp: true,
                level: true,
                threadName: false,
@@ -330,6 +330,9 @@ if (typeof Date.prototype.format == 'undefined') {
     };
 };
 
+Vue.filter('objectIdTimeStamp', function (value, formater) {
+  return new Date(parseInt(value.substring(0, 8), 16) * 1000).format(formater);
+});
 Vue.filter('timeStamp', function (value, formater) {
   return new Date(value).format(formater);
 });

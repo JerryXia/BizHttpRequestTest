@@ -57,8 +57,12 @@ public class Log4JAppender extends AppenderSkeleton {
 //        } else {
 //            throwable = event.getThrowableInformation().getThrowable();
 //        }
-        String httpRequestRecordId = Constants.HTTP_REQUEST_RECORD_ID.get();
-        String httpRequestRecordReplayingRequestId = Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.get();
+        String httpRequestRecordId = null;
+        String httpRequestRecordReplayingRequestId = null;
+        if(Constants.LOG_EXT_ENABLED_STATUS) {
+            httpRequestRecordId = Constants.HTTP_REQUEST_RECORD_ID.get();
+            httpRequestRecordReplayingRequestId = Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.get();
+        }
         LogEntry log = new LogEntry(httpRequestRecordId, httpRequestRecordReplayingRequestId);
         log.setHost(this.hostName);
         log.setIp(this.ip);
@@ -68,7 +72,5 @@ public class Log4JAppender extends AppenderSkeleton {
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
         Constants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
-        Constants.HTTP_REQUEST_RECORD_ID.remove();
-        Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.remove();
     }
 }
