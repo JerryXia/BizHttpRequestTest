@@ -25,5 +25,4 @@
     select `key`, `value`, cn_mark
     from app_setting
   </select>
-
 </mapper>

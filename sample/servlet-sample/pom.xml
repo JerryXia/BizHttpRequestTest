@@ -178,15 +178,9 @@
       <version>4.3.2.Final</version>
     </dependency>
     <dependency>
-      <groupId>com.guqiankun</groupId>
+      <groupId>org.anonymous</groupId>
       <artifactId>devhelper</artifactId>
       <version>1.0.0-SNAPSHOT</version>
-      <exclusions>
-        <exclusion>
-          <groupId>log4j</groupId>
-          <artifactId>log4j</artifactId>
-        </exclusion>
-      </exclusions>
     </dependency>
   </dependencies>
   <profiles>
