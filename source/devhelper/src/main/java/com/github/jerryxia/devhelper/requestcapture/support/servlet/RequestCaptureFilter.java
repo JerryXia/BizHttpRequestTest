@@ -32,10 +32,12 @@ import org.slf4j.LoggerFactory;
 public class RequestCaptureFilter implements Filter {
     private static final Logger logger = LoggerFactory.getLogger(RequestCaptureFilter.class);
 
-    private static final String PARAM_NAME_EXCLUSIONS = "exclusions";
-    private String contextPath;
+    public static final String PARAM_NAME_EXCLUSIONS                            = "exclusions";
+    public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
+
+    private String      contextPath;
     private Set<String> excludesPattern;
-    private String replayRequestIdRequestHeaderName;
+    private String      replayRequestIdRequestHeaderName;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -49,8 +51,8 @@ public class RequestCaptureFilter implements Filter {
             this.excludesPattern = new HashSet<String>(Arrays.asList(exclusions.split("\\s*,\\s*")));
         }
 
-        String cfgRequestHeaderName = filterConfig.getInitParameter("replayRequestIdRequestHeaderName");
-        if (cfgRequestHeaderName != null && cfgRequestHeaderName.length() > 0) {
+        String cfgRequestHeaderName = filterConfig.getInitParameter(PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME);
+        if (cfgRequestHeaderName != null && cfgRequestHeaderName.trim().length() > 0) {
             replayRequestIdRequestHeaderName = cfgRequestHeaderName;
         } else {
             replayRequestIdRequestHeaderName = WebConstants.REPLAY_HTTP_REQUEST_HEADER_NAME;
@@ -144,8 +146,7 @@ public class RequestCaptureFilter implements Filter {
 
     /**
      * <p>
-     * three type: endsWithMatch(eg. /xxx*=/xxx/xyz),
-     * startsWithMatch(eg.*.xxx=abc.xxx), equals(eg. /xxx=/xxx).
+     * three type: endsWithMatch(eg. /xxx*=/xxx/xyz), startsWithMatch(eg.*.xxx=abc.xxx), equals(eg. /xxx=/xxx).
      * </p>
      * <b>Notice</b>: *xxx* will match *xxxyyyy. endsWithMatch first.
      */

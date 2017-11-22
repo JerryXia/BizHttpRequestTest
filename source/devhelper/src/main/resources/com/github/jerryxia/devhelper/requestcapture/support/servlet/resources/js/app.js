@@ -7,7 +7,6 @@ const apiRecords = {
             apiRecordsPagedList: [],
             logTbShow: {
                 id: false,
-                replayingRequestId: false,
                 timeStamp: true,
                 method: true,
                 requestAndQuery: true,
@@ -150,7 +149,6 @@ const allLogs = {
            logTbShow: {
                id: false,
                httpRequestRecordId: false,
-               httpRequestRecordReplayingRequestId: false,
                timeStamp: true,
                level: true,
                threadName: false,

@@ -21,13 +21,14 @@ import com.github.jerryxia.devhelper.web.WebConstants;
  *
  */
 public class RequestIdInitFilter implements Filter {
+    public static final String PARAM_NAME_REQUEST_ID_RESPONSE_HEADER_NAME = "requestIdResponseHeaderName";
 
     private String requestIdResponseHeaderName;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
-        String cfgResponseHeaderName = filterConfig.getInitParameter("requestIdResponseHeaderName");
-        if (cfgResponseHeaderName != null && cfgResponseHeaderName.length() > 0) {
+        String cfgResponseHeaderName = filterConfig.getInitParameter(PARAM_NAME_REQUEST_ID_RESPONSE_HEADER_NAME);
+        if (cfgResponseHeaderName != null && cfgResponseHeaderName.trim().length() > 0) {
             requestIdResponseHeaderName = cfgResponseHeaderName;
         } else {
             requestIdResponseHeaderName = WebConstants.REQUEST_ID_RESPONSE_HEADER_NAME;

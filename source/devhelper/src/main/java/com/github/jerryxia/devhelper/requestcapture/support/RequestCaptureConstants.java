@@ -19,15 +19,10 @@ public class RequestCaptureConstants {
     public static volatile boolean LOG_EXT_ENABLED_STATUS = false;
     public static final Map<String, Boolean> LOG_EXT_ENABLED_MAP = new HashMap<String, Boolean>();
 
-    public static HttpRequestRecordManager RECORD_MANAGER = null;
+    public static final HttpRequestRecordManager RECORD_MANAGER = new HttpRequestRecordManager();
 
     static {
         LOG_EXT_ENABLED_MAP.put("log4j", Boolean.FALSE);
         LOG_EXT_ENABLED_MAP.put("logback", Boolean.FALSE);
-        try {
-            RECORD_MANAGER = new HttpRequestRecordManager();
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 }

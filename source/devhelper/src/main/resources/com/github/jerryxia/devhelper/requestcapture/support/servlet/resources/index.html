@@ -140,7 +140,6 @@ span.metric-default {
             <div>
                 <div class="table-responsive">
                     <label><input type="checkbox" v-model="logTbShow.id" /> id</label>
-                    <label><input type="checkbox" v-model="logTbShow.replayingRequestId" /> replayingRequestId</label>
                     <label><input type="checkbox" v-model="logTbShow.timeStamp" /> timeStamp</label>
                     <label><input type="checkbox" v-model="logTbShow.method" /> method</label>
                     <label><input type="checkbox" v-model="logTbShow.requestAndQuery" /> requestAndQuery</label>
@@ -149,7 +148,6 @@ span.metric-default {
                         <thead>
                             <tr>
                                 <th v-show="logTbShow.id" style="min-width:116px;width:116px;word-break: break-all;">id</th>
-                                <th v-show="logTbShow.replayingRequestId" style="min-width:160px;width:160px;word-break: break-all;">replayingRequestId</th>
                                 <th v-show="logTbShow.timeStamp" style="min-width:90px;width:90px;word-break: break-all;">timeStamp</th>
                                 <th v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;">method</th>
                                 <th v-show="logTbShow.requestAndQuery" style="min-width:400px;width:400px;word-break: break-all;">requestAndQuery</th>
@@ -160,8 +158,7 @@ span.metric-default {
                         <tbody>
                             <tr v-for="apiRecord in apiRecordsPagedList">
                                 <td v-show="logTbShow.id" style="min-width:116px;width:116px;word-break: break-all;">{{apiRecord.id}}</td>
-                                <td v-show="logTbShow.replayingRequestId" style="min-width:160px;width:160px;word-break: break-all;">{{apiRecord.replayingRequestId}}</td>
-                                <td v-show="logTbShow.timeStamp" style="min-width:90px;width:90px;word-break: break-all;">{{apiRecord.id | objectIdTimeStamp('yyyy/MM/dd HH:mm:ss') }}</td>
+                                <td v-show="logTbShow.timeStamp" style="min-width:90px;width:90px;word-break: break-all;">{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</td>
                                 <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;">{{apiRecord.method}}</td>
                                 <td v-show="logTbShow.requestAndQuery" style="min-width:400px;width:400px;word-break: break-all;">{{apiRecord.requestURI + ( (apiRecord.queryString!=null && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : '') }}</td>
                                 <td v-show="logTbShow.parameter" style="width:400px;word-break: break-all;">{{ apiRecord.parameterMap | parameterFormater }}</td>
@@ -244,7 +241,6 @@ span.metric-default {
                 <div class="table-responsive">
                     <label><input type="checkbox" v-model="logTbShow.id" /> id</label>
                     <label><input type="checkbox" v-model="logTbShow.httpRequestRecordId" /> httpRequestRecordId</label>
-                    <label><input type="checkbox" v-model="logTbShow.httpRequestRecordReplayingRequestId" /> httpRequestRecordReplayingRequestId</label>
                     <label><input type="checkbox" v-model="logTbShow.timeStamp" /> timeStamp</label>
                     <label><input type="checkbox" v-model="logTbShow.level" /> level</label>
                     <label><input type="checkbox" v-model="logTbShow.threadName" /> threadName</label>
@@ -257,7 +253,6 @@ span.metric-default {
                             <tr>
                                 <th v-show="logTbShow.id" style="min-width:50px;width:50px;word-break: break-all;">id</th>
                                 <th v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;">httpRequestRecordId</th>
-                                <th v-show="logTbShow.httpRequestRecordReplayingRequestId" style="min-width:100px;width:100px;word-break: break-all;">httpRequestRecordReplayingRequestId</th>
                                 <th v-show="logTbShow.timeStamp" style="width:70px;word-break: break-all;">timeStamp</th>
                                 <th v-show="logTbShow.level" style="min-width:50px;width:50px;word-break: break-all;">level</th>
                                 <th v-show="logTbShow.threadName">threadName</th>
@@ -271,7 +266,6 @@ span.metric-default {
                             <tr v-for="log in queryedLogPagedList">
                                 <td v-show="logTbShow.id" style="min-width:50px;width:50px;word-break: break-all;">{{log.id}}</td>
                                 <td v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;">{{log.httpRequestRecordId}}</td>
-                                <td v-show="logTbShow.httpRequestRecordReplayingRequestId" style="min-width:100px;width:100px;word-break: break-all;">{{log.httpRequestRecordReplayingRequestId}}</td>
                                 <td v-show="logTbShow.timeStamp" style="width:70px;word-break: break-all;">{{log.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</td>
                                 <td v-show="logTbShow.level" style="min-width:50px;width:50px;word-break: break-all;">{{log.level}}</td>
                                 <td v-show="logTbShow.threadName">{{log.threadName}}</td>
