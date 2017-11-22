@@ -20,8 +20,8 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  *
  */
 public class RequestIdInitInterceptor extends HandlerInterceptorAdapter {
-    // 相应头默认值
-    private String responseHeaderName = "X-Call-RequestId";
+    // response header name defaultValue: X-Call-RequestId
+    private String responseHeaderName = WebConstants.X_CALL_REQUEST_ID.toString();
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)

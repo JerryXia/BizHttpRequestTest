@@ -53,7 +53,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             if (parameterMap != null) {
                 map.putAll(parameterMap);
             }
-            dumpRequestMap(map);
+            dumpRequest(map);
         }
         return true;
     }
@@ -109,7 +109,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
         }
     }
 
-    private void dumpRequestMap(LinkedHashMap<String, String[]> map) {
+    private void dumpRequest(LinkedHashMap<String, String[]> map) {
         Iterator<Entry<String, String[]>> i = map.entrySet().iterator();
         if (!i.hasNext()) {
             logger.info("{}");

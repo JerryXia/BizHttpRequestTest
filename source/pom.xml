@@ -6,6 +6,9 @@
   <artifactId>devhelper</artifactId>
   <version>1.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
+  <name>devhelper</name>
+  <url>https://github.com/JerryXia/BizHttpRequestTest</url>
+  <description>This is a helper tool library in developing or testing java web application.</description>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.7</maven.compiler.target>
@@ -66,58 +69,12 @@
       <optional>true</optional>
     </dependency>
   </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.6.0</version>
-        <configuration>
-          <source>${maven.compiler.source}</source>
-          <target>${maven.compiler.target}</target>
-          <encoding>UTF-8</encoding>
-          <compilerArgument>-Xlint:all</compilerArgument>
-          <showWarnings>true</showWarnings>
-          <showDeprecation>true</showDeprecation>
-        </configuration>
-      </plugin>
-      <!-- mvn deploy:deploy-file -DgroupId=${project.groupId} -DartifactId=${project.artifactId} 
-        -Dversion=${project.version} -Dpackaging=jar -Dfile=${project.build.directory}/${project.artifactId}-${project.version}.jar 
-        -Durl=http://nexus.shiwuliantech.com/nexus/content/repositories/snapshots/ 
-        -DrepositoryId=snapshots -Dmaven.test.skip=true -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-deploy-plugin</artifactId>
-        <version>2.8.2</version>
-        <executions>
-          <execution>
-            <id>default-deploy</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>deploy</goal>
-            </goals>
-            <configuration>
-              <skip>true</skip>
-            </configuration>
-          </execution>
-          <execution>
-            <id>deploy-file</id>
-            <phase>deploy</phase>
-            <goals>
-              <goal>deploy-file</goal>
-            </goals>
-            <configuration>
-              <packaging>jar</packaging>
-              <repositoryId>${project.distributionManagement.repository.id}</repositoryId>
-              <url>${project.distributionManagement.repository.url}</url>
-              <file>${project.build.directory}/${project.artifactId}-${project.artifactId}.jar</file>
-              <groupId>${project.groupId}</groupId>
-              <artifactId>${project.artifactId}</artifactId>
-              <version>${project.version}</version>
-            </configuration>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
-  </build>
+  <scm>
+    <url>https://github.com/JerryXia/BizHttpRequestTest.git</url>
+    <developerConnection>JerryXia</developerConnection>
+  </scm>
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/JerryXia/BizHttpRequestTest/issues</url>
+  </issueManagement>
 </project>

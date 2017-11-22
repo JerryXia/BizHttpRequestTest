@@ -46,4 +46,8 @@
         <url-pattern>/snoop</url-pattern>
     </servlet-mapping>
      -->
+
+    <listener>
+      <listener-class>org.anonymous.devhelper.web.BootstrapperContextListener</listener-class>
+    </listener>
 </web-fragment>
