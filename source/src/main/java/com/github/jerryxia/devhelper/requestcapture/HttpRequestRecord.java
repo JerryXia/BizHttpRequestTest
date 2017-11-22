@@ -1,11 +1,6 @@
 package com.github.jerryxia.devhelper.requestcapture;
 
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
-
-import com.github.jerryxia.devhelper.util.Assert;
-import com.github.jerryxia.devhelper.util.ObjectId;
 
 /**
  * @author Administrator
@@ -13,31 +8,24 @@ import com.github.jerryxia.devhelper.util.ObjectId;
  */
 public class HttpRequestRecord {
 
-    private final String                id;
+    private final String id;
     private final HttpRequestRecordType type;
-    private final String                replayingRequestId;
-    private List<HttpRequestRecord>     replayedHttpRequestRecords;
-    private String                      method;
-    private String                      requestURL;
-    private String                      requestURI;
-    private String                      queryString;
-    private String                      accept;
-    private String                      contentType;
-    private Map<String, String[]>       parameterMap;
+    private final long timeStamp;
+    private String method;
+    private String requestURL;
+    private String requestURI;
+    private String queryString;
+    private String accept;
+    private String contentType;
+    private Map<String, String[]> parameterMap;
 
-    public HttpRequestRecord(HttpRequestRecordType type, String replayingRequestId) {
-        this.id = ObjectId.get().toString();
+    public HttpRequestRecord(String uuid, HttpRequestRecordType type, long timeStamp) {
         switch (type) {
         case NORMAL:
-            this.type = type;
-            //this.replayingRequestId = UUID.randomUUID().toString();
-            this.replayingRequestId = replayingRequestId;
-            this.replayedHttpRequestRecords = new LinkedList<HttpRequestRecord>();
-            break;
         case REPLAY:
-            Assert.hasLength(replayingRequestId);
+            this.id = uuid;
             this.type = type;
-            this.replayingRequestId = replayingRequestId;
+            this.timeStamp = timeStamp;
             break;
         case UNKNOWN:
         default:
@@ -49,16 +37,12 @@ public class HttpRequestRecord {
         return id;
     }
 
-    public String getReplayingRequestId() {
-        return replayingRequestId;
-    }
-
     public HttpRequestRecordType getType() {
         return type;
     }
 
-    public List<HttpRequestRecord> getReplayedHttpRequestRecords() {
-        return replayedHttpRequestRecords;
+    public long getTimeStamp() {
+        return timeStamp;
     }
 
     public String getMethod() {

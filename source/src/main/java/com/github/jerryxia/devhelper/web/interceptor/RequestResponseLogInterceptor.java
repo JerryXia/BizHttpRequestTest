@@ -35,6 +35,10 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     // 额外要记录的请求头
     private String[] logRequestHeaderNames = new String[0];
 
+    public void init() {
+        WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED = true;
+    }
+
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
@@ -63,7 +67,6 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             ModelAndView modelAndView) throws Exception {
         if (enable) {
             if (modelAndView != null) {
-                // logger.info(JsonConvertor.serialize(modelAndView.getModelMap()));
                 logger.info(modelAndView.getModelMap().toString());
             } else {
                 logger.info("null");

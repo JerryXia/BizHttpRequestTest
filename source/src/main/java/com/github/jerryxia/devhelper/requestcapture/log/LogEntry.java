@@ -1,17 +1,12 @@
 package com.github.jerryxia.devhelper.requestcapture.log;
 
 /**
- * @author Administrator
- *
- */
-/**
  * @author guqk
  *
  */
 public class LogEntry {
     private long   id;
     private String httpRequestRecordId;
-    private String httpRequestRecordReplayingRequestId;
     private String host;
     private String ip;
     private String loggerName;
@@ -20,10 +15,9 @@ public class LogEntry {
     private long   timeStamp;
     private String level;
 
-    public LogEntry(String httpRequestRecordId, String httpRequestRecordReplayingRequestId) {
+    public LogEntry(String httpRequestRecordId) {
         this.id = LogConstants.LOG_ENTRY_ID.incrementAndGet();
         this.httpRequestRecordId = httpRequestRecordId;
-        this.httpRequestRecordReplayingRequestId = httpRequestRecordReplayingRequestId;
     }
 
     public long getId() {
@@ -32,10 +26,6 @@ public class LogEntry {
 
     public String getHttpRequestRecordId() {
         return httpRequestRecordId;
-    }
-
-    public String getHttpRequestRecordReplayingRequestId() {
-        return httpRequestRecordReplayingRequestId;
     }
 
     public String getHost() {

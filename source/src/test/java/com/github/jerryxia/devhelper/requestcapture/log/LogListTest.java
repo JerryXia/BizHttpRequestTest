@@ -191,7 +191,7 @@ public class LogListTest {
 
 
     private LogEntry buildLogEntry(long id) {
-        LogEntry logEntry = new LogEntry("", "");
+        LogEntry logEntry = new LogEntry("");
         return logEntry;
     }
 }

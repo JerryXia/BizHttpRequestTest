@@ -278,11 +278,6 @@ public class JSONWriter {
         writeObject(logEntryData.getHttpRequestRecordId());
         write(',');
 
-        writeString("httpRequestRecordReplayingRequestId");
-        write(':');
-        writeObject(logEntryData.getHttpRequestRecordReplayingRequestId());
-        write(',');
-
         writeString("host");
         write(':');
         writeObject(logEntryData.getHost());
@@ -333,19 +328,14 @@ public class JSONWriter {
         writeObject(httpRequestRecordData.getId());
         write(',');
 
-        writeString("replayingRequestId");
-        write(':');
-        writeObject(httpRequestRecordData.getReplayingRequestId());
-        write(',');
-
         writeString("type");
         write(':');
         writeObject(httpRequestRecordData.getType().getValue());
         write(',');
 
-        writeString("replayedHttpRequestRecords");
+        writeString("timeStamp");
         write(':');
-        writeObject(httpRequestRecordData.getReplayedHttpRequestRecords());
+        writeObject(httpRequestRecordData.getTimeStamp());
         write(',');
 
         writeString("method");

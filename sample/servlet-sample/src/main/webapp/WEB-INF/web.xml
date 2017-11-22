@@ -6,7 +6,10 @@
     <!-- spring conext -->
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>classpath:spring/app-context.xml</param-value>
+        <param-value>
+            classpath:com/github/jerryxia/devhelper/devhelper-spring.xml
+            classpath:spring/app-context.xml
+        </param-value>
     </context-param>
     <listener>
         <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>

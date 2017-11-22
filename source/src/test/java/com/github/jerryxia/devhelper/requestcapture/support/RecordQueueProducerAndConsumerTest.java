@@ -3,11 +3,12 @@ package com.github.jerryxia.devhelper.requestcapture.support;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import com.github.jerryxia.devhelper.requestcapture.support.Constants;
+import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordEventProducer;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
@@ -24,18 +25,18 @@ public class RecordQueueProducerAndConsumerTest {
 
     @Before
     public void init() {
-        Constants.RECORD_MANAGER.init();
+        RequestCaptureConstants.RECORD_MANAGER.init();
     }
 
     @Test
     public void testDisruptorIsOk() {
         // 1 threads 13.710s
-        HttpRequestRecordEventProducer producer = Constants.RECORD_MANAGER.allocEventProducer();
+        HttpRequestRecordEventProducer producer = RequestCaptureConstants.RECORD_MANAGER.allocEventProducer();
         int count = 10000000;
         for (long l = 0; l < count; l++) {
-            producer.publish(new HttpRequestRecord(HttpRequestRecordType.NORMAL, null));
+            producer.publish(new HttpRequestRecord(UUID.randomUUID().toString(), HttpRequestRecordType.NORMAL, System.currentTimeMillis()));
         }
-        assertEquals(count, Constants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
+        assertEquals(count, RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
     }
 
     ArrayList<Thread> workers = new ArrayList<Thread>();
@@ -57,9 +58,9 @@ public class RecordQueueProducerAndConsumerTest {
                 @Override
                 public void run() {
                     workers.add(Thread.currentThread());
-                    HttpRequestRecordEventProducer producer = Constants.RECORD_MANAGER.allocEventProducer();
+                    HttpRequestRecordEventProducer producer = RequestCaptureConstants.RECORD_MANAGER.allocEventProducer();
                     for (long l = 0; l < count; l++) {
-                        producer.publish(new HttpRequestRecord(HttpRequestRecordType.NORMAL, null));
+                        producer.publish(new HttpRequestRecord(UUID.randomUUID().toString(), HttpRequestRecordType.NORMAL, System.currentTimeMillis()));
                     }
                 }
             });
@@ -77,11 +78,11 @@ public class RecordQueueProducerAndConsumerTest {
             }
         }
         assertEquals(threadCount * count,
-                Constants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
+                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
     }
 
     @After
     public void shutdown() {
-        Constants.RECORD_MANAGER.shutdown();
+        RequestCaptureConstants.RECORD_MANAGER.shutdown();
     }
 }

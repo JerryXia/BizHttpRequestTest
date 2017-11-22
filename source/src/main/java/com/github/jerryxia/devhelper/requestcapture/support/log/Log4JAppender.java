@@ -10,7 +10,7 @@ import org.apache.log4j.AppenderSkeleton;
 import org.apache.log4j.spi.LoggingEvent;
 
 import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
-import com.github.jerryxia.devhelper.requestcapture.support.Constants;
+import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
 
 /**
  * @author Administrator
@@ -24,8 +24,6 @@ public class Log4JAppender extends AppenderSkeleton {
 
     public Log4JAppender() {
         super();
-        Constants.LOG_EXT_ENABLED_MAP.put("log4j", Boolean.TRUE);
-        Constants.LOG_EXT_ENABLED_STATUS = true;
         try {
             localHost = InetAddress.getLocalHost();
             hostName = localHost.getHostName();
@@ -34,6 +32,8 @@ public class Log4JAppender extends AppenderSkeleton {
             hostName = "UnKnown";
             ip = "0.0.0.0";
         }
+        RequestCaptureConstants.LOG_EXT_ENABLED_MAP.put("log4j", Boolean.TRUE);
+        RequestCaptureConstants.LOG_EXT_ENABLED_STATUS = true;
     }
 
     @Override
@@ -57,13 +57,8 @@ public class Log4JAppender extends AppenderSkeleton {
 //        } else {
 //            throwable = event.getThrowableInformation().getThrowable();
 //        }
-        String httpRequestRecordId = null;
-        String httpRequestRecordReplayingRequestId = null;
-        if(Constants.LOG_EXT_ENABLED_STATUS) {
-            httpRequestRecordId = Constants.HTTP_REQUEST_RECORD_ID.get();
-            httpRequestRecordReplayingRequestId = Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.get();
-        }
-        LogEntry log = new LogEntry(httpRequestRecordId, httpRequestRecordReplayingRequestId);
+        String httpRequestRecordId = RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.get();
+        LogEntry log = new LogEntry(httpRequestRecordId);
         log.setHost(this.hostName);
         log.setIp(this.ip);
         log.setLoggerName(event.getLoggerName());
@@ -71,6 +66,6 @@ public class Log4JAppender extends AppenderSkeleton {
         log.setThreadName(event.getThreadName());
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
-        Constants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
+        RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
     }
 }

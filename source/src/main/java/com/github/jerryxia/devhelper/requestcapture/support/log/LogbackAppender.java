@@ -10,7 +10,7 @@ import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.UnsynchronizedAppenderBase;
 
 import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
-import com.github.jerryxia.devhelper.requestcapture.support.Constants;
+import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
 
 /**
  * @author Administrator
@@ -26,8 +26,6 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
      */
     public LogbackAppender() {
         super();
-        Constants.LOG_EXT_ENABLED_MAP.put("logback", Boolean.TRUE);
-        Constants.LOG_EXT_ENABLED_STATUS = true;
         try {
             localHost = InetAddress.getLocalHost();
             hostName = localHost.getHostName();
@@ -36,13 +34,14 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
             hostName = "UnKnown";
             ip = "0.0.0.0";
         }
+        RequestCaptureConstants.LOG_EXT_ENABLED_MAP.put("logback", Boolean.TRUE);
+        RequestCaptureConstants.LOG_EXT_ENABLED_STATUS = true;
     }
 
     @Override
     protected void append(ILoggingEvent event) {
-        String httpRequestRecordId = Constants.HTTP_REQUEST_RECORD_ID.get();
-        String httpRequestRecordReplayingRequestId = Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.get();
-        LogEntry log = new LogEntry(httpRequestRecordId, httpRequestRecordReplayingRequestId);
+        String httpRequestRecordId = RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.get();
+        LogEntry log = new LogEntry(httpRequestRecordId);
         log.setHost(this.hostName);
         log.setIp(this.ip);
         log.setLoggerName(event.getLoggerName());
@@ -50,7 +49,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         log.setThreadName(event.getThreadName());
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
-        Constants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
+        RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
     }
 
 }

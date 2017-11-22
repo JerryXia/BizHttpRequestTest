@@ -2,8 +2,11 @@ package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -14,7 +17,11 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
-import com.github.jerryxia.devhelper.requestcapture.support.Constants;
+import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
+import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
+import com.github.jerryxia.devhelper.util.SystemClock;
+import com.github.jerryxia.devhelper.web.WebConstants;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,16 +29,13 @@ import org.slf4j.LoggerFactory;
  * @author guqiankun
  *
  */
-public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements Filter {
+public class RequestCaptureFilter implements Filter {
     private static final Logger logger = LoggerFactory.getLogger(RequestCaptureFilter.class);
 
     private static final String PARAM_NAME_EXCLUSIONS = "exclusions";
-    private String              contextPath;
-    private Set<String>         excludesPattern;
-
-    public RequestCaptureFilter() {
-        // ctor
-    }
+    private String contextPath;
+    private Set<String> excludesPattern;
+    private String replayRequestIdRequestHeaderName;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -44,10 +48,18 @@ public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements 
         if (exclusions != null && exclusions.trim().length() != 0) {
             this.excludesPattern = new HashSet<String>(Arrays.asList(exclusions.split("\\s*,\\s*")));
         }
-        logger.info("com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter init");
-        logger.info("requestcapture log_ext_enabled_status: {}", Constants.LOG_EXT_ENABLED_STATUS);
-        logger.info("requestcapture log_ext_enabled_map: {}", Constants.LOG_EXT_ENABLED_MAP);
-        Constants.RECORD_MANAGER.init();
+
+        String cfgRequestHeaderName = filterConfig.getInitParameter("replayRequestIdRequestHeaderName");
+        if (cfgRequestHeaderName != null && cfgRequestHeaderName.length() > 0) {
+            replayRequestIdRequestHeaderName = cfgRequestHeaderName;
+        } else {
+            replayRequestIdRequestHeaderName = WebConstants.REPLAY_HTTP_REQUEST_HEADER_NAME;
+        }
+
+        logger.info("requestcapture log_ext_enabled_status: {}", RequestCaptureConstants.LOG_EXT_ENABLED_STATUS);
+        logger.info("requestcapture log_ext_enabled_map: {}", RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
+        RequestCaptureConstants.RECORD_MANAGER.init();
+        WebConstants.REQUEST_CAPTURE_FILTER_ENABLED = true;
     }
 
     @Override
@@ -61,18 +73,52 @@ public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements 
         }
 
         HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
-        if (Constants.LOG_EXT_ENABLED_STATUS) {
-            Constants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
-            Constants.HTTP_REQUEST_RECORD_REPLAYING_REQUEST_ID.set(httpRequestRecord.getReplayingRequestId());
-        }
-        Constants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+        RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
+        RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
 
         chain.doFilter(request, response);
     }
 
     @Override
     public void destroy() {
-        Constants.RECORD_MANAGER.shutdown();
+        RequestCaptureConstants.RECORD_MANAGER.shutdown();
+    }
+
+    private HttpRequestRecord buildHttpRequestRecord(HttpServletRequest httpRequest) {
+        String id = null;
+        if (WebConstants.REQUEST_ID_INIT_FILTER_ENABLED) {
+            id = WebConstants.X_CALL_REQUEST_ID.get();
+        } else {
+            id = UUID.randomUUID().toString();
+        }
+
+        long timeStamp = SystemClock.now();
+
+        HttpRequestRecordType type = HttpRequestRecordType.UNKNOWN;
+        String replayReqId = httpRequest.getHeader(replayRequestIdRequestHeaderName);
+        if (replayReqId != null && replayReqId.length() > 0) {
+            type = HttpRequestRecordType.REPLAY;
+        } else {
+            type = HttpRequestRecordType.NORMAL;
+        }
+
+        String method = httpRequest.getMethod();
+        String requestURI = httpRequest.getRequestURI();
+        String requestURL = httpRequest.getRequestURL().toString();
+        String queryString = httpRequest.getQueryString();
+        String accept = httpRequest.getHeader("accept");
+        String contentType = httpRequest.getContentType();
+        Map<String, String[]> parameterMap = new HashMap<String, String[]>(httpRequest.getParameterMap());
+
+        HttpRequestRecord httpRequestRecord = new HttpRequestRecord(id, type, timeStamp);
+        httpRequestRecord.setMethod(method);
+        httpRequestRecord.setRequestURL(requestURL);
+        httpRequestRecord.setRequestURI(requestURI);
+        httpRequestRecord.setQueryString(queryString);
+        httpRequestRecord.setAccept(accept);
+        httpRequestRecord.setContentType(contentType);
+        httpRequestRecord.setParameterMap(parameterMap);
+        return httpRequestRecord;
     }
 
     private boolean isExclusion(String requestURI) {
@@ -98,11 +144,12 @@ public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements 
 
     /**
      * <p>
-     * three type: endsWithMatch(eg. /xxx*=/xxx/xyz), startsWithMatch(eg.*.xxx=abc.xxx), equals(eg. /xxx=/xxx).
+     * three type: endsWithMatch(eg. /xxx*=/xxx/xyz),
+     * startsWithMatch(eg.*.xxx=abc.xxx), equals(eg. /xxx=/xxx).
      * </p>
      * <b>Notice</b>: *xxx* will match *xxxyyyy. endsWithMatch first.
      */
-    public boolean pathMatches(String pattern, String source) {
+    private boolean pathMatches(String pattern, String source) {
         if (pattern == null || source == null) {
             return false;
         }
@@ -137,4 +184,5 @@ public class RequestCaptureFilter extends AbstractRequestCaptureImpl implements 
         }
         return false;
     }
+
 }
