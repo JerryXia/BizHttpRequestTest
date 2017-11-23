@@ -2,17 +2,12 @@ package com.github.jerryxia.devhelper.requestcapture.support;
 
 import static org.junit.Assert.*;
 
-import java.util.ArrayList;
-import java.util.UUID;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
+import com.github.jerryxia.devhelper.util.SystemClock;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordEventProducer;
+import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordManager;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,66 +18,71 @@ import org.junit.Test;
  */
 public class RecordQueueProducerAndConsumerTest {
 
+    private HttpRequestRecordManager recordManager;
+    
     @Before
     public void init() {
-        RequestCaptureConstants.RECORD_MANAGER.init();
+        recordManager = new HttpRequestRecordManager();
+        recordManager.init();
     }
 
     @Test
-    public void testDisruptorIsOk() {
+    public void testDisruptorOneThreadIsOk() {
         // 1 threads 13.710s
-        HttpRequestRecordEventProducer producer = RequestCaptureConstants.RECORD_MANAGER.allocEventProducer();
-        int count = 10000000;
+        HttpRequestRecordEventProducer producer = recordManager.allocEventProducer();
+        int count = 100 * 10000;
+        String threadName = Thread.currentThread().getName();
         for (long l = 0; l < count; l++) {
-            producer.publish(new HttpRequestRecord(UUID.randomUUID().toString(), HttpRequestRecordType.NORMAL, System.currentTimeMillis()));
+            producer.publish(new HttpRequestRecord(String.format("%s_%s", threadName, l), HttpRequestRecordType.NORMAL, SystemClock.now()));
         }
-        assertEquals(count, RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assertEquals(count, recordManager.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
     }
 
-    ArrayList<Thread> workers = new ArrayList<Thread>();
-
     @Test
-    public void testDisruptorMutiThreadIsOk() {
+    public void testDisruptorTwoThreadIsOk() {
         // 2 threads 26.292s
         // 3 threads 37.764s
         // 4 threads 49.750s
         int threadCount = 2;
-        final int count = 10000000;
+        final int count = 100 * 10000;
 
-        ThreadPoolExecutor executorService = new ThreadPoolExecutor(threadCount, threadCount, 1, TimeUnit.SECONDS,
-                new LinkedBlockingQueue<Runnable>(),
-                new BasicThreadFactory.Builder().namingPattern("example-pool-%d").daemon(true).build());
-
+        Thread[] workers = new Thread[threadCount];
         for (int i = 0; i < threadCount; i++) {
-            executorService.execute(new Runnable() {
+            Thread t = new Thread(new Runnable() {
                 @Override
                 public void run() {
-                    workers.add(Thread.currentThread());
-                    HttpRequestRecordEventProducer producer = RequestCaptureConstants.RECORD_MANAGER.allocEventProducer();
-                    for (long l = 0; l < count; l++) {
-                        producer.publish(new HttpRequestRecord(UUID.randomUUID().toString(), HttpRequestRecordType.NORMAL, System.currentTimeMillis()));
+                    String threadName = Thread.currentThread().getName();
+                    for(int l = 0; l < count; l++) {
+                        HttpRequestRecordEventProducer producer = recordManager.allocEventProducer();
+                        producer.publish(new HttpRequestRecord(String.format("%s_%s", threadName, l), HttpRequestRecordType.NORMAL, SystemClock.now()));
                     }
                 }
-            });
+            }, String.format("%s", i));
+            workers[i] = t;
         }
+        workers[0].start();
+        workers[1].start();
         try {
-            Thread.sleep(5000);
+            workers[0].join();
+            workers[1].join();
         } catch (InterruptedException e1) {
             e1.printStackTrace();
         }
-        for (Thread worker : workers) {
-            try {
-                worker.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        try {
+            Thread.sleep(1);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
-        assertEquals(threadCount * count,
-                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
+        assertEquals(threadCount * count, recordManager.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
     }
 
     @After
     public void shutdown() {
-        RequestCaptureConstants.RECORD_MANAGER.shutdown();
+        recordManager.shutdown();
     }
 }

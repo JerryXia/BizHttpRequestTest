@@ -13,6 +13,9 @@ import com.github.jerryxia.devhelper.util.Assert;
 
 /**
  * <p>A globally unique identifier for objects.</p>
+ * 
+ * @author Administrator
+ * 
  */
 public final class ObjectId implements Comparable<ObjectId>, Serializable {
 
@@ -267,7 +270,8 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
     public byte[] toByteArray() {
         ByteBuffer buffer = ByteBuffer.allocate(12);
         putToByteBuffer(buffer);
-        return buffer.array();  // using .allocate ensures there is a backing array that can be returned
+        // using .allocate ensures there is a backing array that can be returned
+        return buffer.array();
     }
 
     /**
@@ -487,8 +491,13 @@ public final class ObjectId implements Comparable<ObjectId>, Serializable {
         return machinePiece;
     }
 
-    // Creates the process identifier.  This does not have to be unique per class loader because
-    // NEXT_COUNTER will provide the uniqueness.
+
+    /**
+     * Creates the process identifier.  This does not have to be unique per class loader because
+     * NEXT_COUNTER will provide the uniqueness.
+     * 
+     * @return
+     */
     private static short createProcessIdentifier() {
         short processId;
         try {

@@ -123,11 +123,6 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         return writer.toString();
     }
 
-    // private Object parse(String text) {
-    // JSONParser parser = new JSONParser(text);
-    // return parser.parse();
-    // }
-
     private List<LogEntry> filterById(List<LogEntry> alllogs, String id) {
         List<LogEntry> linkedList = new LinkedList<LogEntry>();
         for (LogEntry log : alllogs) {

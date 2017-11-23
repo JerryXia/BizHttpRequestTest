@@ -71,7 +71,8 @@ public abstract class AbstractResourceServlet extends HttpServlet {
 
         response.setCharacterEncoding("utf-8");
 
-        if (contextPath == null) { // root context
+        if (contextPath == null) {
+            // root context
             contextPath = "";
         }
         String uri = contextPath + servletPath;
@@ -105,6 +106,12 @@ public abstract class AbstractResourceServlet extends HttpServlet {
         returnResourceFile(path, uri, response);
     }
 
+    /**
+     * 处理请求
+     * 
+     * @param url
+     * @return
+     */
     protected abstract String process(String url);
 
     private byte[] readByteArrayFromResource(String resource) throws IOException {

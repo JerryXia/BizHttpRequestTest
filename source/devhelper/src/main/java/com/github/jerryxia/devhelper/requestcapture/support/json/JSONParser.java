@@ -352,7 +352,7 @@ public class JSONParser {
         /**
          * 
          */
-        NULL, //
+        NULL,
         /**
          * 
          */

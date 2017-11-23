@@ -30,9 +30,15 @@ import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogIntercept
 public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     private static final Logger logger = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
 
-    // 只要加入了interceptors中默认启用
+
+    /**
+     * 只要加入了interceptors中默认启用
+     */
     private boolean enable = true;
-    // 额外要记录的请求头
+
+    /**
+     *  额外要记录的请求头
+     */
     private String[] logRequestHeaderNames = new String[0];
 
     public void init() {

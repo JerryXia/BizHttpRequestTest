@@ -21,7 +21,10 @@ import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
  *
  */
 public class RequestIdInitInterceptor extends HandlerInterceptorAdapter {
-    // response header name defaultValue: X-Call-RequestId
+
+    /**
+     * response header name defaultValue: X-Call-RequestId
+     */
     private String requestIdResponseHeaderName = WebConstants.REQUEST_ID_RESPONSE_HEADER_NAME;
 
     public void init() {

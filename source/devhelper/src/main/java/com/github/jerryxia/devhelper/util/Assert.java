@@ -1,5 +1,9 @@
 package com.github.jerryxia.devhelper.util;
 
+/**
+ * @author Administrator
+ *
+ */
 public final class Assert {
     /**
      * Cast an object to the given class and return it, or throw

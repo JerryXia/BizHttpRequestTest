@@ -20,18 +20,18 @@ public class HttpRequestRecordManager {
     private HttpRequestRecordEventHandler     consumer;
     private LogEntryManager                   logEntryManager;
 
+    @SuppressWarnings("unchecked")
     public HttpRequestRecordManager() {
         this.disruptor = new Disruptor<>(new HttpRequestRecordEventFactory(), 1024, Executors.defaultThreadFactory(),
                 ProducerType.MULTI, new SleepingWaitStrategy());
         this.recordStorage = new HttpRequestRecordMemoryStorage();
         this.eventStat = new HttpRequestRecordEventStat();
         this.consumer = new HttpRequestRecordEventHandler(this.recordStorage, this.eventStat);
+        this.disruptor.handleEventsWith(this.consumer);
         this.logEntryManager = new LogEntryManager();
     }
 
-    @SuppressWarnings("unchecked")
     public void init() {
-        disruptor.handleEventsWith(this.consumer);
         disruptor.start();
         this.logEntryManager.init();
     }

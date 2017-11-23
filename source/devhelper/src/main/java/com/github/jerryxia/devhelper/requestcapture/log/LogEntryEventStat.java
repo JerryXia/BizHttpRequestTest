@@ -15,8 +15,8 @@ public class LogEntryEventStat {
 
     private final AtomicLong producerSuccessCount = new AtomicLong();
     private final AtomicLong producerFailCount    = new AtomicLong();
-    private long             consumerSuccessCount = 0;
-    private long             consumerFailCount    = 0;
+    private volatile long    consumerSuccessCount = 0;
+    private volatile long    consumerFailCount    = 0;
 
     public LogEntryEventStat() {
 

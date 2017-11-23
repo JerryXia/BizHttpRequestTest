@@ -8,7 +8,6 @@ import java.lang.management.MemoryUsage;
  */
 public class MemoryMXBeanInfo {
 
-    // Memory MXBean
     private MemoryUsage heapMemoryUsag;
     private MemoryUsage nonHeapMemoryUsag;
 

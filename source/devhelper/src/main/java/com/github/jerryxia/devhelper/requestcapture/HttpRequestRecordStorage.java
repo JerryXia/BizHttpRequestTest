@@ -16,7 +16,19 @@ public interface HttpRequestRecordStorage {
      */
     boolean save(HttpRequestRecord record);
 
+    /**
+     * queryAll
+     * 
+     * @return
+     */
     List<HttpRequestRecord> queryAll();
 
+    /**
+     * queryPagedList
+     * 
+     * @param start
+     * @param end
+     * @return
+     */
     List<HttpRequestRecord> queryPagedList(int start, int end);
 }

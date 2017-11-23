@@ -19,17 +19,17 @@ public class LogEntryManager {
     private LogEntryEventStat         logEntryEventStat;
     private LogEntryEventHandler      consumer;
 
+    @SuppressWarnings("unchecked")
     public LogEntryManager() {
         this.disruptor = new Disruptor<>(new LogEntryEventFactory(), 1024, Executors.defaultThreadFactory(),
                 ProducerType.MULTI, new SleepingWaitStrategy());
         this.logEntryStorage = new LogEntryMemoryStorage();
         this.logEntryEventStat = new LogEntryEventStat();
         this.consumer = new LogEntryEventHandler(this.logEntryStorage, this.logEntryEventStat);
+        this.disruptor.handleEventsWith(consumer);
     }
 
-    @SuppressWarnings("unchecked")
     public void init() {
-        this.disruptor.handleEventsWith(consumer);
         this.disruptor.start();
     }
 

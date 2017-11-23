@@ -82,15 +82,16 @@ public class CharTypes {
 		for (int i = 0x7F; i <= 0xA0; ++i) {
 			WHITESPACE_FLAGS[i] = true;
 		}
-
-		WHITESPACE_FLAGS[160] = true; // 特别处理
+		// 特别处理
+		WHITESPACE_FLAGS[160] = true;
 	}
 
 	/**
 	 * @return false if {@link LayoutCharacters#EOI}
 	 */
 	public static boolean isWhitespace(char c) {
-		return (c <= WHITESPACE_FLAGS.length && WHITESPACE_FLAGS[c]) || c == '　'; // Chinese space
+	    // Chinese space
+		return (c <= WHITESPACE_FLAGS.length && WHITESPACE_FLAGS[c]) || c == '　';
 	}
 
 }

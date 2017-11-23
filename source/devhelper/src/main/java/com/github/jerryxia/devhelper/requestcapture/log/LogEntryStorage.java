@@ -11,9 +11,27 @@ import java.util.List;
  */
 public interface LogEntryStorage {
 
+    /**
+     * save
+     * 
+     * @param record
+     * @return
+     */
     boolean save(LogEntry record);
 
+    /**
+     * queryAll
+     * 
+     * @return
+     */
     List<LogEntry> queryAll();
 
+    /**
+     * queryPagedList
+     * 
+     * @param start
+     * @param end
+     * @return
+     */
     List<LogEntry> queryPagedList(int start, int end);
 }

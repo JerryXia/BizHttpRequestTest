@@ -12,7 +12,6 @@ public class MemoryPoolMXBeanInfo {
     private String    name;
     public MemoryType type;
 
-    // Memory Usage Monitoring
     private MemoryUsage memoryUsage;
     private MemoryUsage peakMemoryUsage;
     private MemoryUsage collectionUsage;

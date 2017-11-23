@@ -19,7 +19,7 @@ public class SystemClock {
     private final long period;
     private volatile long now;
 
-    private static final SystemClock instance = new SystemClock(1);
+    private static final SystemClock INSTANCE = new SystemClock(1);
 
     private SystemClock(long period) {
         this.period = period;
@@ -29,15 +29,16 @@ public class SystemClock {
     }
 
     public static long now() {
-        return instance.currentTimeMillis();
+        return INSTANCE.currentTimeMillis();
     }
 
     public static Date nowDate() {
-        return new Date(instance.currentTimeMillis());
+        return new Date(INSTANCE.currentTimeMillis());
     }
 
     private void scheduleClockUpdating() {
         ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+            @Override
             public Thread newThread(Runnable runnable) {
                 Thread thread = new Thread(runnable, "devhelper-util-SystemClock");
                 thread.setDaemon(true);
@@ -45,6 +46,7 @@ public class SystemClock {
             }
         });
         scheduler.scheduleAtFixedRate(new Runnable() {
+            @Override
             public void run() {
                 now = System.currentTimeMillis();
             }

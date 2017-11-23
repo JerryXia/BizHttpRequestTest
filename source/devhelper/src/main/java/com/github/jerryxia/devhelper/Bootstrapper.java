@@ -9,18 +9,25 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
+ * 引导器
+ * 
  * @author guqk
- *
  */
 public class Bootstrapper {
     private String      javaHome = null;
     private ClassLoader clToUse  = null;
 
+    /**
+     * ctors
+     */
     public Bootstrapper() {
         javaHome = System.getProperty("java.home");
         clToUse = Bootstrapper.class.getClassLoader();
     }
 
+    /**
+     * 解压宋体的字体文件到 {java.home}/lib/fonts/fallback/
+     */
     public void javaMelodyChineseFontExtract() {
         String javaMelodyMonitoringFilterClassName = "net.bull.javamelody.MonitoringFilter";
         boolean existsJavaMelodyClass = classforName(javaMelodyMonitoringFilterClassName) != null;
@@ -62,6 +69,12 @@ public class Bootstrapper {
         }
     }
 
+    /**
+     * 判断类是否存在
+     * 
+     * @param className
+     * @return
+     */
     private Class<?> classforName(String className) {
         try {
             return clToUse != null ? clToUse.loadClass(className) : Class.forName(className);

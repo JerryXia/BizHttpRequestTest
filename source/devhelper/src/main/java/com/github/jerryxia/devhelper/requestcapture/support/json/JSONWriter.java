@@ -10,6 +10,10 @@ import java.util.Map;
 import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 
+/**
+ * @author Administrator
+ *
+ */
 public class JSONWriter {
 
     private static final Object EVAL_VALUE_NULL  = new Object();
