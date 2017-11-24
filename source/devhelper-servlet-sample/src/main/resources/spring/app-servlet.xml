@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+  xmlns:mvc="http://www.springframework.org/schema/mvc"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+
+  <context:component-scan base-package="com.guqiankun.ssmtemplate.web" />
+  <context:property-placeholder location="classpath:app.properties" />
+
+  <bean id="multipartResolver"
+    class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+    <property name="maxUploadSize" value="5242880" />
+  </bean>
+
+  <bean class="com.guqiankun.ssmtemplate.web.CustomHandlerExceptionResolver">
+    <property name="defaultErrorView" value="error" />
+    <property name="defaultStatusCode" value="404" />
+  </bean>
+
+  <bean id="jackson2ObjectMapperFactoryBean"
+    class="org.springframework.http.converter.json.Jackson2ObjectMapperFactoryBean">
+    <property name="objectMapper">
+      <bean class="com.fasterxml.jackson.datatype.joda.JodaMapper">
+        <property name="writeDatesAsTimestamps" value="false" />
+      </bean>
+    </property>
+    <property name="failOnEmptyBeans" value="false" />
+    <property name="indentOutput" value="false" />
+    <!-- <property name="serializers"> <array> <bean class="org.mycompany.MyCustomSerializer" 
+      /> </array> </property> -->
+  </bean>
+
+  <bean id="contentNegotiationManager"
+    class="org.springframework.web.accept.ContentNegotiationManagerFactoryBean">
+    <!-- 用于开启 /userinfo/123?format=json 的支持 -->
+    <property name="favorParameter" value="false" />
+
+    <!-- 设置为true以忽略对Accept Header的支持 -->
+    <property name="ignoreAcceptHeader" value="false" />
+
+    <!-- 设置为true以开启url扩展名的支持 -->
+    <property name="favorPathExtension" value="true" />
+
+    <!-- 在没有扩展名时即: "/user" 时的默认展现形式 -->
+    <property name="defaultContentType" value="text/html" />
+
+    <!-- 扩展名至mimeType的映射,即 /user.json => application/json -->
+    <property name="mediaTypes">
+      <map>
+        <entry key="json" value="application/json" />
+      </map>
+    </property>
+  </bean>
+
+  <bean
+    class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver">
+    <property name="order" value="0" />
+    <property name="contentNegotiationManager" ref="contentNegotiationManager" />
+    <property name="viewResolvers">
+      <list>
+        <ref bean="freeMarkerViewResolver" />
+        <bean
+          class="org.springframework.web.servlet.view.BeanNameViewResolver">
+          <property name="order" value="2" />
+        </bean>
+        <bean
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver">
+          <property name="order" value="3" />
+          <property name="viewClass"
+            value="org.springframework.web.servlet.view.JstlView" />
+          <property name="prefix" value="/WEB-INF/jsp/"></property>
+          <property name="suffix" value=".jsp"></property>
+        </bean>
+      </list>
+    </property>
+    <property name="defaultViews">
+      <list>
+        <bean
+          class="org.springframework.web.servlet.view.json.MappingJackson2JsonView">
+          <constructor-arg name="objectMapper"
+            ref="jackson2ObjectMapperFactoryBean" />
+        </bean>
+      </list>
+    </property>
+  </bean>
+
+  <!-- Freemarker 视图解析器 -->
+  <bean id="freeMarkerViewResolver"
+    class="org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver">
+    <property name="order" value="1" />
+    <property name="cache" value="${app.freemarker.view.cache}" />
+    <property name="prefix" value="" />
+    <property name="suffix" value=".ftl" />
+    <property name="contentType" value="text/html;charset=UTF-8" />
+    <!-- 把contextPath暴露给freemaker，前端可以通过￥{request.getContextPath()} 来获取上下文路径 
+      <property name="requestContextAttribute" value="request"/> -->
+    <property name="viewClass"
+      value="org.springframework.web.servlet.view.freemarker.FreeMarkerView" />
+  </bean>
+  <bean id="freemarkerConfig"
+    class="org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer">
+    <property name="templateLoaderPath" value="/WEB-INF/ftl/" />
+    <property name="defaultEncoding" value="UTF-8" />
+    <property name="freemarkerSettings">
+      <props>
+        <prop key="template_update_delay">${app.freemarker.template_update_delay}</prop>
+        <prop key="default_encoding">UTF-8</prop>
+        <prop key="locale">zh-CN</prop>
+        <prop key="datetime_format">yyyy-MM-dd HH:mm:ss</prop>
+        <prop key="date_format">yyyy-MM-dd</prop>
+        <prop key="time_format">HH:mm:ss</prop>
+        <prop key="number_format">0.######</prop>
+        <prop key="boolean_format">true,false</prop>
+        <prop key="whitespace_stripping">true</prop>
+        <prop key="url_escaping_charset">UTF-8</prop>
+        <prop key="tag_syntax">auto_detect</prop>
+        <prop key="classic_compatible">true</prop>
+        <prop key="template_exception_handler">ignore</prop>
+        <!-- #freemarker.template.Configuration <prop key="auto_import">"/common/index.ftl" 
+          as ui</prop> -->
+      </props>
+    </property>
+  </bean>
+
+  <mvc:annotation-driven
+    content-negotiation-manager="contentNegotiationManager">
+  </mvc:annotation-driven>
+
+  <!-- Ensures that dispatcher servlet can be mapped to '/' and that static 
+    resources are still served by the containers default servlet. Requires Spring 
+    Framework 3.0 or higher. -->
+  <mvc:default-servlet-handler />
+
+  <!-- static resources in the ${webappRoot}/resources directory <mvc:resources 
+    mapping="/resources/**" location="/resources/"> <mvc:cache-control max-age="3600" 
+    cache-public="true" /> </mvc:resources> -->
+
+  <mvc:cors>
+    <mvc:mapping path="/**" allowed-origins="*"
+      allowed-methods="GET,POST,PUT,DELETE,OPTIONS" allowed-headers="X-Requested-With" />
+  </mvc:cors>
+
+</beans>

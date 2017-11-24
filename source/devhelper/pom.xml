@@ -4,31 +4,10 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jerryxia</groupId>
   <artifactId>devhelper</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>devhelper</name>
-  <url>https://github.com/JerryXia/BizHttpRequestTest</url>
-  <description>This is a helper tool library in developing or testing java web application.</description>
-  <licenses>
-    <license>
-      <name>MIT</name>
-      <url>https://opensource.org/licenses/MIT</url>
-    </license>
-  </licenses>
-  <developers>
-    <developer>
-      <name>JerryXia</name>
-      <email>gqkzwy@gmail.com</email>
-    </developer>
-  </developers>
-  <scm>
-    <url>git@github.com:JerryXia/BizHttpRequestTest.git</url>
-    <connection>scm:git:git@github.com:JerryXia/BizHttpRequestTest.git</connection>
-  </scm>
-  <issueManagement>
-    <system>Github</system>
-    <url>https://github.com/JerryXia/BizHttpRequestTest/issues</url>
-  </issueManagement>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.7</maven.compiler.target>
@@ -40,12 +19,6 @@
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
       <version>${junit-version}</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.4</version>
       <scope>test</scope>
     </dependency>
     <dependency>
@@ -89,6 +62,7 @@
       <optional>true</optional>
     </dependency>
   </dependencies>
+
   <profiles>
     <profile>
       <id>release</id>
@@ -156,4 +130,27 @@
       </distributionManagement>
     </profile>
   </profiles>
+
+  <url>https://github.com/JerryXia/BizHttpRequestTest</url>
+  <description>This is a helper tool library in developing or testing java web application.</description>
+  <licenses>
+    <license>
+      <name>MIT</name>
+      <url>https://opensource.org/licenses/MIT</url>
+    </license>
+  </licenses>
+  <developers>
+    <developer>
+      <name>JerryXia</name>
+      <email>gqkzwy@gmail.com</email>
+    </developer>
+  </developers>
+  <scm>
+    <url>git@github.com:JerryXia/BizHttpRequestTest.git</url>
+    <connection>scm:git:git@github.com:JerryXia/BizHttpRequestTest.git</connection>
+  </scm>
+  <issueManagement>
+    <system>Github</system>
+    <url>https://github.com/JerryXia/BizHttpRequestTest/issues</url>
+  </issueManagement>
 </project>

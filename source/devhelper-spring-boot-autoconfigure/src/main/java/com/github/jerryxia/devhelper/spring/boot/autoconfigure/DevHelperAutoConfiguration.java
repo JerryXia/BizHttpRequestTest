@@ -10,6 +10,9 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 
+import org.slf4j.ILoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,11 +21,15 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.Assert;
 
+import com.github.jerryxia.devhelper.requestcapture.support.log.LogbackAppender;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
 import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
 import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
+
+import ch.qos.logback.classic.LoggerContext;
 
 /**
  * @author guqk
