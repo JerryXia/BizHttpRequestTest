@@ -111,7 +111,7 @@
     </profile>
   </profiles>
 
-  <url>https://github.com/JerryXia/BizHttpRequestTest</url>
+  <url>https://github.com/JerryXia/BizHttpRequestTest/tree/master/source/devhelper-spring-boot-autoconfigure</url>
   <description>This is a helper tool library in developing or testing java web application.</description>
   <licenses>
     <license>

@@ -8,12 +8,12 @@ import java.util.Map;
  */
 public class GeneralResponse {
     private int                 code;
-    private String              message;
+    private String              msg;
     private Map<String, Object> data;
 
-    public GeneralResponse(int c, String msg, Map<String, Object> d) {
+    public GeneralResponse(int c, String message, Map<String, Object> d) {
         this.code = c;
-        this.message = msg;
+        this.msg = message;
         this.data = d;
     }
 
@@ -22,13 +22,13 @@ public class GeneralResponse {
         return this;
     }
 
-    public GeneralResponse message(String msg) {
-        this.message = msg;
+    public GeneralResponse msg(String message) {
+        this.msg = message;
         return this;
     }
 
     public GeneralResponse failWithMsg(String withMessage) {
-        return fail().message(withMessage);
+        return fail().msg(withMessage);
     }
 
     public GeneralResponse failWithSysError() {
@@ -44,12 +44,12 @@ public class GeneralResponse {
         this.code = code;
     }
 
-    public String getMessage() {
-        return message;
+    public String getMsg() {
+        return msg;
     }
 
-    public void setMessage(String message) {
-        this.message = message;
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 
     public Map<String, Object> getData() {
