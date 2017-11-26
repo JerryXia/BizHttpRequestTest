@@ -10,9 +10,6 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 
-import org.slf4j.ILoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -21,15 +18,15 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.util.Assert;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
-import com.github.jerryxia.devhelper.requestcapture.support.log.LogbackAppender;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
 import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
+import com.github.jerryxia.devhelper.web.interceptor.RequestIdInitInterceptor;
+import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor;
 import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
-
-import ch.qos.logback.classic.LoggerContext;
 
 /**
  * @author guqk
@@ -38,7 +35,7 @@ import ch.qos.logback.classic.LoggerContext;
 @Configuration
 @EnableConfigurationProperties(DevHelperProperties.class)
 @ConditionalOnWebApplication
-public class DevHelperAutoConfiguration {
+public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
     public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestIdInitFilter-registration";
     public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestCaptureFilter-registration";
     public static final String REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-requestCaptureWebServlet-registration";
@@ -151,6 +148,15 @@ public class DevHelperAutoConfiguration {
         registrationBean.setName(listenerName);
 
         return registrationBean;
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        // 多个拦截器组成一个拦截器链
+        // addPathPatterns 用于添加拦截规则
+        // excludePathPatterns 用户排除拦截
+        registry.addInterceptor(new RequestIdInitInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(new RequestResponseLogInterceptor()).addPathPatterns("/**");
     }
 
 }

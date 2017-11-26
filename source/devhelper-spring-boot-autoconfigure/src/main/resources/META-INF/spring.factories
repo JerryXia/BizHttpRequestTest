@@ -1,1 +1,7 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.jerryxia.devhelper.spring.boot.autoconfigure.DevHelperAutoConfiguration
+
+
+# Application Listeners
+org.springframework.context.ApplicationListener=\
+org.springframework.boot.system.ApplicationPidFileWriter,\
+com.github.jerryxia.devhelper.spring.boot.listener.ApplicationReadyListener
