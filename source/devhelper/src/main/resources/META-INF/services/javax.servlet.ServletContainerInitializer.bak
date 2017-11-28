@@ -1,0 +1,2 @@
+# not used, see META-INF/web-fragment.xml
+com.github.jerryxia.devhelper.web.servlet.BootstrapperServletContainerInitializer

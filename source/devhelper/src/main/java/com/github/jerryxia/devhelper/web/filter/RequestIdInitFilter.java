@@ -45,7 +45,11 @@ public class RequestIdInitFilter implements Filter {
         String requestId = UUID.randomUUID().toString();
         WebConstants.X_CALL_REQUEST_ID.set(requestId);
         httpResponse.setHeader(requestIdResponseHeaderName, requestId);
-        chain.doFilter(request, response);
+        try {
+            chain.doFilter(request, response);
+        } finally {
+            WebConstants.X_CALL_REQUEST_ID.remove();
+        }
     }
 
     @Override

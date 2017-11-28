@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import com.github.jerryxia.devhelper.snoop.JvmMemoryInfo;
 import com.github.jerryxia.devhelper.snoop.MemoryPoolMXBeanInfo;
 import com.github.jerryxia.devhelper.snoop.Monitor;
+import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
  * @author Administrator
@@ -28,10 +29,13 @@ public class SnoopServlet extends HttpServlet {
         JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().run();
         RequestInformation requestInfo = buildRequestInfo(req);
         StringBuffer sb = new StringBuffer(1024 * 64);
-        sb.append("<html><head><title>");
+        sb.append("<html><head>");
+        sb.append("<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\" />");
+        sb.append("<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, shrink-to-fit=no\" />");
+        sb.append("<title>");
         sb.append("Servlet Snoop Page");
         sb.append("</title>");
-        sb.append("<link href=\"https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css\" rel=\"stylesheet\">");
+        sb.append(String.format("<link href=\"https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css?t=%s\" rel=\"stylesheet\">", WebConstants.START_TIMESTAMP));
         sb.append("</head>");
         sb.append("<body>");
         sb.append("<h2>JVM Memory Monitor</h2>");
@@ -201,7 +205,7 @@ public class SnoopServlet extends HttpServlet {
         }
         sb.append("</table>");
 
-        sb.append("<script src=\"https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js\"></script>");
+        sb.append(String.format("<script src=\"https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js?t=%s\"></script>", WebConstants.START_TIMESTAMP));
         sb.append("<script>$('table').addClass('table').addClass('table-bordered').addClass('table-condensed');");
         sb.append("$('table tr th').css({'text-align':'center'});");
         sb.append("</script>");

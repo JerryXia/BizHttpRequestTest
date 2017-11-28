@@ -9,7 +9,7 @@ import java.util.List;
  */
 class LogEntryMemoryStorageList {
     private volatile long        offset         = 0;
-    private int                  capacity       = 1024 * 1024;
+    private int                  capacity       = 1024 * 8;
     private boolean              hasSetCapacity = false;
     private LinkedList<LogEntry> linkedList     = new LinkedList<LogEntry>();
 

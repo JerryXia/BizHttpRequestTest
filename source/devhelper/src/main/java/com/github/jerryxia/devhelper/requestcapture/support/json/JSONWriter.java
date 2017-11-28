@@ -362,11 +362,6 @@ public class JSONWriter {
         writeObject(httpRequestRecordData.getQueryString());
         write(',');
 
-        writeString("accept");
-        write(':');
-        writeObject(httpRequestRecordData.getAccept());
-        write(',');
-
         writeString("contentType");
         write(':');
         writeObject(httpRequestRecordData.getContentType());
@@ -375,6 +370,11 @@ public class JSONWriter {
         writeString("parameterMap");
         write(':');
         writeObject(httpRequestRecordData.getParameterMap());
+
+        writeString("payload");
+        write(':');
+        writeObject(httpRequestRecordData.getPayload());
+        write(',');
 
         write('}');
     }

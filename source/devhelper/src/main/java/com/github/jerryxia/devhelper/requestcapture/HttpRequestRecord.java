@@ -15,9 +15,9 @@ public class HttpRequestRecord {
     private String requestURL;
     private String requestURI;
     private String queryString;
-    private String accept;
     private String contentType;
     private Map<String, String[]> parameterMap;
+    private String payload;
 
     public HttpRequestRecord(String uuid, HttpRequestRecordType type, long timeStamp) {
         switch (type) {
@@ -77,14 +77,6 @@ public class HttpRequestRecord {
         this.queryString = queryString;
     }
 
-    public String getAccept() {
-        return accept;
-    }
-
-    public void setAccept(String accept) {
-        this.accept = accept;
-    }
-
     public String getContentType() {
         return contentType;
     }
@@ -101,4 +93,11 @@ public class HttpRequestRecord {
         this.parameterMap = parameterMap;
     }
 
+    public String getPayload() {
+        return payload;
+    }
+
+    public void setPayload(String payload) {
+        this.payload = payload;
+    }
 }

@@ -29,7 +29,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
     @Override
     public void init() throws ServletException {
-        //
+        
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -8,13 +9,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
@@ -24,23 +24,32 @@ import com.github.jerryxia.devhelper.web.WebConstants;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.server.ServletServerHttpRequest;
+import org.springframework.util.StringUtils;
+import org.springframework.web.filter.AbstractRequestLoggingFilter;
+import org.springframework.web.util.ContentCachingRequestWrapper;
+import org.springframework.web.util.WebUtils;
 
 /**
  * @author guqiankun
  *
  */
-public class RequestCaptureFilter implements Filter {
+public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
     private static final Logger logger = LoggerFactory.getLogger(RequestCaptureFilter.class);
 
     public static final String PARAM_NAME_EXCLUSIONS                            = "exclusions";
     public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
+    private static final String REQUEST_CAPTURE_REQUEST_KEY_PREFIX = UUID.randomUUID().toString().replace('-', 'a').trim() + ":";
 
     private String      contextPath;
     private Set<String> excludesPattern;
     private String      replayRequestIdRequestHeaderName;
 
     @Override
-    public void init(FilterConfig filterConfig) throws ServletException {
+    protected void initFilterBean() throws ServletException {
+        FilterConfig filterConfig = getFilterConfig();
+
+        // from init()
         this.contextPath = filterConfig.getServletContext().getContextPath();
         if (this.contextPath == null || this.contextPath.length() == 0) {
             this.contextPath = "/";
@@ -65,25 +74,116 @@ public class RequestCaptureFilter implements Filter {
     }
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        // HttpServletResponse httpResponse = (HttpServletResponse) response;
-        if (isExclusion(httpRequest.getRequestURI())) {
-            chain.doFilter(request, response);
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+            throws ServletException, IOException {
+        if (isExclusion(request.getRequestURI())) {
+            filterChain.doFilter(request, response);
             return;
         }
+        super.doFilterInternal(request, response, filterChain);
+    }
 
-        HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
+    @Override
+    protected String createMessage(HttpServletRequest request, String prefix, String suffix) {
+        StringBuilder msg = new StringBuilder();
+        msg.append(prefix);
+        msg.append("uri=").append(request.getRequestURI());
+
+        if (isIncludeQueryString()) {
+            String queryString = request.getQueryString();
+            if (queryString != null) {
+                msg.append('?').append(queryString);
+            }
+        }
+
+        if (isIncludeClientInfo()) {
+            String client = request.getRemoteAddr();
+            if (StringUtils.hasLength(client)) {
+                msg.append(";client=").append(client);
+            }
+            HttpSession session = request.getSession(false);
+            if (session != null) {
+                msg.append(";session=").append(session.getId());
+            }
+            String user = request.getRemoteUser();
+            if (user != null) {
+                msg.append(";user=").append(user);
+            }
+        }
+
+        if (isIncludeHeaders()) {
+            msg.append(";headers=").append(new ServletServerHttpRequest(request).getHeaders());
+        }
+
+        String payloadKey = buildRequestKey("payload");
+        if (isIncludePayload()) {
+            ContentCachingRequestWrapper wrapper =
+                    WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
+            if (wrapper != null) {
+                byte[] buf = wrapper.getContentAsByteArray();
+                if (buf.length > 0) {
+                    int length = Math.min(buf.length, getMaxPayloadLength());
+                    String payload;
+                    try {
+                        payload = new String(buf, 0, length, wrapper.getCharacterEncoding());
+                    }
+                    catch (UnsupportedEncodingException ex) {
+                        payload = "[unknown]";
+                    }
+                    msg.append(";payload=").append(payload);
+
+                    request.setAttribute(payloadKey, payload);
+                } else {
+                    request.setAttribute(payloadKey, "");
+                }
+            } else {
+                request.setAttribute(payloadKey, "null");
+            }
+        } else {
+            request.setAttribute(payloadKey, "payload is unEnabled");
+        }
+
+        msg.append(suffix);
+        return msg.toString();
+    }
+
+    /**
+     * Writes a log message before the request is processed.
+     */
+    @Override
+    protected void beforeRequest(HttpServletRequest request, String message) {
+        HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(request);
         RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
+        String payloadKey = buildRequestKey("payload");
+        String payload = (String) request.getAttribute(payloadKey);
+        httpRequestRecord.setPayload(payload);
+        request.removeAttribute(payloadKey);
         RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+        logger.debug(message);
+    }
 
-        chain.doFilter(request, response);
+    /**
+     * Writes a log message after the request is processed.
+     */
+    @Override
+    protected void afterRequest(HttpServletRequest request, String message) {
+        String payloadKey = buildRequestKey("payload");
+        request.removeAttribute(payloadKey);
+        logger.debug(message);
+    }
+
+    @Override
+    protected boolean shouldLog(HttpServletRequest request) {
+        return logger.isDebugEnabled();
     }
 
     @Override
     public void destroy() {
         RequestCaptureConstants.RECORD_MANAGER.shutdown();
+    }
+
+    private String buildRequestKey(String key) {
+        return REQUEST_CAPTURE_REQUEST_KEY_PREFIX + key;
     }
 
     private HttpRequestRecord buildHttpRequestRecord(HttpServletRequest httpRequest) {
@@ -108,7 +208,6 @@ public class RequestCaptureFilter implements Filter {
         String requestURI = httpRequest.getRequestURI();
         String requestURL = httpRequest.getRequestURL().toString();
         String queryString = httpRequest.getQueryString();
-        String accept = httpRequest.getHeader("accept");
         String contentType = httpRequest.getContentType();
         Map<String, String[]> parameterMap = new HashMap<String, String[]>(httpRequest.getParameterMap());
 
@@ -117,7 +216,6 @@ public class RequestCaptureFilter implements Filter {
         httpRequestRecord.setRequestURL(requestURL);
         httpRequestRecord.setRequestURI(requestURI);
         httpRequestRecord.setQueryString(queryString);
-        httpRequestRecord.setAccept(accept);
         httpRequestRecord.setContentType(contentType);
         httpRequestRecord.setParameterMap(parameterMap);
         return httpRequestRecord;

@@ -5,7 +5,6 @@
     xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-fragment_3_0.xsd"
     version="3.0">
     <name>devhelper</name>
-    <distributable />
 
     <!-- Request Id Init Filter -->
     <filter>
@@ -20,6 +19,7 @@
         <filter-name>requestIdInitFilter</filter-name>
         <url-pattern>/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ASYNC</dispatcher>
     </filter-mapping>
 
     <!-- Request Capture Filter -->
@@ -34,12 +34,39 @@
             <param-name>replayRequestIdRequestHeaderName</param-name>
             <param-value></param-value>
         </init-param>
+        <init-param>
+            <param-name>includeQueryString</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>includeClientInfo</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>includeHeaders</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>includePayload</param-name>
+            <param-value>true</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
         <filter-name>requestCaptureFilter</filter-name>
         <url-pattern>/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
+        <dispatcher>ASYNC</dispatcher>
     </filter-mapping>
+
+    <!-- Snoop Servlet -->
+    <servlet>
+        <servlet-name>snoopServlet</servlet-name>
+        <servlet-class>com.github.jerryxia.devhelper.snoop.support.servlet.SnoopServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>snoopServlet</servlet-name>
+        <url-pattern>/requestcapture/snoop</url-pattern>
+    </servlet-mapping>
 
     <!-- Request Capture Servlet -->
     <servlet>
@@ -55,20 +82,8 @@
         <url-pattern>/requestcapture/*</url-pattern>
     </servlet-mapping>
 
-    <!-- Snoop Servlet
-    <servlet>
-        <servlet-name>snoopServlet</servlet-name>
-        <servlet-class>com.github.jerryxia.devhelper.snoop.support.servlet.SnoopServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>snoopServlet</servlet-name>
-        <url-pattern>/snoop</url-pattern>
-    </servlet-mapping>
-     -->
-
     <!-- BootstrapperContextListener -->
     <listener>
       <listener-class>com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener</listener-class>
     </listener>
-
 </web-fragment>

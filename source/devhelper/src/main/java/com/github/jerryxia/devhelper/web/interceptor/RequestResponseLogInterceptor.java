@@ -75,7 +75,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             if (modelAndView != null) {
                 logger.info(modelAndView.getModelMap().toString());
             } else {
-                logger.info("null");
+                logger.info("response ModelAndView: null");
             }
         }
     }

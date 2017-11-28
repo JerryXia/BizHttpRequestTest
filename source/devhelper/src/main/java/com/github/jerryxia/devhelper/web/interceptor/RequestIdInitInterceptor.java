@@ -52,7 +52,10 @@ public class RequestIdInitInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
             throws Exception {
-        WebConstants.X_CALL_REQUEST_ID.remove();
+        // 前置过滤器没有被配置使用, 就在这个拦截器结束掉
+        if (WebConstants.REQUEST_ID_INIT_FILTER_ENABLED == false) {
+            WebConstants.X_CALL_REQUEST_ID.remove();
+        }
     }
 
     public String getResponseHeaderName() {
