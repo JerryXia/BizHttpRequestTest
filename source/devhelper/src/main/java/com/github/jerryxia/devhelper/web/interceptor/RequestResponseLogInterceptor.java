@@ -51,7 +51,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
         if (enable) {
             LinkedHashMap<String, String[]> map = new LinkedHashMap<String, String[]>();
             map.put("RequestURI", toStringArray(request.getRequestURI()));
-            map.put("X-Call-RequestId", toStringArray(WebConstants.X_CALL_REQUEST_ID.get()));
+            map.put(WebConstants.REQUEST_ID_RESPONSE_HEADER_NAME, toStringArray(WebConstants.X_CALL_REQUEST_ID.get()));
             // 记录额外指定的请求头
             if (logRequestHeaderNames != null && logRequestHeaderNames.length > 0) {
                 for (int i = 0; i < logRequestHeaderNames.length; i++) {

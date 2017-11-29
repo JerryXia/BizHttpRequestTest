@@ -7,7 +7,7 @@
   <bean id="requestIdInitInterceptor"
     class="com.github.jerryxia.devhelper.web.interceptor.RequestIdInitInterceptor"
     init-method="init">
-    <property name="responseHeaderName" value="" />
+    <property name="requestIdResponseHeaderName" value="" />
   </bean>
   <bean id="requestResponseLogInterceptor"
     class="com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor"

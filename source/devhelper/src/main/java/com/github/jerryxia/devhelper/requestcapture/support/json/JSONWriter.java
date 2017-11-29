@@ -370,11 +370,11 @@ public class JSONWriter {
         writeString("parameterMap");
         write(':');
         writeObject(httpRequestRecordData.getParameterMap());
+        write(',');
 
         writeString("payload");
         write(':');
         writeObject(httpRequestRecordData.getPayload());
-        write(',');
 
         write('}');
     }

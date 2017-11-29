@@ -50,6 +50,10 @@
             <param-name>includePayload</param-name>
             <param-value>true</param-value>
         </init-param>
+        <init-param>
+            <param-name>maxPayloadLength</param-name>
+            <param-value>10240</param-value>
+        </init-param>
     </filter>
     <filter-mapping>
         <filter-name>requestCaptureFilter</filter-name>

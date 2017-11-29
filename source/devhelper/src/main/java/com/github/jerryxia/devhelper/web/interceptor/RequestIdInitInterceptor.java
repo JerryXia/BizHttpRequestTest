@@ -58,12 +58,12 @@ public class RequestIdInitInterceptor extends HandlerInterceptorAdapter {
         }
     }
 
-    public String getResponseHeaderName() {
-        return this.requestIdResponseHeaderName;
+    public String getRequestIdResponseHeaderName() {
+        return requestIdResponseHeaderName;
     }
 
-    public void setResponseHeaderName(String responseHeaderName) {
-        String trimVal = StringUtils.trimWhitespace(responseHeaderName);
+    public void setRequestIdResponseHeaderName(String requestIdResponseHeaderName) {
+        String trimVal = StringUtils.trimWhitespace(requestIdResponseHeaderName);
         if (!StringUtils.isEmpty(trimVal)) {
             this.requestIdResponseHeaderName = trimVal;
         }

@@ -3,6 +3,7 @@
  */
 package com.github.jerryxia.devhelper.spring.boot.autoconfigure;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.servlet.DispatcherType;
@@ -10,6 +11,7 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -18,6 +20,7 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
@@ -86,6 +89,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         filter.setIncludeQueryString(true);
         filter.setIncludePayload(true);
         filter.setIncludeHeaders(true);
+        filter.setMaxPayloadLength(1024 * 10);
 
         registrationBean.setFilter(filter);
         registrationBean.setName(filterName);
@@ -189,13 +193,45 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         return registrationBean;
     }
 
+    @Autowired
+    private DevHelperProperties devHelperProperties;
+
+    @Bean(initMethod = "init")
+    public RequestIdInitInterceptor requestIdInitInterceptor() {
+        RequestIdInitFilterProperties config = devHelperProperties.getRequestIdInit();
+        RequestIdInitInterceptor interceptor =  new RequestIdInitInterceptor();
+        interceptor.setRequestIdResponseHeaderName(config.getRequestIdResponseHeaderName());
+        return interceptor;
+    }
+
+    @Bean(initMethod = "init")
+    public RequestResponseLogInterceptor requestResponseLogInterceptor() {
+        RequestResponseLogProperties config = devHelperProperties.getRequestResponseLog();
+        RequestResponseLogInterceptor interceptor = new RequestResponseLogInterceptor();
+        if(config.getEnable() != null) {
+            interceptor.setEnable(config.getEnable().booleanValue());
+        }
+        if(!StringUtils.isEmpty(config.getLogRequestHeaderNames())) {
+            String[] reqheadNames = config.getLogRequestHeaderNames().split(",");
+            ArrayList<String> list = new ArrayList<String>();
+            for(String reqHeadName : reqheadNames) {
+                String trimReqHeadName = reqHeadName.trim();
+                if(!StringUtils.isEmpty(trimReqHeadName)) {
+                    list.add(trimReqHeadName);
+                }
+            }
+            interceptor.setLogRequestHeaderNames(list.toArray(new String[list.size()]));
+        }
+        return interceptor;
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         // 多个拦截器组成一个拦截器链
         // addPathPatterns 用于添加拦截规则
         // excludePathPatterns 用户排除拦截
-        registry.addInterceptor(new RequestIdInitInterceptor()).addPathPatterns("/**");
-        registry.addInterceptor(new RequestResponseLogInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(requestIdInitInterceptor()).addPathPatterns("/**");
+        registry.addInterceptor(requestResponseLogInterceptor()).addPathPatterns("/**");
     }
 
 }

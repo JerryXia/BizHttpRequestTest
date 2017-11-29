@@ -10,7 +10,8 @@ const apiRecords = {
                 timeStamp: true,
                 method: true,
                 requestAndQuery: true,
-                parameter: true
+                parameter: true,
+                payload: false
             },
             apiRecordLogs: [],
             serverstat: {}
@@ -29,7 +30,7 @@ const apiRecords = {
     watch: {
         '$route': 'fetchData',
         'serverstat':  function (newVal, oldVal) {
-            let html = '<li><a href="http://www.aiswl.com/" target="_blank">lazydev.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: '+ new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') +'</li><li>Generated: '+newVal.generated+'ns</li>';
+            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">lazydev.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: '+ new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') +'</li><li>Generated: '+newVal.generated+'ns</li>';
             $('.footer ul').html(html).show();
         }
     },

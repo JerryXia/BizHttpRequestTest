@@ -140,7 +140,7 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
                 request.setAttribute(payloadKey, "null");
             }
         } else {
-            request.setAttribute(payloadKey, "payload is unEnabled");
+            request.setAttribute(payloadKey, "payload is not enabled");
         }
 
         msg.append(suffix);
@@ -154,11 +154,10 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
     protected void beforeRequest(HttpServletRequest request, String message) {
         HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(request);
         RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
-        String payloadKey = buildRequestKey("payload");
-        String payload = (String) request.getAttribute(payloadKey);
-        httpRequestRecord.setPayload(payload);
-        request.removeAttribute(payloadKey);
         RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+
+        String httpRequestRecordObjectKey = buildRequestKey("httpRequestRecord_object");
+        request.setAttribute(httpRequestRecordObjectKey, httpRequestRecord);
         logger.debug(message);
     }
 
@@ -168,7 +167,14 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
     @Override
     protected void afterRequest(HttpServletRequest request, String message) {
         String payloadKey = buildRequestKey("payload");
+        String payload = (String) request.getAttribute(payloadKey);
         request.removeAttribute(payloadKey);
+
+        String httpRequestRecordObjectKey = buildRequestKey("httpRequestRecord_object");
+        HttpRequestRecord httpRequestRecord = (HttpRequestRecord)request.getAttribute(httpRequestRecordObjectKey);
+        httpRequestRecord.setPayload(payload);
+        request.removeAttribute(httpRequestRecordObjectKey);
+
         logger.debug(message);
     }
 

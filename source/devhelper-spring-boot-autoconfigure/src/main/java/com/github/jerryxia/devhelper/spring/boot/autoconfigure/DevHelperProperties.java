@@ -15,6 +15,7 @@ public class DevHelperProperties {
     private RequestCaptureFilterProperties requestCapture = new RequestCaptureFilterProperties();
     private RequestCaptureWebServletProperties requestCaptureServlet = new RequestCaptureWebServletProperties();
     private SnoopServletProperties snoopServlet = new SnoopServletProperties();
+    private RequestResponseLogProperties requestResponseLog = new RequestResponseLogProperties();
 
     public RequestIdInitFilterProperties getRequestIdInit() {
         return requestIdInit;
@@ -46,5 +47,13 @@ public class DevHelperProperties {
 
     public void setSnoopServlet(SnoopServletProperties snoopServlet) {
         this.snoopServlet = snoopServlet;
+    }
+
+    public RequestResponseLogProperties getRequestResponseLog() {
+        return requestResponseLog;
+    }
+
+    public void setRequestResponseLog(RequestResponseLogProperties requestResponseLog) {
+        this.requestResponseLog = requestResponseLog;
     }
 }
