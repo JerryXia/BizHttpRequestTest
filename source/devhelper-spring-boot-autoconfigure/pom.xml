@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jerryxia</groupId>
   <artifactId>devhelper-spring-boot-autoconfigure</artifactId>
-  <version>1.0.2-SNAPSHOT</version>
+  <version>1.0.2</version>
   <packaging>jar</packaging>
   <name>devhelper-spring-boot-autoconfigure</name>
   <properties>
@@ -19,7 +19,7 @@
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper</artifactId>
-      <version>1.0.2-SNAPSHOT</version>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>javax.servlet</groupId>

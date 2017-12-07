@@ -3,7 +3,7 @@
  */
 package com.github.jerryxia.devhelper.requestcapture;
 
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -35,7 +35,7 @@ class HttpRequestRecordMemoryStorageList {
 
     public List<HttpRequestRecord> getAll() {
         final long currentTail = tail;
-        LinkedList<HttpRequestRecord> list = new LinkedList<HttpRequestRecord>();
+        ArrayList<HttpRequestRecord> list = new ArrayList<HttpRequestRecord>();
         if (currentTail >= capacity) {
             int index = (int) (currentTail & mask);
             if (index == 0) {
@@ -68,7 +68,7 @@ class HttpRequestRecordMemoryStorageList {
 
     public List<HttpRequestRecord> getListFrom(int start, int end) {
         final long currentTail = tail;
-        LinkedList<HttpRequestRecord> list = new LinkedList<HttpRequestRecord>();
+        ArrayList<HttpRequestRecord> list = new ArrayList<HttpRequestRecord>();
         if (currentTail >= capacity) {
             int index = (int) (currentTail & mask);
             if (index == 0) {
