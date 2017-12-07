@@ -5,8 +5,6 @@ package com.github.jerryxia.devhelper.requestcapture.log;
 
 import com.lmax.disruptor.RingBuffer;
 
-import com.github.jerryxia.devhelper.util.Assert;
-
 /**
  * @author Administrator
  *
@@ -16,8 +14,6 @@ public class LogEntryEventProducer {
     private final LogEntryEventStat         eventStat;
 
     public LogEntryEventProducer(RingBuffer<LogEntryEvent> ringBuffer, LogEntryEventStat logEntryEventStat) {
-        Assert.notNull(ringBuffer);
-        Assert.notNull(logEntryEventStat);
         this.ringBuffer = ringBuffer;
         this.eventStat = logEntryEventStat;
     }

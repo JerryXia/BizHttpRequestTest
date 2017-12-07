@@ -5,8 +5,6 @@ package com.github.jerryxia.devhelper.requestcapture.log;
 
 import com.lmax.disruptor.EventHandler;
 
-import com.github.jerryxia.devhelper.util.Assert;
-
 /**
  * @author Administrator
  *
@@ -17,8 +15,6 @@ public class LogEntryEventHandler implements EventHandler<LogEntryEvent> {
     private final LogEntryEventStat eventStat;
 
     public LogEntryEventHandler(LogEntryStorage logEntryStorage, LogEntryEventStat logEntryEventStat) {
-        Assert.notNull(logEntryStorage);
-        Assert.notNull(logEntryEventStat);
         this.logEntryStorage = logEntryStorage;
         this.eventStat = logEntryEventStat;
     }
