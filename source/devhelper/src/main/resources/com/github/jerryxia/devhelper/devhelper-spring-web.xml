@@ -12,7 +12,7 @@
   <bean id="requestResponseLogInterceptor"
     class="com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor"
     init-method="init">
-    <property name="enable" value="true" />
+    <property name="enabled" value="true" />
     <property name="logRequestHeaderNames">
       <list>
         <!-- 请求的应用系统类型：ios、android 用于服务器端跟踪请求统计 -->

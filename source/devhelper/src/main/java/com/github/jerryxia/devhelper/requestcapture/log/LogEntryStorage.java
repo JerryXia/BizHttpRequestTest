@@ -3,8 +3,6 @@
  */
 package com.github.jerryxia.devhelper.requestcapture.log;
 
-import java.util.List;
-
 /**
  * @author Administrator
  *
@@ -24,14 +22,14 @@ public interface LogEntryStorage {
      * 
      * @return
      */
-    List<LogEntry> queryAll();
+    LogEntryStorageQueryResult queryAll();
 
     /**
-     * queryPagedList
+     * query next page list
      * 
-     * @param start
-     * @param end
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    List<LogEntry> queryPagedList(int start, int end);
+    LogEntryStorageQueryResult queryNextList(long startIndex, long endIndex);
 }

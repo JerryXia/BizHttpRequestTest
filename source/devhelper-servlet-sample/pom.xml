@@ -181,7 +181,7 @@
 		<dependency>
 			<groupId>com.github.jerryxia</groupId>
 			<artifactId>devhelper</artifactId>
-			<version>1.0.2</version>
+			<version>1.0.3</version>
 		</dependency>
 	</dependencies>
 	<profiles>
@@ -249,7 +249,7 @@
 					<dependency>
 						<groupId>com.github.jerryxia</groupId>
 						<artifactId>devhelper</artifactId>
-						<version>1.0.2</version>
+						<version>1.0.3</version>
 					</dependency>
 				</dependencies>
 			</plugin>

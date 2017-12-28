@@ -3,6 +3,7 @@
  */
 package com.github.jerryxia.devhelper.util;
 
+import java.util.Date;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ThreadFactory;
@@ -14,18 +15,15 @@ import java.util.concurrent.TimeUnit;
  * @author guqk
  *
  */
-public final class SystemClock {
+public class SystemClock {
     private final long    period;
-    private int           periodCount = 0;
     private volatile long now;
-    private volatile long nanoTime;
 
-    private static final SystemClock INSTANCE = new SystemClock(100);
+    private static final SystemClock INSTANCE = new SystemClock(1);
 
     private SystemClock(long period) {
         this.period = period;
         this.now = System.currentTimeMillis();
-        this.nanoTime = System.nanoTime();
         this.scheduleClockUpdating();
     }
 
@@ -33,8 +31,8 @@ public final class SystemClock {
         return INSTANCE.currentTimeMillis();
     }
 
-    public static long nanoTime() {
-        return INSTANCE.currentNanoTime();
+    public static Date nowDate() {
+        return new Date(INSTANCE.currentTimeMillis());
     }
 
     private void scheduleClockUpdating() {
@@ -49,21 +47,12 @@ public final class SystemClock {
         scheduler.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                nanoTime = System.nanoTime();
-                // 1微妙 10次 1毫秒10000次
-                if (++periodCount == 10000) {
-                    now = System.currentTimeMillis();
-                    periodCount = 0;
-                }
+                now = System.currentTimeMillis();
             }
-        }, period, period, TimeUnit.NANOSECONDS);
+        }, period, period, TimeUnit.MILLISECONDS);
     }
 
     private long currentTimeMillis() {
         return this.now;
-    }
-
-    private long currentNanoTime() {
-        return this.nanoTime;
     }
 }

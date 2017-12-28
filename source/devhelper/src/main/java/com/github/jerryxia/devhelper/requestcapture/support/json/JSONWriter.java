@@ -8,7 +8,9 @@ import java.util.Date;
 import java.util.Map;
 
 import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
+import com.github.jerryxia.devhelper.requestcapture.log.LogEntryStorageQueryResult;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
+import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordStorageQueryResult;
 
 /**
  * @author Administrator
@@ -122,7 +124,14 @@ public class JSONWriter {
 //            writeTabularData((TabularData) o);
 //            return;
 //        }
-
+        if (o instanceof HttpRequestRecordStorageQueryResult) {
+            writeHttpRequestRecordStorageQueryResultData((HttpRequestRecordStorageQueryResult) o);
+            return;
+        }
+        if (o instanceof LogEntryStorageQueryResult) {
+            writeLogEntryStorageQueryResultData((LogEntryStorageQueryResult) o);
+            return;
+        }
         if (o instanceof LogEntry) {
             writeLogEntryData((LogEntry) o);
             return;
@@ -263,6 +272,46 @@ public class JSONWriter {
 //        }
 //        write(']');
 //    }
+
+    public void writeHttpRequestRecordStorageQueryResultData(HttpRequestRecordStorageQueryResult httpRequestRecordStorageQueryResultData) {
+        if (httpRequestRecordStorageQueryResultData == null) {
+            writeNull();
+            return;
+        }
+
+        write('{');
+
+        writeString("lastIndex");
+        write(':');
+        writeObject(httpRequestRecordStorageQueryResultData.getLastIndex());
+        write(',');
+
+        writeString("list");
+        write(':');
+        writeObject(httpRequestRecordStorageQueryResultData.getList());
+
+        write('}');
+    }
+
+    public void writeLogEntryStorageQueryResultData(LogEntryStorageQueryResult logEntryStorageQueryResult) {
+        if (logEntryStorageQueryResult == null) {
+            writeNull();
+            return;
+        }
+
+        write('{');
+
+        writeString("lastIndex");
+        write(':');
+        writeObject(logEntryStorageQueryResult.getLastIndex());
+        write(',');
+
+        writeString("list");
+        write(':');
+        writeObject(logEntryStorageQueryResult.getList());
+
+        write('}');
+    }
 
     public void writeLogEntryData(LogEntry logEntryData) {
         if (logEntryData == null) {

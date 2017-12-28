@@ -22,7 +22,7 @@ public final class BootstrapperContextListener implements ServletContextListener
         long startTimeStamp = WebConstants.START_TIMESTAMP;
         if (startTimeStamp > 0) {
             bootstrapper = new Bootstrapper();
-            bootstrapper.javaMelodyChineseFontExtract();
+            bootstrapper.init();
         }
     }
 

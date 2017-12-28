@@ -8,10 +8,16 @@ package com.github.jerryxia.devhelper.spring.boot.autoconfigure;
  *
  */
 public class RequestCaptureFilterProperties {
-
+    private Boolean enabled;
     private String exclusions;
     private String replayRequestIdRequestHeaderName;
 
+    public Boolean isEnabled() {
+        return enabled;
+    }
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
+    }
     public String getExclusions() {
         return exclusions;
     }

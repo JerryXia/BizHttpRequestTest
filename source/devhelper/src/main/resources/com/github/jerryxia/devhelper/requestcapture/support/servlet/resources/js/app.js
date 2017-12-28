@@ -2,7 +2,7 @@
 
 const apiRecords = {
     template: '#apiRecords',
-    data: function() {
+    data: function () {
         return {
             apiRecordsPagedList: [],
             logTbShow: {
@@ -14,52 +14,114 @@ const apiRecords = {
                 payload: false
             },
             apiRecordLogs: [],
-            serverstat: {}
+            serverstat: {},
+            isFetchingData: false,
+            fetchedTick: 5,
+            fetchedTickInterval: null,
+            currFetchHasNew: false,
+            lastRecordIndex: 0,
+            pageSize: 10
         }
     },
     route: {
-        data: function(transition){
+        data: function (transition) {
             //transition.next({
             //    currentPath: transition.to.path
             //})
         }
     },
-    created: function(){
+    created: function () {
+        console.log('apiRecords created');
         this.fetchData();
+    },
+    updated: function () {
+        //console.log('apiRecords updated');
+    },
+    destroyed: function () {
+        let that = this;
+        console.log('apiRecords destroyed');
+        if (that.fetchedTickInterval != null) {
+            clearInterval(that.fetchedTickInterval);
+            that.fetchedTickInterval = null;
+        }
     },
     watch: {
         '$route': 'fetchData',
-        'serverstat':  function (newVal, oldVal) {
-            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">lazydev.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: '+ new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') +'</li><li>Generated: '+newVal.generated+'ns</li>';
+        'serverstat': function (newVal, oldVal) {
+            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
             $('.footer ul').html(html).show();
+        },
+        'isFetchingData': function (newVal, oldVal) {
+            let that = this;
+            if (oldVal === false && newVal === true) {
+                // 开始获取
+                if (that.fetchedTickInterval != null) {
+                    clearInterval(that.fetchedTickInterval);
+                    that.fetchedTickInterval = null;
+                }
+                $('#btn_loadmore').attr('disabled', 'disabled');
+            } else if (oldVal === true && newVal === false) {
+                // 获取结束
+                if (that.fetchedTickInterval == null) {
+                    that.fetchedTick = 5;
+                    that.fetchedTickInterval = setInterval(function () {
+                        let newFetchedTick = that.fetchedTick - 1;
+                        if (newFetchedTick > 0) {
+                            that.fetchedTick = newFetchedTick;
+                        } else {
+                            that.fetchNextData();
+                        }
+                    }, 1000);
+                }
+                $('#btn_loadmore').removeAttr('disabled');
+            } else {
+                console.log('watch isFetchingData into extra case.');
+            }
         }
     },
     computed: {
-        logCount: function() {
+        logCount: function () {
             let that = this;
             return 0;
+        },
+        fetchedMessage: function () {
+            let that = this;
+            return that.currFetchHasNew ? '' : '找不到与当前过滤条件相符的更新的记录。';
+        },
+        fetchedButtonValue: function () {
+            let that = this;
+            if (that.isFetchingData) {
+                return ' loading...';
+            } else {
+                return '' + that.fetchedTick + '秒后自动加载较新记录';
+            }
         }
     },
     methods: {
-        fetchData: function() {
+        fetchData: function () {
             let that = this;
 
-            $.post('apirecords.json', { t: Date.now() }, function(res){
-                if(res && res.code == 1) {
-                    that.apiRecordsPagedList = res.data.reverse();
+            that.isFetchingData = true;
+            $.post('allapirecords.json', { t: Date.now() }, function (res) {
+                if (res && res.code == 1) {
+                    that.lastRecordIndex = res.data.lastIndex;
+                    that.apiRecordsPagedList = res.data.list;
 
                     that.serverstat = res.serverstat;
+                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
                 } else {
                     that.apiRecordsPagedList = [];
+                    that.currFetchHasNew = false;
                 }
+                that.isFetchingData = false;
             });
         },
-        showLogs: function(recordId, requestId, event) {
+        showLogs: function (recordId, requestId, event) {
             let that = this;
             var $btn = $(event.target).button('loading');
 
-            $.post('apirecordlogs.json?id='+recordId, { t: Date.now() }, function(res) {
-                if(res && res.code == 1) {
+            $.get('apirecordlogs.json', { id: recordId, t: Date.now() }, function (res) {
+                if (res && res.code == 1) {
                     that.apiRecordLogs = res.data;
 
                     //that.serverstat = res.serverstat;
@@ -70,14 +132,14 @@ const apiRecords = {
                 $('.bs-example-modal-lg').modal();
             });
         },
-        replay: function(apiRecord, event){
+        replay: function (apiRecord, event) {
             let replayUrlHost = '';
-            if(window.localStorage){
+            if (window.localStorage) {
                 replayUrlHost = localStorage.getItem("rquestcapture:replayUrlHost");
-            }else{
+            } else {
                 alert('This browser does NOT support localStorage');
             }
-            if(replayUrlHost == null || replayUrlHost.length === 0){
+            if (replayUrlHost == null || replayUrlHost.length === 0) {
                 alert('请先前往settings:replay配置host');
                 return;
             }
@@ -91,46 +153,71 @@ const apiRecords = {
                 headers: {},
                 data: that.parameterFormat(apiRecord.parameterMap),
                 //dataType: 'json',
-                success: function(res){
+                success: function (res) {
                     $btn.button('reset');
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
-                    console.log(jqXHR);console.log(textStatus);console.log(errorThrown);
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.log(jqXHR); console.log(textStatus); console.log(errorThrown);
                     $btn.button('reset');
                 }
             });
         },
-        parameterFormat: function(obj){
-          let formaterObj = {};
-          //obj = JSON.parse(JSON.stringify(obj));
-          if(obj){
-            for(let k in obj){
-                let v = obj[k];
-                if(Array.isArray(v)){
-                  if(v.length === 1){
-                    formaterObj[k] = v[0];
-                  }else{
-                    formaterObj[k] = v;
-                  }
-                }else{
-                  formaterObj[k] = v;
+        parameterFormat: function (obj) {
+            let formaterObj = {};
+            //obj = JSON.parse(JSON.stringify(obj));
+            if (obj) {
+                for (let k in obj) {
+                    let v = obj[k];
+                    if (Array.isArray(v)) {
+                        if (v.length === 1) {
+                            formaterObj[k] = v[0];
+                        } else {
+                            formaterObj[k] = v;
+                        }
+                    } else {
+                        formaterObj[k] = v;
+                    }
                 }
             }
-          }
-          return formaterObj;
+            return formaterObj;
+        },
+        fetchNextData: function () {
+            let that = this;
+
+            let start = that.lastRecordIndex;
+            let end = that.lastRecordIndex + that.pageSize;
+
+            that.isFetchingData = true;
+            $.get('apirecords.json', { startIndex: start, endIndex: end, t: Date.now() }, function (res) {
+                if (res && res.code == 1) {
+                    that.lastRecordIndex = res.data.lastIndex;
+                    if (res.data.list && res.data.list.length > 0) {
+                        for (let i = 0, len = res.data.list.length; i < len; i++) {
+                            that.apiRecordsPagedList.push(res.data.list[i]);
+                        }
+                    }
+
+                    that.serverstat = res.serverstat;
+                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                } else {
+                    that.currFetchHasNew = false;
+                }
+
+                that.isFetchingData = false;
+            });
         }
     }
 };
 const apilogs = {
     template: '#apilogs',
-    data: function() {
+    data: function () {
         return {
             msg: 'Hello, vue router!',
             currentPath: ''
         }
     },
     route: {
-        data: function(transition){
+        data: function (transition) {
             //transition.next({
             //    currentPath: transition.to.path
             //})
@@ -139,148 +226,225 @@ const apilogs = {
 };
 const allLogs = {
     template: '#allLogs',
-    data: function() {
-       return {
-           logLevels: [ 'ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL' ],
-           queryLevel: '',
-           queryFrom: 0,
-           queryCount: 10,
-           logPagedList: [],
-           queryedLogPagedList: [],
-           logTbShow: {
-               id: false,
-               httpRequestRecordId: false,
-               timeStamp: true,
-               level: true,
-               threadName: false,
-               loggerName: true,
-               message: true,
-               host: false,
-               ip: false
-           },
-           serverstat: {}
-       }
+    data: function () {
+        return {
+            logLevels: ['ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'],
+            queryLevel: 'ALL',
+            queryFrom: 0,
+            queryCount: 16,
+            logPagedList: [],
+            logTbShow: {
+                id: false,
+                httpRequestRecordId: false,
+                timeStamp: true,
+                level: true,
+                threadName: true,
+                loggerName: true,
+                message: true,
+                host: false,
+                ip: false
+            },
+            serverstat: {},
+            isFetchingData: false,
+            fetchedTickTimeout: null,
+            currFetchHasNew: false,
+            lastRecordIndex: 0,
+            pageSize: 16
+        }
     },
-    created: function(){
+    created: function () {
+        console.log('allLogs created');
         this.fetchData();
+        this.filterLogs();
+    },
+    updated: function () {
+        //console.log('allLogs updated');
+    },
+    destroyed: function () {
+        let that = this;
+        console.log('allLogs destroyed');
+        if (that.fetchedTickTimeout != null) {
+            clearTimeout(that.fetchedTickTimeout);
+            that.fetchedTickTimeout = null;
+        }
     },
     watch: {
-        '$route': 'fetchData',
-        'serverstat':  function (newVal, oldVal) {
-            let html = '<li><a href="http://www.aiswl.com/" target="_blank">lazydev.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: '+ new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') +'</li><li>Generated: '+newVal.generated+'ns</li>';
+        '$route': 'filterLogs',
+        'serverstat': function (newVal, oldVal) {
+            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
             $('.footer ul').html(html).show();
+        },
+        'isFetchingData': function (newVal, oldVal) {
+            let that = this;
+            if (oldVal === false && newVal === true) {
+                // 开始获取
+                if (that.fetchedTickTimeout != null) {
+                    clearTimeout(that.fetchedTickTimeout);
+                    that.fetchedTickTimeout = null;
+                }
+                //$('#btn_loadmore').attr('disabled', 'disabled');
+            } else if (oldVal === true && newVal === false) {
+                // 获取结束
+                if (that.fetchedTickTimeout == null) {
+                    that.fetchedTickTimeout = setTimeout(function () {
+                        that.fetchNextData();
+                    }, 1000);
+                }
+                //$('#btn_loadmore').removeAttr('disabled');
+            } else {
+                console.log('watch isFetchingData into extra case.');
+            }
         }
     },
     computed: {
-        logCount: function() {
+        logCount: function () {
             let that = this;
             return {
                 ALL: that.logPagedList.length,
-                DEBUG: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'DEBUG'; }).length,
-                INFO: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'INFO'; }).length,
-                WARN: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'WARN'; }).length,
-                ERROR: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'ERROR'; }).length,
-                FATAL: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'FATAL'; }).length
+                DEBUG: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'DEBUG'; }).length,
+                INFO: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'INFO'; }).length,
+                WARN: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'WARN'; }).length,
+                ERROR: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'ERROR'; }).length,
+                FATAL: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'FATAL'; }).length
+            }
+        },
+        queryedLogPagedList: function() {
+            let that = this;
+
+            if (that.queryLevel === 'ALL') {
+                return that.logPagedList.slice(that.queryFrom, that.queryFrom + that.queryCount);
+            } else {
+                return _.filter(that.logPagedList, function (logItem) {
+                    return logItem.level == that.queryLevel;
+                }).slice(that.queryFrom, that.queryFrom + that.queryCount);
             }
         }
     },
     methods: {
-        parseLevel: function() {
+        fetchData: function () {
             let that = this;
-            if(that.$route.query.level) {
-                if(that.$route.query.level.length > 0) {
-                    return that.$route.query.level;
-                } else {
-                    return 'ALL';
-                }
-            } else {
-                return 'ALL';
-            }
-        },
-        parseFrom: function() {
-            let that = this;
-            if(that.$route.query.from) {
-                return typeof that.$route.query.from === 'string' ? parseInt(that.$route.query.from) : that.$route.query.from;
-            } else {
-                return 0;
-            }
-        },
-        parseCount: function() {
-            let that = this;
-            if(that.$route.query.count) {
-                return typeof that.$route.query.count === 'string' ? parseInt(that.$route.query.count) : that.$route.query.count;
-            } else {
-                return 10;
-            }
-        },
-        fetchData: function() {
-            let that = this;
-            that.queryLevel = that.parseLevel();
-            that.queryFrom = that.parseFrom();
-            that.queryCount = that.parseCount();
-            $.post('alllogs.json', {}, function(res){
-                if(res && res.code == 1) {
-                    that.logPagedList = res.data.reverse();
 
-                    if(that.queryLevel === 'ALL'){
-                        that.queryedLogPagedList = that.logPagedList.slice(that.queryFrom, that.queryFrom + that.queryCount);
-                    }else{
-                        that.queryedLogPagedList = _.filter(that.logPagedList, function(logItem) {
-                            return logItem.level == that.queryLevel;
-                        }).slice(that.queryFrom, that.queryFrom + that.queryCount);
+            that.isFetchingData = true;
+            $.post('alllogs.json', { t: Date.now() }, function (res) {
+                if (res && res.code == 1) {
+                    that.lastRecordIndex = res.data.lastIndex;
+                    that.logPagedList = res.data.list;
+
+                    that.serverstat = res.serverstat;
+                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                } else {
+                    that.logPagedList = [];
+                    that.currFetchHasNew = false;
+                }
+                that.isFetchingData = false;
+            });
+        },
+        fetchNextData: function () {
+            let that = this;
+
+            let start = that.lastRecordIndex;
+            let end = that.lastRecordIndex + that.pageSize;
+
+            that.isFetchingData = true;
+            $.get('logs.json', { startIndex: start, endIndex: end, t: Date.now() }, function (res) {
+                if (res && res.code == 1) {
+                    that.lastRecordIndex = res.data.lastIndex;
+                    if (res.data.list && res.data.list.length > 0) {
+                        for (let i = 0, len = res.data.list.length; i < len; i++) {
+                            that.logPagedList.push(res.data.list[i]);
+                        }
                     }
 
                     that.serverstat = res.serverstat;
+                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
                 } else {
-                    that.logPagedList = [];
+                    that.currFetchHasNew = false;
                 }
+
+                that.isFetchingData = false;
             });
+        },
+        filterLogs: function() {
+            console.log('alllogs filterlogs');
+            let that = this;
+
+            let queryLevel = 'ALL';
+            if (that.$route.params.level) {
+                if (that.$route.params.level.length > 0) {
+                    queryLevel = that.$route.params.level;
+                }
+            }
+            if(that.queryLevel != queryLevel) {
+                that.queryLevel = queryLevel;
+            }
+
+            let queryFrom = 0;
+            if (that.$route.query.from) {
+                queryFrom = typeof that.$route.query.from === 'string' ? parseInt(that.$route.query.from) : that.$route.query.from;
+            }
+            if(that.queryFrom != queryFrom) {
+                that.queryFrom = queryFrom;
+            }
+
+            let queryCount = 16;
+            if (that.$route.query.count) {
+                queryCount = typeof that.$route.query.count === 'string' ? parseInt(that.$route.query.count) : that.$route.query.count;
+            }
+            if(that.queryCount != queryCount) {
+                that.queryCount = queryCount;
+            }
+        },
+        switchExpandMessage: function (item) {
+            if (typeof item.isExpandMessage === 'undefined') {
+                Vue.set(item, 'isExpandMessage', true);
+            } else {
+                item.isExpandMessage = item.isExpandMessage ? false : true;
+            }
         }
     }
 };
 const settingsReplay = {
     template: '#settings_replay',
-    data: function() {
+    data: function () {
         return {
             replayUrlHost: ''
         }
     },
-    created: function(){
+    created: function () {
         this.loadFromLocalDb();
     },
     methods: {
-        loadFromLocalDb: function() {
+        loadFromLocalDb: function () {
             let that = this;
-            if(window.localStorage){
+            if (window.localStorage) {
                 that.replayUrlHost = localStorage.getItem("rquestcapture:replayUrlHost");
-            }else{
+            } else {
                 alert('This browser does NOT support localStorage');
             }
         },
-        saveToLocalDb: function() {
+        saveToLocalDb: function () {
             let that = this;
-            if(window.localStorage){
+            if (window.localStorage) {
                 window.localStorage.setItem("rquestcapture:replayUrlHost", that.replayUrlHost);
-            }else{
+            } else {
                 alert('This browser does NOT support localStorage');
             }
         }
     }
 };
 
-const routes = [
-    { path: '/apirecords', component: apiRecords },
-    { path: '/apilogs', component: apilogs },
-    { path: '/alllogs', component: allLogs },
-    { path: '/settings_replay', component: settingsReplay },
-    { path: '/', redirect: '/apiRecords' }
-];
 const router = new VueRouter({
-    routes: routes
+    routes: [
+        { path: '/apirecords', component: apiRecords },
+        { path: '/apilogs', component: apilogs },
+        { path: '/alllogs/:level', component: allLogs },
+        { path: '/alllogs', redirect: '/alllogs/ALL' },
+        { path: '/settings_replay', component: settingsReplay },
+        { path: '/', redirect: '/apiRecords' }
+    ]
 });
-
 const app = new Vue({
-  router: router
+    router: router
 }).$mount('#wrap');
 
 if (typeof Date.prototype.format == 'undefined') {
@@ -289,7 +453,7 @@ if (typeof Date.prototype.format == 'undefined') {
         var zeroize = function (value, length) {
             if (!length) length = 2;
             value = String(value);
-            for (var i = 0, zeros = ''; i < (length - value.length) ; i++) {
+            for (var i = 0, zeros = ''; i < (length - value.length); i++) {
                 zeros += '0';
             }
             return zeros + value;
@@ -322,7 +486,7 @@ if (typeof Date.prototype.format == 'undefined') {
                 case 'tt': return d.getHours() < 12 ? 'am' : 'pm';
                 case 'TT': return d.getHours() < 12 ? 'AM' : 'PM';
                 case 'Z': return d.toUTCString().match(/[A-Z]+$/);
-                    // Return quoted strings with the surrounding quotes removed
+                // Return quoted strings with the surrounding quotes removed
                 default: return $0.substr(1, $0.length - 2);
             }
         });
@@ -330,47 +494,47 @@ if (typeof Date.prototype.format == 'undefined') {
 };
 
 Vue.filter('objectIdTimeStamp', function (value, formater) {
-  return new Date(parseInt(value.substring(0, 8), 16) * 1000).format(formater);
+    return new Date(parseInt(value.substring(0, 8), 16) * 1000).format(formater);
 });
 Vue.filter('timeStamp', function (value, formater) {
-  return new Date(value).format(formater);
+    return new Date(value).format(formater);
 });
 Vue.filter('parameterFormater', function (obj, formater) {
-  let formaterObj = {};
-  //obj = JSON.parse(JSON.stringify(obj));
-  if(obj){
-    for(let k in obj){
-        let v = obj[k];
-        if(Array.isArray(v)){
-          if(v.length === 1){
-            formaterObj[k] = v[0];
-          }else{
-            formaterObj[k] = v;
-          }
-        }else{
-          formaterObj[k] = v;
+    let formaterObj = {};
+    //obj = JSON.parse(JSON.stringify(obj));
+    if (obj) {
+        for (let k in obj) {
+            let v = obj[k];
+            if (Array.isArray(v)) {
+                if (v.length === 1) {
+                    formaterObj[k] = v[0];
+                } else {
+                    formaterObj[k] = v;
+                }
+            } else {
+                formaterObj[k] = v;
+            }
         }
     }
-  }
-  return JSON.stringify(formaterObj);
+    return JSON.stringify(formaterObj);
 });
 Vue.filter('logLevelFormater', function (value) {
-  let val = '';
-  switch(value.toLowerCase()){
-  case 'info':
-    val = 'label-info';
-    break;
-  case 'warn':
-    val = 'label-warning';
-    break;
-  case 'error':
-  case 'fatal':
-    val = 'label-danger';
-    break;
-  case 'debug':
-  default:
-    val = 'label-default';
-    break;
-  }
-  return val;
+    let val = '';
+    switch (value.toLowerCase()) {
+        case 'info':
+            val = 'label-info';
+            break;
+        case 'warn':
+            val = 'label-warning';
+            break;
+        case 'error':
+        case 'fatal':
+            val = 'label-danger';
+            break;
+        case 'debug':
+        default:
+            val = 'label-default';
+            break;
+    }
+    return val;
 });

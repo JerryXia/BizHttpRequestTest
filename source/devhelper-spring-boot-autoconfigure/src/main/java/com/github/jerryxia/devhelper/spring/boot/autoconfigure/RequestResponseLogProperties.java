@@ -9,15 +9,14 @@ package com.github.jerryxia.devhelper.spring.boot.autoconfigure;
  */
 public class RequestResponseLogProperties {
 
-    private Boolean enable;
+    private Boolean enabled;
     private String logRequestHeaderNames;
 
-
-    public Boolean getEnable() {
-        return enable;
+    public Boolean getEnabled() {
+        return enabled;
     }
-    public void setEnable(Boolean enable) {
-        this.enable = enable;
+    public void setEnabled(Boolean enabled) {
+        this.enabled = enabled;
     }
     public String getLogRequestHeaderNames() {
         return logRequestHeaderNames;

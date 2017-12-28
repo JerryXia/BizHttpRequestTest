@@ -34,7 +34,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     /**
      * 只要加入了interceptors中默认启用
      */
-    private boolean enable = true;
+    private boolean enabled = true;
 
     /**
      *  额外要记录的请求头
@@ -48,7 +48,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
-        if (enable) {
+        if (this.enabled) {
             LinkedHashMap<String, String[]> map = new LinkedHashMap<String, String[]>();
             map.put("RequestURI", toStringArray(request.getRequestURI()));
             map.put(WebConstants.REQUEST_ID_RESPONSE_HEADER_NAME, toStringArray(WebConstants.X_CALL_REQUEST_ID.get()));
@@ -71,7 +71,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
             ModelAndView modelAndView) throws Exception {
-        if (enable) {
+        if (this.enabled) {
             if (modelAndView != null) {
                 logger.info(modelAndView.getModelMap().toString());
             } else {
@@ -86,8 +86,8 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
 
     }
 
-    public void setEnable(boolean enable) {
-        this.enable = enable;
+    public void setEnabled(boolean enable) {
+        this.enabled = enable;
     }
 
     public void setLogRequestHeaderNames(String... logRequestHeaderNames) {

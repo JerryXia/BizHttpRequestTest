@@ -25,10 +25,14 @@ public class Bootstrapper {
         clToUse = Bootstrapper.class.getClassLoader();
     }
 
+    public void init() {
+        this.javaMelodyChineseFontExtract();
+    }
+
     /**
      * 解压宋体的字体文件到 {java.home}/lib/fonts/fallback/
      */
-    public void javaMelodyChineseFontExtract() {
+    private void javaMelodyChineseFontExtract() {
         String javaMelodyMonitoringFilterClassName = "net.bull.javamelody.MonitoringFilter";
         boolean existsJavaMelodyClass = classforName(javaMelodyMonitoringFilterClassName) != null;
         if (existsJavaMelodyClass) {

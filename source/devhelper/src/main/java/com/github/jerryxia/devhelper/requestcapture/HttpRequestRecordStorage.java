@@ -1,7 +1,5 @@
 package com.github.jerryxia.devhelper.requestcapture;
 
-import java.util.List;
-
 /**
  * @author Administrator
  *
@@ -21,14 +19,14 @@ public interface HttpRequestRecordStorage {
      * 
      * @return
      */
-    List<HttpRequestRecord> queryAll();
+    HttpRequestRecordStorageQueryResult queryAll();
 
     /**
-     * queryPagedList
+     * query next page list
      * 
-     * @param start
-     * @param end
+     * @param startIndex
+     * @param endIndex
      * @return
      */
-    List<HttpRequestRecord> queryPagedList(int start, int end);
+    HttpRequestRecordStorageQueryResult queryNextList(long startIndex, long endIndex);
 }

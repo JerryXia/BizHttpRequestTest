@@ -93,6 +93,9 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
 
         registrationBean.setFilter(filter);
         registrationBean.setName(filterName);
+        if (config.isEnabled() != null) {
+            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_ENABLED, config.isEnabled().toString());
+        }
         if (config.getExclusions() != null) {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_EXCLUSIONS, config.getExclusions());
         }
@@ -208,8 +211,8 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
     public RequestResponseLogInterceptor requestResponseLogInterceptor() {
         RequestResponseLogProperties config = devHelperProperties.getRequestResponseLog();
         RequestResponseLogInterceptor interceptor = new RequestResponseLogInterceptor();
-        if(config.getEnable() != null) {
-            interceptor.setEnable(config.getEnable().booleanValue());
+        if(config.getEnabled() != null) {
+            interceptor.setEnabled(config.getEnabled().booleanValue());
         }
         if(!StringUtils.isEmpty(config.getLogRequestHeaderNames())) {
             String[] reqheadNames = config.getLogRequestHeaderNames().split(",");

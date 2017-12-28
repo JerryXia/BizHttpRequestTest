@@ -37,10 +37,13 @@ import org.springframework.web.util.WebUtils;
 public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
     private static final Logger logger = LoggerFactory.getLogger(RequestCaptureFilter.class);
 
-    public static final String PARAM_NAME_EXCLUSIONS                            = "exclusions";
-    public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
-    private static final String REQUEST_CAPTURE_REQUEST_KEY_PREFIX = UUID.randomUUID().toString().replace('-', 'a').trim() + ":";
+    public static final String  PARAM_NAME_ENABLED                               = "enabled";
+    public static final String  PARAM_NAME_EXCLUSIONS                            = "exclusions";
+    public static final String  PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
+    private static final String REQUEST_CAPTURE_REQUEST_KEY_PREFIX               = UUID.randomUUID().toString()
+            .replace('-', 'a').trim() + ":";
 
+    private boolean     enabled;
     private String      contextPath;
     private Set<String> excludesPattern;
     private String      replayRequestIdRequestHeaderName;
@@ -53,6 +56,12 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
         this.contextPath = filterConfig.getServletContext().getContextPath();
         if (this.contextPath == null || this.contextPath.length() == 0) {
             this.contextPath = "/";
+        }
+
+        this.enabled = true;
+        String enabledStr = filterConfig.getInitParameter(PARAM_NAME_ENABLED);
+        if (enabledStr != null && enabledStr.trim().length() != 0) {
+            this.enabled = Boolean.parseBoolean(enabledStr);
         }
 
         String exclusions = filterConfig.getInitParameter(PARAM_NAME_EXCLUSIONS);
@@ -76,7 +85,7 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-        if (isExclusion(request.getRequestURI())) {
+        if (!enabled || isExclusion(request.getRequestURI())) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -117,8 +126,8 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
 
         String payloadKey = buildRequestKey("payload");
         if (isIncludePayload()) {
-            ContentCachingRequestWrapper wrapper =
-                    WebUtils.getNativeRequest(request, ContentCachingRequestWrapper.class);
+            ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request,
+                    ContentCachingRequestWrapper.class);
             if (wrapper != null) {
                 byte[] buf = wrapper.getContentAsByteArray();
                 if (buf.length > 0) {
@@ -126,8 +135,7 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
                     String payload;
                     try {
                         payload = new String(buf, 0, length, wrapper.getCharacterEncoding());
-                    }
-                    catch (UnsupportedEncodingException ex) {
+                    } catch (UnsupportedEncodingException ex) {
                         payload = "[unknown]";
                     }
                     msg.append(";payload=").append(payload);
@@ -171,8 +179,11 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
         request.removeAttribute(payloadKey);
 
         String httpRequestRecordObjectKey = buildRequestKey("httpRequestRecord_object");
-        HttpRequestRecord httpRequestRecord = (HttpRequestRecord)request.getAttribute(httpRequestRecordObjectKey);
-        httpRequestRecord.setPayload(payload);
+        Object httpRequestRecordObject = request.getAttribute(httpRequestRecordObjectKey);
+        if (httpRequestRecordObject != null) {
+            HttpRequestRecord httpRequestRecord = (HttpRequestRecord) httpRequestRecordObject;
+            httpRequestRecord.setPayload(payload);
+        }
         request.removeAttribute(httpRequestRecordObjectKey);
 
         logger.debug(message);
