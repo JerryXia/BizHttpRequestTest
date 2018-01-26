@@ -4,7 +4,6 @@
 package com.github.jerryxia.devhelper.requestcapture.support;
 
 import java.util.HashMap;
-import java.util.Map;
 
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordManager;
 
@@ -16,8 +15,8 @@ public class RequestCaptureConstants {
 
     public static final ThreadLocal<String> HTTP_REQUEST_RECORD_ID = new ThreadLocal<String>();
 
-    public static volatile boolean LOG_EXT_ENABLED_STATUS = false;
-    public static final Map<String, Boolean> LOG_EXT_ENABLED_MAP = new HashMap<String, Boolean>();
+    public static volatile boolean               LOG_EXT_ENABLED_STATUS = false;
+    public static final HashMap<String, Boolean> LOG_EXT_ENABLED_MAP    = new HashMap<String, Boolean>();
 
     public static final HttpRequestRecordManager RECORD_MANAGER = new HttpRequestRecordManager();
 

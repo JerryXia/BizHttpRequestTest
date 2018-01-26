@@ -249,6 +249,9 @@ span.metric-default {
                 <router-link :to="{ path: '/alllogs/ALL', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>ALL
                     <span class="pull-right"><span class="metric metric-default">{{logCount.ALL}}</span></span>
                 </router-link>
+                <router-link :to="{ path: '/alllogs/TRACE', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>TRACE
+                    <span class="pull-right"><span class="metric metric-default">{{logCount.TRACE}}</span></span>
+                </router-link>
                 <router-link :to="{ path: '/alllogs/DEBUG', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>DEBUG
                     <span class="pull-right"><span class="metric metric-default">{{logCount.DEBUG}}</span></span>
                 </router-link>

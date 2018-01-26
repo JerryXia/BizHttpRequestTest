@@ -19,7 +19,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
 import com.github.jerryxia.devhelper.web.WebConstants;
-import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor;
 
 /**
  * 用于log请求、响应
@@ -28,8 +27,7 @@ import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogIntercept
  *
  */
 public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
-    private static final Logger logger = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
-
+    private static final Logger log = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
 
     /**
      * 只要加入了interceptors中默认启用
@@ -37,12 +35,13 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     private boolean enabled = true;
 
     /**
-     *  额外要记录的请求头
+     * 额外要记录的请求头
      */
     private String[] logRequestHeaderNames = new String[0];
 
     public void init() {
         WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED = true;
+        log.debug("devhelper RequestResponseLogInterceptor enabled                : {}", enabled);
     }
 
     @Override
@@ -73,9 +72,9 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             ModelAndView modelAndView) throws Exception {
         if (this.enabled) {
             if (modelAndView != null) {
-                logger.info(modelAndView.getModelMap().toString());
+                log.debug(modelAndView.getModelMap().toString());
             } else {
-                logger.info("response ModelAndView: null");
+                log.debug("response ModelAndView: null");
             }
         }
     }
@@ -106,7 +105,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
 
     private String[] toStringArray(Enumeration<String> enumeration) {
         if (enumeration != null) {
-            //List<String> lists = EnumerationUtils.toList(enumeration);
+            // List<String> lists = EnumerationUtils.toList(enumeration);
             final ArrayList<String> list = new ArrayList<String>(16);
             while (enumeration.hasMoreElements()) {
                 list.add(enumeration.nextElement());
@@ -121,7 +120,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     private void dumpRequest(LinkedHashMap<String, String[]> map) {
         Iterator<Entry<String, String[]>> i = map.entrySet().iterator();
         if (!i.hasNext()) {
-            logger.info("{}");
+            log.debug("{}");
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append('{');
@@ -158,7 +157,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
                     sb.append(',').append(' ');
                 }
             }
-            logger.info(sb.toString());
+            log.debug(sb.toString());
         }
     }
 

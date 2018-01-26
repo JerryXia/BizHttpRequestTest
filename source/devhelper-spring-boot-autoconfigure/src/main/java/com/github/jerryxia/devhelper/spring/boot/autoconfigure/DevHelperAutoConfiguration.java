@@ -45,6 +45,19 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
     public static final String REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-requestCaptureWebServlet-registration";
     public static final String SNOOP_SERVLET_REGISTRATION_BEAN_NAME               = "devhelper-snoopServlet-registration";
 
+    @Bean
+    public ServletListenerRegistrationBean<BootstrapperContextListener> bootstrapperContextListener() {
+        String listenerName = "bootstrapperContextListener";
+
+        ServletListenerRegistrationBean<BootstrapperContextListener> registrationBean = new ServletListenerRegistrationBean<BootstrapperContextListener>();
+
+        BootstrapperContextListener listener = new BootstrapperContextListener();
+        registrationBean.setListener(listener);
+        registrationBean.setName(listenerName);
+
+        return registrationBean;
+    }
+
     @Bean(name = REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME)
     @ConditionalOnMissingBean(name = REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME)
     public FilterRegistrationBean requestIdInitFilter(DevHelperProperties properties, ServletContext servletContext) {
@@ -56,6 +69,8 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         RequestIdInitFilter filter = new RequestIdInitFilter();
         registrationBean.setFilter(filter);
         registrationBean.setName(filterName);
+        // 优先使用此filter
+        registrationBean.setOrder(FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER);
         if (config.getRequestIdResponseHeaderName() != null) {
             registrationBean.addInitParameter(RequestIdInitFilter.PARAM_NAME_REQUEST_ID_RESPONSE_HEADER_NAME,
                     config.getRequestIdResponseHeaderName());
@@ -85,14 +100,16 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
 
         RequestCaptureFilter filter = new RequestCaptureFilter();
-        filter.setIncludeClientInfo(true);
-        filter.setIncludeQueryString(true);
-        filter.setIncludePayload(true);
-        filter.setIncludeHeaders(true);
-        filter.setMaxPayloadLength(1024 * 10);
+//        filter.setIncludeClientInfo(true);
+//        filter.setIncludeQueryString(true);
+//        filter.setIncludePayload(true);
+//        filter.setIncludeHeaders(true);
+//        filter.setMaxPayloadLength(1024 * 10);
 
         registrationBean.setFilter(filter);
         registrationBean.setName(filterName);
+        // 优先使用此filter
+        registrationBean.setOrder(FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER);
         if (config.isEnabled() != null) {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_ENABLED, config.isEnabled().toString());
         }
@@ -180,19 +197,6 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
                 servletRegistration.setInitParameter(entry.getKey(), entry.getValue());
             }
         }
-        return registrationBean;
-    }
-
-    @Bean
-    public ServletListenerRegistrationBean<BootstrapperContextListener> bootstrapperContextListener() {
-        String listenerName = "bootstrapperContextListener";
-
-        ServletListenerRegistrationBean<BootstrapperContextListener> registrationBean = new ServletListenerRegistrationBean<BootstrapperContextListener>();
-
-        BootstrapperContextListener listener = new BootstrapperContextListener();
-        registrationBean.setListener(listener);
-        registrationBean.setName(listenerName);
-
         return registrationBean;
     }
 

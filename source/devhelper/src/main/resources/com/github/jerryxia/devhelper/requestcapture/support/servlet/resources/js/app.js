@@ -228,7 +228,7 @@ const allLogs = {
     template: '#allLogs',
     data: function () {
         return {
-            logLevels: ['ALL', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'],
+            logLevels: ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'],
             queryLevel: 'ALL',
             queryFrom: 0,
             queryCount: 16,
@@ -301,6 +301,7 @@ const allLogs = {
             let that = this;
             return {
                 ALL: that.logPagedList.length,
+                TRACE: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'TRACE'; }).length,
                 DEBUG: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'DEBUG'; }).length,
                 INFO: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'INFO'; }).length,
                 WARN: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'WARN'; }).length,
@@ -521,17 +522,20 @@ Vue.filter('parameterFormater', function (obj, formater) {
 Vue.filter('logLevelFormater', function (value) {
     let val = '';
     switch (value.toLowerCase()) {
-        case 'info':
-            val = 'label-info';
+        case 'fatal':
+        case 'error':
+            val = 'label-danger';
             break;
         case 'warn':
             val = 'label-warning';
             break;
-        case 'error':
-        case 'fatal':
-            val = 'label-danger';
+        case 'info':
+            val = 'label-info';
             break;
         case 'debug':
+            val = 'label-success';
+            break;
+        case 'trace':
         default:
             val = 'label-default';
             break;

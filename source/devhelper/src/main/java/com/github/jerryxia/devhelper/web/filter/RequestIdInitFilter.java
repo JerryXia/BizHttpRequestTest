@@ -17,6 +17,13 @@ import javax.servlet.http.HttpServletResponse;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
+ * <p>
+ * 请求唯一ID，请求一旦到达API后，API就会生成请求ID并通过响应头返回给客户端。
+ * </p>
+ * <p>
+ * 建议客户端与后端服务都记录此请求ID，可用于问题排查与跟踪。
+ * </p>
+ * 
  * @author guqk
  *
  */
@@ -34,13 +41,13 @@ public class RequestIdInitFilter implements Filter {
             requestIdResponseHeaderName = WebConstants.REQUEST_ID_RESPONSE_HEADER_NAME;
         }
         WebConstants.REQUEST_ID_INIT_FILTER_ENABLED = true;
+        filterConfig.getServletContext().log("devhelper RequestIdInitFilter enabled                 : true");
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        // 请求唯一ID，请求一旦到达API后，API就会生成请求ID并通过响应头返回给客户端
-        // 建议客户端与后端服务都记录此请求ID，可用于问题排查与跟
+        // if convert fail, throw exception
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestId = UUID.randomUUID().toString();
         WebConstants.X_CALL_REQUEST_ID.set(requestId);
@@ -54,6 +61,6 @@ public class RequestIdInitFilter implements Filter {
 
     @Override
     public void destroy() {
-
+        this.requestIdResponseHeaderName = null;
     }
 }

@@ -17,9 +17,9 @@ import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConsta
  *
  */
 public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
-    private InetAddress      localHost;
-    private String           hostName;
-    private String           ip;
+    private InetAddress localHost;
+    private String      hostName;
+    private String      ip;
 
     /**
      * Constructeur.
@@ -51,5 +51,4 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         log.setLevel(event.getLevel().toString());
         RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
     }
-
 }

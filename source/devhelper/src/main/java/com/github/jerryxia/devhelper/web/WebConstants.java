@@ -13,6 +13,9 @@ public class WebConstants {
 
     public static final long START_TIMESTAMP = SystemClock.now();
 
+    /**
+     * 响应头的名字， 优先读取配置，其次使用默认值
+     */
     public static final String REQUEST_ID_RESPONSE_HEADER_NAME = "X-Call-RequestId";
     public static final ThreadLocal<String> X_CALL_REQUEST_ID = new ThreadLocal<String>();
 

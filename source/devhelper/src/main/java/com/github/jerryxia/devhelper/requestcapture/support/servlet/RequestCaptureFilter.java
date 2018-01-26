@@ -1,7 +1,6 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -9,12 +8,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
@@ -22,26 +22,14 @@ import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConsta
 import com.github.jerryxia.devhelper.util.SystemClock;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.http.server.ServletServerHttpRequest;
-import org.springframework.util.StringUtils;
-import org.springframework.web.filter.AbstractRequestLoggingFilter;
-import org.springframework.web.util.ContentCachingRequestWrapper;
-import org.springframework.web.util.WebUtils;
-
 /**
  * @author guqiankun
  *
  */
-public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
-    private static final Logger logger = LoggerFactory.getLogger(RequestCaptureFilter.class);
-
-    public static final String  PARAM_NAME_ENABLED                               = "enabled";
-    public static final String  PARAM_NAME_EXCLUSIONS                            = "exclusions";
-    public static final String  PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
-    private static final String REQUEST_CAPTURE_REQUEST_KEY_PREFIX               = UUID.randomUUID().toString()
-            .replace('-', 'a').trim() + ":";
+public class RequestCaptureFilter implements Filter {
+    public static final String PARAM_NAME_ENABLED                               = "enabled";
+    public static final String PARAM_NAME_EXCLUSIONS                            = "exclusions";
+    public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
 
     private boolean     enabled;
     private String      contextPath;
@@ -49,10 +37,7 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
     private String      replayRequestIdRequestHeaderName;
 
     @Override
-    protected void initFilterBean() throws ServletException {
-        FilterConfig filterConfig = getFilterConfig();
-
-        // from init()
+    public void init(FilterConfig filterConfig) throws ServletException {
         this.contextPath = filterConfig.getServletContext().getContextPath();
         if (this.contextPath == null || this.contextPath.length() == 0) {
             this.contextPath = "/";
@@ -76,131 +61,54 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
             replayRequestIdRequestHeaderName = WebConstants.REPLAY_HTTP_REQUEST_HEADER_NAME;
         }
 
-        logger.info("requestcapture log_ext_enabled_status: {}", RequestCaptureConstants.LOG_EXT_ENABLED_STATUS);
-        logger.info("requestcapture log_ext_enabled_map: {}", RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
         RequestCaptureConstants.RECORD_MANAGER.init();
         WebConstants.REQUEST_CAPTURE_FILTER_ENABLED = true;
+
+        filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : true");
+        filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_status : "
+                + RequestCaptureConstants.LOG_EXT_ENABLED_STATUS);
+        filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_map    : "
+                + RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
-            throws ServletException, IOException {
-        if (!enabled || isExclusion(request.getRequestURI())) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-        super.doFilterInternal(request, response, filterChain);
-    }
-
-    @Override
-    protected String createMessage(HttpServletRequest request, String prefix, String suffix) {
-        StringBuilder msg = new StringBuilder();
-        msg.append(prefix);
-        msg.append("uri=").append(request.getRequestURI());
-
-        if (isIncludeQueryString()) {
-            String queryString = request.getQueryString();
-            if (queryString != null) {
-                msg.append('?').append(queryString);
-            }
-        }
-
-        if (isIncludeClientInfo()) {
-            String client = request.getRemoteAddr();
-            if (StringUtils.hasLength(client)) {
-                msg.append(";client=").append(client);
-            }
-            HttpSession session = request.getSession(false);
-            if (session != null) {
-                msg.append(";session=").append(session.getId());
-            }
-            String user = request.getRemoteUser();
-            if (user != null) {
-                msg.append(";user=").append(user);
-            }
-        }
-
-        if (isIncludeHeaders()) {
-            msg.append(";headers=").append(new ServletServerHttpRequest(request).getHeaders());
-        }
-
-        String payloadKey = buildRequestKey("payload");
-        if (isIncludePayload()) {
-            ContentCachingRequestWrapper wrapper = WebUtils.getNativeRequest(request,
-                    ContentCachingRequestWrapper.class);
-            if (wrapper != null) {
-                byte[] buf = wrapper.getContentAsByteArray();
-                if (buf.length > 0) {
-                    int length = Math.min(buf.length, getMaxPayloadLength());
-                    String payload;
-                    try {
-                        payload = new String(buf, 0, length, wrapper.getCharacterEncoding());
-                    } catch (UnsupportedEncodingException ex) {
-                        payload = "[unknown]";
-                    }
-                    msg.append(";payload=").append(payload);
-
-                    request.setAttribute(payloadKey, payload);
-                } else {
-                    request.setAttribute(payloadKey, "");
-                }
-            } else {
-                request.setAttribute(payloadKey, "null");
-            }
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        if (!enabled || isExclusion(httpRequest.getRequestURI())) {
+            chain.doFilter(request, response);
         } else {
-            request.setAttribute(payloadKey, "payload is not enabled");
+            HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
+            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
+            RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+
+            ContentRecordRequestWrapper httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest, 10240, null,
+                    new DefaultContentEndListener(httpRequestRecord));
+
+            /*
+             * msg.append("uri=").append(request.getRequestURI());
+             * 
+             * String queryString = request.getQueryString(); if (queryString != null) {
+             * msg.append('?').append(queryString); }
+             * 
+             * String client = request.getRemoteAddr(); if (StringUtils.hasLength(client)) {
+             * msg.append(";client=").append(client); } HttpSession session = request.getSession(false); if (session !=
+             * null) { msg.append(";session=").append(session.getId()); } String user = request.getRemoteUser(); if
+             * (user != null) { msg.append(";user=").append(user); }
+             * 
+             * msg.append(";headers=").append(new ServletServerHttpRequest(request).getHeaders());
+             */
+            try {
+                chain.doFilter(httpRequestWrapper, response);
+            } finally {
+                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+            }
         }
-
-        msg.append(suffix);
-        return msg.toString();
-    }
-
-    /**
-     * Writes a log message before the request is processed.
-     */
-    @Override
-    protected void beforeRequest(HttpServletRequest request, String message) {
-        HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(request);
-        RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
-        RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
-
-        String httpRequestRecordObjectKey = buildRequestKey("httpRequestRecord_object");
-        request.setAttribute(httpRequestRecordObjectKey, httpRequestRecord);
-        logger.debug(message);
-    }
-
-    /**
-     * Writes a log message after the request is processed.
-     */
-    @Override
-    protected void afterRequest(HttpServletRequest request, String message) {
-        String payloadKey = buildRequestKey("payload");
-        String payload = (String) request.getAttribute(payloadKey);
-        request.removeAttribute(payloadKey);
-
-        String httpRequestRecordObjectKey = buildRequestKey("httpRequestRecord_object");
-        Object httpRequestRecordObject = request.getAttribute(httpRequestRecordObjectKey);
-        if (httpRequestRecordObject != null) {
-            HttpRequestRecord httpRequestRecord = (HttpRequestRecord) httpRequestRecordObject;
-            httpRequestRecord.setPayload(payload);
-        }
-        request.removeAttribute(httpRequestRecordObjectKey);
-
-        logger.debug(message);
-    }
-
-    @Override
-    protected boolean shouldLog(HttpServletRequest request) {
-        return logger.isDebugEnabled();
     }
 
     @Override
     public void destroy() {
         RequestCaptureConstants.RECORD_MANAGER.shutdown();
-    }
-
-    private String buildRequestKey(String key) {
-        return REQUEST_CAPTURE_REQUEST_KEY_PREFIX + key;
     }
 
     private HttpRequestRecord buildHttpRequestRecord(HttpServletRequest httpRequest) {
@@ -300,5 +208,4 @@ public class RequestCaptureFilter extends AbstractRequestLoggingFilter {
         }
         return false;
     }
-
 }
