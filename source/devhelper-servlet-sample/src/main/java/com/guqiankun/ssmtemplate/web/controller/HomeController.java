@@ -22,6 +22,18 @@ public class HomeController extends BaseController {
         return mv;
     }
 
+    @RequestMapping("/throwerror")
+    public ModelAndView throwError() {
+        ModelAndView mv = new ModelAndView("home/index");
+        mv.addObject("currDateTime", org.joda.time.DateTime.now(DateTimeZone.UTC));
+        int i = 0;
+        if(i == 0) {
+            throw new IllegalArgumentException("uncached error");
+        }
+        return mv;
+    }
+
+    
     @RequestMapping("/error")
     public ModelAndView error(HttpServletRequest request) {
         ModelAndView mv = new ModelAndView("error");

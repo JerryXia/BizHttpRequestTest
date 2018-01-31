@@ -17,10 +17,11 @@ import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConsta
  *
  */
 public class Log4JAppender extends AppenderSkeleton {
+    private static final String DELIMITER = "\n";
 
-    private InetAddress      localHost;
-    private String           hostName;
-    private String           ip;
+    private InetAddress localHost;
+    private String      hostName;
+    private String      ip;
 
     public Log4JAppender() {
         super();
@@ -46,23 +47,30 @@ public class Log4JAppender extends AppenderSkeleton {
 
     @Override
     public boolean requiresLayout() {
-        return true;
+        return false;
     }
 
     @Override
     protected void append(LoggingEvent event) {
-//        final Throwable throwable;
-//        if (event.getThrowableInformation() == null) {
-//            throwable = null;
-//        } else {
-//            throwable = event.getThrowableInformation().getThrowable();
-//        }
         String httpRequestRecordId = RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.get();
         LogEntry log = new LogEntry(httpRequestRecordId);
         log.setHost(this.hostName);
         log.setIp(this.ip);
         log.setLoggerName(event.getLoggerName());
-        log.setMessage(event.getRenderedMessage());
+
+        String[] throwableStrRep = event.getThrowableStrRep();
+        if (throwableStrRep != null) {
+            // 1024 * 16
+            StringBuffer sb = new StringBuffer(16384);
+            sb.append(event.getRenderedMessage()).append(DELIMITER).append(DELIMITER);
+            for (String line : throwableStrRep) {
+                sb.append(line).append(DELIMITER);
+            }
+            log.setMessage(sb.toString());
+        } else {
+            log.setMessage(event.getRenderedMessage());
+        }
+
         log.setThreadName(event.getThreadName());
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());

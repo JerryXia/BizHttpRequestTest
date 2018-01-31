@@ -3,18 +3,20 @@
  */
 package com.github.jerryxia.devhelper.web.interceptor;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -28,6 +30,7 @@ import com.github.jerryxia.devhelper.web.WebConstants;
  */
 public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     private static final Logger log = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
+    private final String lineSeparator;
 
     /**
      * 只要加入了interceptors中默认启用
@@ -39,30 +42,64 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
      */
     private String[] logRequestHeaderNames = new String[0];
 
+    public RequestResponseLogInterceptor() {
+        String pLineSeparator = null;
+        try {
+            pLineSeparator = System.getProperty("line.separator");
+        } catch (SecurityException se) {
+            pLineSeparator = "\n";
+        } finally {
+            lineSeparator = pLineSeparator;
+        }
+    }
+
     public void init() {
+        StringBuilder buf = new StringBuilder(logRequestHeaderNames.length * 16);
+        for (int i = 0; i < logRequestHeaderNames.length; i++) {
+            if (i > 0) {
+                buf.append(',');
+            }
+            buf.append(logRequestHeaderNames[i]);
+        }
+
         WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED = true;
-        log.debug("devhelper RequestResponseLogInterceptor enabled                : {}", enabled);
+        log.debug("devhelper RequestResponseLogInterceptor enabled               : {}", enabled);
+        log.debug("devhelper RequestResponseLogInterceptor logRequestHeaderNames : {}", buf.toString());
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
             throws Exception {
         if (this.enabled) {
-            LinkedHashMap<String, String[]> map = new LinkedHashMap<String, String[]>();
-            map.put("RequestURI", toStringArray(request.getRequestURI()));
-            map.put(WebConstants.REQUEST_ID_RESPONSE_HEADER_NAME, toStringArray(WebConstants.X_CALL_REQUEST_ID.get()));
-            // 记录额外指定的请求头
-            if (logRequestHeaderNames != null && logRequestHeaderNames.length > 0) {
-                for (int i = 0; i < logRequestHeaderNames.length; i++) {
-                    map.put(logRequestHeaderNames[i], toStringArray(request.getHeaders(logRequestHeaderNames[i])));
-                }
-            }
+            HttpSession session = request.getSession(false);
+            Principal userPrincipal = request.getUserPrincipal();
+            StringBuffer sb = new StringBuffer();
+            appendKeyValueLine(sb, "requestURI", request.getRequestURI());
+            appendKeyValueLine(sb, "contextPath", request.getContextPath());
+            appendKeyValueLine(sb, "pathInfo", request.getPathInfo());
+            appendKeyValueLine(sb, "pathTranslated", request.getPathTranslated());
+            appendKeyValueLine(sb, "requestedSessionId", request.getRequestedSessionId());
+            appendKeyValueLine(sb, "session_id", session == null ? null : session.getId());
+            appendKeyValueLine(sb, "remoteAddress", request.getRemoteAddr());
+            appendKeyValueLine(sb, "authType", request.getAuthType());
+            appendKeyValueLine(sb, "remoteUser", request.getRemoteUser());
+            appendKeyValueLine(sb, "userPrincipal", userPrincipal == null ? null : userPrincipal.getName());
+            appendKeyValueLine(sb, "headers", new ServletServerHttpRequest(request).getHeaders().toString());
+            log.debug(sb.toString());
 
-            Map<String, String[]> parameterMap = request.getParameterMap();
-            if (parameterMap != null) {
-                map.putAll(parameterMap);
-            }
-            dumpRequest(map);
+            // 记录额外指定的请求头
+//            LinkedHashMap<String, String[]> map = new LinkedHashMap<String, String[]>();
+//            if (logRequestHeaderNames != null && logRequestHeaderNames.length > 0) {
+//                for (int i = 0; i < logRequestHeaderNames.length; i++) {
+//                    map.put(logRequestHeaderNames[i], toStringArray(request.getHeaders(logRequestHeaderNames[i])));
+//                }
+//            }
+//            Map<String, String[]> parameterMap = request.getParameterMap();
+//            if (parameterMap != null) {
+//                map.putAll(parameterMap);
+//            }
+//            dumpRequest(map);
+
         }
         return true;
     }
@@ -74,7 +111,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             if (modelAndView != null) {
                 log.debug(modelAndView.getModelMap().toString());
             } else {
-                log.debug("response ModelAndView: null");
+                log.debug("ModelAndView returned: null");
             }
         }
     }
@@ -82,7 +119,12 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
             throws Exception {
-
+//        System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION));
+//        System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE));
+//        System.err.println(request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
+        if(this.enabled && ex != null) {
+            log.error(handler.toString(), ex);
+        }
     }
 
     public void setEnabled(boolean enable) {
@@ -91,6 +133,10 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
 
     public void setLogRequestHeaderNames(String... logRequestHeaderNames) {
         this.logRequestHeaderNames = logRequestHeaderNames;
+    }
+
+    private void appendKeyValueLine(StringBuffer sb, String key, String value) {
+        sb.append(key).append(": ").append(value).append(lineSeparator);
     }
 
     private String[] toStringArray(String item) {

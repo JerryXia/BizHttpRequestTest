@@ -89,6 +89,14 @@ span.metric-default {
     width: 100%;
     word-break: break-all;
 }
+.td_expand_message pre{
+    margin: 0px; 
+    padding: 0px; 
+    font-size: 85%; 
+    border: 0px; 
+    border-radius: 4px; 
+    background-color: inherit;
+}
 </style>
 </head>
 <body>
@@ -187,26 +195,26 @@ span.metric-default {
                     </div>
                 </form>
                 <div class="table-responsive">
-                    <table class="table table-condensed table-bordered table-hover">
+                    <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
                         <thead>
                             <tr>
                                 <th v-show="logTbShow.id" style="min-width:116px;width:116px;word-break: break-all;">id</th>
                                 <th v-show="logTbShow.timeStamp" style="min-width:124px;width:124px;word-break: break-all;">timeStamp</th>
                                 <th v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;">method</th>
-                                <th v-show="logTbShow.requestAndQuery" style="min-width:400px;width:400px;word-break: break-all;">requestAndQuery</th>
-                                <th v-show="logTbShow.parameter" style="width:400px;word-break: break-all;">form parameter</th>
-                                <th v-show="logTbShow.payload" style="width:400px;word-break: break-all;">payload</th>
+                                <th v-show="logTbShow.requestAndQuery" style="width:16%;">requestAndQuery</th>
+                                <th v-show="logTbShow.parameter">form parameter</th>
+                                <th v-show="logTbShow.payload">payload</th>
                                 <th style="min-width:92px;width: 92px;">action</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="apiRecord in apiRecordsPagedList">
-                                <td v-show="logTbShow.id" style="min-width:116px;width:116px;word-break: break-all;"><small>{{apiRecord.id}}</small></td>
+                                <td v-show="logTbShow.id" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
                                 <td v-show="logTbShow.timeStamp" v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;"><code>{{apiRecord.method}}</code></td>
-                                <td v-show="logTbShow.requestAndQuery" style="min-width:400px;width:400px;word-break: break-all;"><small>{{apiRecord.requestURI + ( (apiRecord.queryString!=null && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : '') }}</small></td>
-                                <td v-show="logTbShow.parameter" style="width:400px;word-break: break-all;"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
-                                <td v-show="logTbShow.payload" style="width:400px;word-break: break-all;"><small>{{ apiRecord.payload }}</small></td>
+                                <td v-show="logTbShow.requestAndQuery" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
+                                <td v-show="logTbShow.parameter" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
+                                <td v-show="logTbShow.payload" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.payload }}</small></td>
                                 <td style="min-width:92px;width: 92px;">
                                     <input type="button" class="btn btn-xs btn-info" value="Log" data-loading-text="Loading..." v-on:click="showLogs(apiRecord.id, apiRecord.requestId, $event)" />
                                     <input type="button" class="btn btn-xs btn-success" value="replay" data-loading-text="pending..." v-on:click="replay(apiRecord, $event)" />
@@ -225,11 +233,11 @@ span.metric-default {
                           <h4 class="modal-title" id="apiRecordLogsTitle">Api Request Logs</h4>
                         </div>
                         <div class="modal-body">
-                            <table class="table table-condensed table-bordered table-hover">
+                            <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
                                 <tbody>
                                   <tr v-for="log in apiRecordLogs">
-                                    <td><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></td>
-                                    <td style="width: 100%; word-break: break-all;">{{ log.message }}</td>
+                                    <td style="min-width: 70px; width: 70px; word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
+                                    <td class="td_expand_message"><pre v-if="log.message.indexOf('\n') > -1">{{log.message}}</pre><small v-else>{{log.message}}</small></td>
                                   </tr>
                                 </tbody>
                              </table>
@@ -330,9 +338,9 @@ span.metric-default {
                                 <td v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.httpRequestRecordId}}</small></td>
                                 <td v-show="logTbShow.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{log.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
-                                <td v-show="logTbShow.threadName" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{log.threadName}}</small></td>
-                                <td v-show="logTbShow.loggerName" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{log.loggerName}}</small></td>
-                                <td v-show="logTbShow.message" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{log.message}}</small></td>
+                                <td v-show="logTbShow.threadName" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="log.threadName"><small>{{log.threadName}}</small></td>
+                                <td v-show="logTbShow.loggerName" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="log.loggerName"><small>{{log.loggerName}}</small></td>
+                                <td v-show="logTbShow.message" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><pre v-if="log.isExpandMessage && log.message.indexOf('\n') > -1">{{log.message}}</pre><small v-else>{{log.message}}</small></td>
                                 <td v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.host}}</small></td>
                                 <td v-show="logTbShow.ip" style="min-width:102px;width:102px;word-break: break-all;"><small>{{log.ip}}</small></td>
                             </tr>

@@ -28,7 +28,6 @@ import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptu
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
 import com.github.jerryxia.devhelper.snoop.support.servlet.SnoopServlet;
 import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
-import com.github.jerryxia.devhelper.web.interceptor.RequestIdInitInterceptor;
 import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor;
 import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
 
@@ -77,7 +76,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         }
 
         registrationBean.addUrlPatterns("/*");
-        registrationBean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.ASYNC);
+        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
 
         FilterRegistration filterRegistration = servletContext.getFilterRegistration(filterName);
         if (filterRegistration != null) {
@@ -100,18 +99,12 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         FilterRegistrationBean registrationBean = new FilterRegistrationBean();
 
         RequestCaptureFilter filter = new RequestCaptureFilter();
-//        filter.setIncludeClientInfo(true);
-//        filter.setIncludeQueryString(true);
-//        filter.setIncludePayload(true);
-//        filter.setIncludeHeaders(true);
-//        filter.setMaxPayloadLength(1024 * 10);
-
         registrationBean.setFilter(filter);
         registrationBean.setName(filterName);
         // 优先使用此filter
         registrationBean.setOrder(FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER);
-        if (config.isEnabled() != null) {
-            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_ENABLED, config.isEnabled().toString());
+        if (config.getEnabled() != null) {
+            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_ENABLED, config.getEnabled().toString());
         }
         if (config.getExclusions() != null) {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_EXCLUSIONS, config.getExclusions());
@@ -120,9 +113,14 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME,
                     config.getReplayRequestIdRequestHeaderName());
         }
+        if (config.getMaxPayloadLength() != null) {
+            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_MAX_PAYLOAD_LENGTH,
+                    config.getMaxPayloadLength().toString());
+        }
 
         registrationBean.addUrlPatterns("/*");
-        registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
+        registrationBean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE,
+                DispatcherType.ERROR);
 
         FilterRegistration filterRegistration = servletContext.getFilterRegistration(filterName);
         if (filterRegistration != null) {
@@ -170,8 +168,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
 
     @Bean(name = SNOOP_SERVLET_REGISTRATION_BEAN_NAME)
     @ConditionalOnMissingBean(name = SNOOP_SERVLET_REGISTRATION_BEAN_NAME)
-    public ServletRegistrationBean snoopServlet(DevHelperProperties properties,
-            ServletContext servletContext) {
+    public ServletRegistrationBean snoopServlet(DevHelperProperties properties, ServletContext servletContext) {
         String servletName = "snoopServlet";
         SnoopServletProperties config = properties.getSnoopServlet();
 
@@ -204,26 +201,18 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
     private DevHelperProperties devHelperProperties;
 
     @Bean(initMethod = "init")
-    public RequestIdInitInterceptor requestIdInitInterceptor() {
-        RequestIdInitFilterProperties config = devHelperProperties.getRequestIdInit();
-        RequestIdInitInterceptor interceptor =  new RequestIdInitInterceptor();
-        interceptor.setRequestIdResponseHeaderName(config.getRequestIdResponseHeaderName());
-        return interceptor;
-    }
-
-    @Bean(initMethod = "init")
     public RequestResponseLogInterceptor requestResponseLogInterceptor() {
         RequestResponseLogProperties config = devHelperProperties.getRequestResponseLog();
         RequestResponseLogInterceptor interceptor = new RequestResponseLogInterceptor();
-        if(config.getEnabled() != null) {
+        if (config.getEnabled() != null) {
             interceptor.setEnabled(config.getEnabled().booleanValue());
         }
-        if(!StringUtils.isEmpty(config.getLogRequestHeaderNames())) {
+        if (!StringUtils.isEmpty(config.getLogRequestHeaderNames())) {
             String[] reqheadNames = config.getLogRequestHeaderNames().split(",");
             ArrayList<String> list = new ArrayList<String>();
-            for(String reqHeadName : reqheadNames) {
+            for (String reqHeadName : reqheadNames) {
                 String trimReqHeadName = reqHeadName.trim();
-                if(!StringUtils.isEmpty(trimReqHeadName)) {
+                if (!StringUtils.isEmpty(trimReqHeadName)) {
                     list.add(trimReqHeadName);
                 }
             }
@@ -237,7 +226,6 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         // 多个拦截器组成一个拦截器链
         // addPathPatterns 用于添加拦截规则
         // excludePathPatterns 用户排除拦截
-        registry.addInterceptor(requestIdInitInterceptor()).addPathPatterns("/**");
         registry.addInterceptor(requestResponseLogInterceptor()).addPathPatterns("/**");
     }
 

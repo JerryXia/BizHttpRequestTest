@@ -39,34 +39,35 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
         String resp = null;
         Map<String, String> parameters = getParameters(url);
-        if ("/allapirecords.json".equals(url)) {
+        String jsonpCallback = parameters.get("callback");
+        if (url.startsWith("/allapirecords.json")) {
             HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentHttpRequestRecordStorage().queryAll();
-            resp = returnJSONResult(RESULT_CODE_SUCCESS, result, getServerStat(startTime));
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/apirecords.json")) {
             int startIndex = Integer.parseInt(parameters.get("startIndex"));
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
             HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentHttpRequestRecordStorage().queryNextList(startIndex, endIndex);
-            resp = returnJSONResult(RESULT_CODE_SUCCESS, result, getServerStat(startTime));
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/apirecordlogs.json")) {
             LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().currentLogEntryStorage().queryAll();
             String id = parameters.get("id");
             if (id != null && id.length() > 0) {
-                resp = returnJSONResult(RESULT_CODE_SUCCESS, filterById(result.getList(), id), getServerStat(startTime));
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, filterById(result.getList(), id), getServerStat(startTime));
             } else {
-                resp = returnJSONResult(RESULT_CODE_SUCCESS, result.getList(), getServerStat(startTime));
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, Collections.emptyList(), getServerStat(startTime));
             }
         }
-        if ("/alllogs.json".equals(url)) {
+        if (url.startsWith("/alllogs.json")) {
             LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().currentLogEntryStorage().queryAll();
-            resp = returnJSONResult(RESULT_CODE_SUCCESS, result, getServerStat(startTime));
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/logs.json")) {
             int startIndex = Integer.parseInt(parameters.get("startIndex"));
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
             LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().currentLogEntryStorage().queryNextList(startIndex, endIndex);
-            resp = returnJSONResult(RESULT_CODE_SUCCESS, result, getServerStat(startTime));
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (resp == null) {
             resp = returnJSONResult(RESULT_CODE_ERROR, null, getServerStat(startTime));
@@ -112,7 +113,6 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         }
 
         return src.substring(indexFrom, indexTo);
-
     }
 
     private Map<String, Object> getServerStat(long startTime) {
@@ -120,6 +120,14 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         map.put("time", System.currentTimeMillis());
         map.put("generated", System.nanoTime() - startTime);
         return map;
+    }
+
+    private String returnJsonpResult(String jsonpCallback, int resultCode, Object content, Map<String, Object> serverStat) {
+        Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+        dataMap.put("code", resultCode);
+        dataMap.put("data", content);
+        dataMap.put("serverstat", serverStat);
+        return jsonpCallback + "(" + toJSONString(dataMap) + ")";
     }
 
     private String returnJSONResult(int resultCode, Object content, Map<String, Object> serverStat) {

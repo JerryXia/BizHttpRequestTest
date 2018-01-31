@@ -30,11 +30,13 @@ public class RequestCaptureFilter implements Filter {
     public static final String PARAM_NAME_ENABLED                               = "enabled";
     public static final String PARAM_NAME_EXCLUSIONS                            = "exclusions";
     public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
+    public static final String PARAM_NAME_MAX_PAYLOAD_LENGTH                    = "maxPayloadLength";
 
     private boolean     enabled;
     private String      contextPath;
     private Set<String> excludesPattern;
     private String      replayRequestIdRequestHeaderName;
+    private int         maxPayloadLength;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -45,9 +47,7 @@ public class RequestCaptureFilter implements Filter {
 
         this.enabled = true;
         String enabledStr = filterConfig.getInitParameter(PARAM_NAME_ENABLED);
-        if (enabledStr != null && enabledStr.trim().length() != 0) {
-            this.enabled = Boolean.parseBoolean(enabledStr);
-        }
+        this.enabled = Boolean.parseBoolean(enabledStr);
 
         String exclusions = filterConfig.getInitParameter(PARAM_NAME_EXCLUSIONS);
         if (exclusions != null && exclusions.trim().length() != 0) {
@@ -59,6 +59,13 @@ public class RequestCaptureFilter implements Filter {
             replayRequestIdRequestHeaderName = cfgRequestHeaderName;
         } else {
             replayRequestIdRequestHeaderName = WebConstants.REPLAY_HTTP_REQUEST_HEADER_NAME;
+        }
+
+        String maxPayloadLengthStr = filterConfig.getInitParameter(PARAM_NAME_MAX_PAYLOAD_LENGTH);
+        if (maxPayloadLengthStr != null && maxPayloadLengthStr.trim().length() > 0) {
+            this.maxPayloadLength = Integer.parseInt(maxPayloadLengthStr);
+        } else {
+            this.maxPayloadLength = RequestCaptureConstants.DEFAULT_PAYLOAD_LENGTH;
         }
 
         RequestCaptureConstants.RECORD_MANAGER.init();
@@ -78,30 +85,30 @@ public class RequestCaptureFilter implements Filter {
         if (!enabled || isExclusion(httpRequest.getRequestURI())) {
             chain.doFilter(request, response);
         } else {
-            HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
-            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
-            RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+            Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+            if (requestCaptureIdObj == null) {
+                // 首次filter
+                HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
+                httpRequest.setAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME,
+                        httpRequestRecord.getId());
+                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
+                RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
 
-            ContentRecordRequestWrapper httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest, 10240, null,
-                    new DefaultContentEndListener(httpRequestRecord));
-
-            /*
-             * msg.append("uri=").append(request.getRequestURI());
-             * 
-             * String queryString = request.getQueryString(); if (queryString != null) {
-             * msg.append('?').append(queryString); }
-             * 
-             * String client = request.getRemoteAddr(); if (StringUtils.hasLength(client)) {
-             * msg.append(";client=").append(client); } HttpSession session = request.getSession(false); if (session !=
-             * null) { msg.append(";session=").append(session.getId()); } String user = request.getRemoteUser(); if
-             * (user != null) { msg.append(";user=").append(user); }
-             * 
-             * msg.append(";headers=").append(new ServletServerHttpRequest(request).getHeaders());
-             */
-            try {
-                chain.doFilter(httpRequestWrapper, response);
-            } finally {
-                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                ContentRecordRequestWrapper httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest,
+                        maxPayloadLength, null, new DefaultContentEndListener(httpRequestRecord));
+                try {
+                    chain.doFilter(httpRequestWrapper, response);
+                } finally {
+                    RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                }
+            } else {
+                // forward include error
+                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+                try {
+                    chain.doFilter(request, response);
+                } finally {
+                    RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                }
             }
         }
     }
@@ -114,8 +121,9 @@ public class RequestCaptureFilter implements Filter {
     private HttpRequestRecord buildHttpRequestRecord(HttpServletRequest httpRequest) {
         String id = null;
         if (WebConstants.REQUEST_ID_INIT_FILTER_ENABLED) {
-            id = WebConstants.X_CALL_REQUEST_ID.get();
+            id = (String) httpRequest.getAttribute(WebConstants.REQUEST_ID_INIT_FILTER_NAME);
         } else {
+            // 如果RequestIdInitFilter没有启用，则由RequestCaptureFilter生成Id
             id = UUID.randomUUID().toString();
         }
 

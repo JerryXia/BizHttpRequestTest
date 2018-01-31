@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jerryxia</groupId>
   <artifactId>devhelper</artifactId>
-  <version>1.0.4</version>
+  <version>1.0.5</version>
   <packaging>jar</packaging>
   <name>devhelper</name>
 
@@ -12,8 +12,10 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.target>1.7</maven.compiler.target>
     <maven.compiler.source>1.7</maven.compiler.source>
-    <junit-version>4.7</junit-version>
-    <spring-framework.version>4.3.11.RELEASE</spring-framework.version>
+    <junit-version>4.12</junit-version>
+    <spring-framework.version>4.3.13.RELEASE</spring-framework.version>
+    <slf4j-api.version>1.7.22</slf4j-api.version>
+    <logback.version>1.1.11</logback.version>
   </properties>
   <dependencies>
     <dependency>
@@ -31,17 +33,17 @@
     <dependency>
       <groupId>com.lmax</groupId>
       <artifactId>disruptor</artifactId>
-      <version>3.3.6</version>
+      <version>3.3.7</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-api</artifactId>
-      <version>1.7.22</version>
+      <version>${slf4j-api.version}</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.1.11</version>
+      <version>${logback.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>

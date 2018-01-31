@@ -50,13 +50,9 @@ public class RequestIdInitFilter implements Filter {
         // if convert fail, throw exception
         HttpServletResponse httpResponse = (HttpServletResponse) response;
         String requestId = UUID.randomUUID().toString();
-        WebConstants.X_CALL_REQUEST_ID.set(requestId);
+        request.setAttribute(WebConstants.REQUEST_ID_INIT_FILTER_NAME, requestId);
         httpResponse.setHeader(requestIdResponseHeaderName, requestId);
-        try {
-            chain.doFilter(request, response);
-        } finally {
-            WebConstants.X_CALL_REQUEST_ID.remove();
-        }
+        chain.doFilter(request, response);
     }
 
     @Override

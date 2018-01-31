@@ -102,25 +102,43 @@ const apiRecords = {
             let that = this;
 
             that.isFetchingData = true;
-            $.post('allapirecords.json', { t: Date.now() }, function (res) {
-                if (res && res.code == 1) {
-                    that.lastRecordIndex = res.data.lastIndex;
-                    that.apiRecordsPagedList = res.data.list;
+            jQuery.ajax({
+                type: 'GET',
+                url: 'allapirecords.json',
+                timeout: 123000,
+                //contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                //data: { t: Date.now() },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        that.lastRecordIndex = res.data.lastIndex;
+                        that.apiRecordsPagedList = res.data.list;
 
-                    that.serverstat = res.serverstat;
-                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
-                } else {
+                        that.serverstat = res.serverstat;
+                        that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                    } else {
+                        that.apiRecordsPagedList = [];
+                        that.currFetchHasNew = false;
+                    }
+                    //that.isFetchingData = false;
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
                     that.apiRecordsPagedList = [];
                     that.currFetchHasNew = false;
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingData = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('allapirecords.json:');
+                    console.log(textStatus);
                 }
-                that.isFetchingData = false;
             });
         },
         showLogs: function (recordId, requestId, event) {
             let that = this;
             var $btn = $(event.target).button('loading');
 
-            $.get('apirecordlogs.json', { id: recordId, t: Date.now() }, function (res) {
+            $.getJSON('apirecordlogs.json?callback=?', { id: recordId }, function (res) {
                 if (res && res.code == 1) {
                     that.apiRecordLogs = res.data;
 
@@ -188,23 +206,46 @@ const apiRecords = {
             let end = that.lastRecordIndex + that.pageSize;
 
             that.isFetchingData = true;
-            $.get('apirecords.json', { startIndex: start, endIndex: end, t: Date.now() }, function (res) {
-                if (res && res.code == 1) {
-                    that.lastRecordIndex = res.data.lastIndex;
-                    if (res.data.list && res.data.list.length > 0) {
-                        for (let i = 0, len = res.data.list.length; i < len; i++) {
-                            that.apiRecordsPagedList.push(res.data.list[i]);
+            jQuery.ajax({
+                type: 'GET',
+                url: 'apirecords.json',
+                timeout: 123000,
+                //contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { startIndex: start, endIndex: end },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        that.lastRecordIndex = res.data.lastIndex;
+                        if (res.data.list && res.data.list.length > 0) {
+                            for (let i = 0, len = res.data.list.length; i < len; i++) {
+                                that.apiRecordsPagedList.push(res.data.list[i]);
+                            }
                         }
+
+                        that.serverstat = res.serverstat;
+                        that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                    } else {
+                        that.currFetchHasNew = false;
                     }
-
-                    that.serverstat = res.serverstat;
-                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
-                } else {
+                    //that.isFetchingData = false;
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
                     that.currFetchHasNew = false;
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingData = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('apirecords.json:');
+                    console.log(textStatus);
                 }
-
-                that.isFetchingData = false;
             });
+        },
+        switchExpandMessage: function (item) {
+            if (typeof item.isExpandMessage === 'undefined') {
+                Vue.set(item, 'isExpandMessage', true);
+            } else {
+                item.isExpandMessage = item.isExpandMessage ? false : true;
+            }
         }
     }
 };
@@ -326,18 +367,34 @@ const allLogs = {
             let that = this;
 
             that.isFetchingData = true;
-            $.post('alllogs.json', { t: Date.now() }, function (res) {
-                if (res && res.code == 1) {
-                    that.lastRecordIndex = res.data.lastIndex;
-                    that.logPagedList = res.data.list;
-
-                    that.serverstat = res.serverstat;
-                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
-                } else {
-                    that.logPagedList = [];
+            jQuery.ajax({
+                type: 'GET',
+                url: 'alllogs.json',
+                timeout: 123000,
+                data: { },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        that.lastRecordIndex = res.data.lastIndex;
+                        that.logPagedList = res.data.list;
+                        
+                        that.serverstat = res.serverstat;
+                        that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                    } else {
+                        that.logPagedList = [];
+                        that.currFetchHasNew = false;
+                    }
+                    //that.isFetchingData = false;
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
                     that.currFetchHasNew = false;
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingData = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('alllogs.json:');
+                    console.log(textStatus);
                 }
-                that.isFetchingData = false;
             });
         },
         fetchNextData: function () {
@@ -347,22 +404,37 @@ const allLogs = {
             let end = that.lastRecordIndex + that.pageSize;
 
             that.isFetchingData = true;
-            $.get('logs.json', { startIndex: start, endIndex: end, t: Date.now() }, function (res) {
-                if (res && res.code == 1) {
-                    that.lastRecordIndex = res.data.lastIndex;
-                    if (res.data.list && res.data.list.length > 0) {
-                        for (let i = 0, len = res.data.list.length; i < len; i++) {
-                            that.logPagedList.push(res.data.list[i]);
+            jQuery.ajax({
+                type: 'GET',
+                url: 'logs.json',
+                timeout: 123000,
+                data: { startIndex: start, endIndex: end },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        that.lastRecordIndex = res.data.lastIndex;
+                        if (res.data.list && res.data.list.length > 0) {
+                            for (let i = 0, len = res.data.list.length; i < len; i++) {
+                                that.logPagedList.push(res.data.list[i]);
+                            }
                         }
+
+                        that.serverstat = res.serverstat;
+                        that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                    } else {
+                        that.currFetchHasNew = false;
                     }
-
-                    that.serverstat = res.serverstat;
-                    that.currFetchHasNew = res.data.list && res.data.list.length > 0;
-                } else {
+                    //that.isFetchingData = false;
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
                     that.currFetchHasNew = false;
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingData = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('logs.json:');
+                    console.log(textStatus);
                 }
-
-                that.isFetchingData = false;
             });
         },
         filterLogs: function() {
@@ -500,7 +572,11 @@ Vue.filter('objectIdTimeStamp', function (value, formater) {
 Vue.filter('timeStamp', function (value, formater) {
     return new Date(value).format(formater);
 });
-Vue.filter('parameterFormater', function (obj, formater) {
+Vue.filter('showRequestAndQuery', function (apiRecord) {
+    let val = apiRecord.requestURI + ( (apiRecord.queryString && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : '');
+    return val;
+});
+Vue.filter('parameterFormater', function (obj) {
     let formaterObj = {};
     //obj = JSON.parse(JSON.stringify(obj));
     if (obj) {

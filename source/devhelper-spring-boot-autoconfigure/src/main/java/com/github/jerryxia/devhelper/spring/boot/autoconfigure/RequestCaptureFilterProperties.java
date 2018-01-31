@@ -9,25 +9,39 @@ package com.github.jerryxia.devhelper.spring.boot.autoconfigure;
  */
 public class RequestCaptureFilterProperties {
     private Boolean enabled;
-    private String exclusions;
-    private String replayRequestIdRequestHeaderName;
+    private String  exclusions;
+    private String  replayRequestIdRequestHeaderName;
+    private Integer maxPayloadLength;
 
-    public Boolean isEnabled() {
+    public Boolean getEnabled() {
         return enabled;
     }
+
     public void setEnabled(Boolean enabled) {
         this.enabled = enabled;
     }
+
     public String getExclusions() {
         return exclusions;
     }
+
     public void setExclusions(String exclusions) {
         this.exclusions = exclusions;
     }
+
     public String getReplayRequestIdRequestHeaderName() {
         return replayRequestIdRequestHeaderName;
     }
+
     public void setReplayRequestIdRequestHeaderName(String replayRequestIdRequestHeaderName) {
         this.replayRequestIdRequestHeaderName = replayRequestIdRequestHeaderName;
+    }
+
+    public Integer getMaxPayloadLength() {
+        return maxPayloadLength;
+    }
+
+    public void setMaxPayloadLength(Integer maxPayloadLength) {
+        this.maxPayloadLength = maxPayloadLength;
     }
 }

@@ -7,7 +7,7 @@
     <context-param>
         <param-name>contextConfigLocation</param-name>
         <param-value>
-            classpath:com/github/jerryxia/devhelper/devhelper-spring.xml
+            classpath:com/github/jerryxia/devhelper/devhelper-spring-context.xml
             classpath:spring/app-context.xml
         </param-value>
     </context-param>

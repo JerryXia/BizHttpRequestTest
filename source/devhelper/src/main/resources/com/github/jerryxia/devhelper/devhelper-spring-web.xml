@@ -4,11 +4,6 @@
   xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd
 		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
-  <bean id="requestIdInitInterceptor"
-    class="com.github.jerryxia.devhelper.web.interceptor.RequestIdInitInterceptor"
-    init-method="init">
-    <property name="requestIdResponseHeaderName" value="" />
-  </bean>
   <bean id="requestResponseLogInterceptor"
     class="com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor"
     init-method="init">
@@ -26,10 +21,6 @@
   </bean>
 
   <mvc:interceptors>
-    <mvc:interceptor>
-      <mvc:mapping path="/**" />
-      <ref bean="requestIdInitInterceptor" />
-    </mvc:interceptor>
     <mvc:interceptor>
       <mvc:mapping path="/**" />
       <ref bean="requestResponseLogInterceptor" />
