@@ -282,12 +282,15 @@ const apiRecords = {
         }
     }
 };
-const apilogs = {
-    template: '#apilogs',
+const apiLogs = {
+    template: '#apiLogs',
     data: function () {
         return {
             msg: 'Hello, vue router!',
-            currentPath: ''
+            isFetchingData: {
+                apiRecord: false,
+                apiRecordLogs: false
+            }
         }
     },
     route: {
@@ -295,6 +298,40 @@ const apilogs = {
             //transition.next({
             //    currentPath: transition.to.path
             //})
+        }
+    },
+    created: function () {
+        console.log('apiLogs created');
+    },
+    updated: function () {
+        //console.log('apiLogs updated');
+    },
+    destroyed: function () {
+        let that = this;
+        console.log('apiLogs destroyed');
+    },
+    watch: {
+        '$route': 'fetchData'
+    },
+    methods: {
+        fetchData: function(){
+            let that = this;
+
+            let queryId = $route.query.apiRecordId;
+            if(queryId && queryId.length > 0) {
+                that.queryApiRecord(queryId);
+                that.queryApiRecordLogs(queryId);
+            } else {
+                //TODO: empty result
+            }
+        },
+        queryApiRecord: function(apiRecordId) {
+            jQuery.ajax({
+
+            });
+        },
+        queryApiRecordLogs: function(apiRecordId) {
+
         }
     }
 };
@@ -542,7 +579,7 @@ const settingsReplay = {
 const router = new VueRouter({
     routes: [
         { path: '/apirecords', component: apiRecords },
-        { path: '/apilogs', component: apilogs },
+        { path: '/apilogs', component: apiLogs },
         { path: '/alllogs/:level', component: allLogs },
         { path: '/alllogs', redirect: '/alllogs/ALL' },
         { path: '/settings_replay', component: settingsReplay },
