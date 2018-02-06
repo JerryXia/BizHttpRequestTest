@@ -19,7 +19,6 @@ import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConsta
  *
  */
 public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
-    private static final String DELIMITER = "\n";
     private static final String TAB       = "\t";
 
     private InetAddress localHost;
@@ -55,7 +54,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         if (throwableProxy != null) {
             // 1024 * 16
             StringBuffer sb = new StringBuffer(16384);
-            sb.append(event.getFormattedMessage()).append(DELIMITER).append(DELIMITER);
+            sb.append(event.getFormattedMessage()).append(System.lineSeparator()).append(System.lineSeparator());
             log.setMessage(formatException(throwableProxy, sb));
         } else {
             log.setMessage(event.getFormattedMessage());
@@ -70,13 +69,13 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     private String formatException(IThrowableProxy error, StringBuffer sb) {
         formatTopLevelError(error, sb);
         formatStackTraceElements(error, sb);
-        sb.append(DELIMITER);
+        sb.append(System.lineSeparator());
 
         IThrowableProxy causeError = error.getCause();
         while (causeError != null) {
             formatTopLevelError(causeError, sb);
             formatStackTraceElements(causeError, sb);
-            sb.append(DELIMITER);
+            sb.append(System.lineSeparator());
             causeError = causeError.getCause();
         }
         return sb.toString();
@@ -90,7 +89,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         StackTraceElementProxy[] elements = error.getStackTraceElementProxyArray();
         if (elements != null) {
             for (StackTraceElementProxy e : elements) {
-                sb.append(DELIMITER).append(TAB).append(e.getSTEAsString());
+                sb.append(System.lineSeparator()).append(TAB).append(e.getSTEAsString());
             }
         }
     }

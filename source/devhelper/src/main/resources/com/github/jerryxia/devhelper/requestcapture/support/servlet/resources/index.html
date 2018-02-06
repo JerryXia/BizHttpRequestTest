@@ -211,7 +211,7 @@ span.metric-default {
                             <tr v-for="apiRecord in apiRecordsPagedList">
                                 <td v-show="logTbShow.id" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
                                 <td v-show="logTbShow.timeStamp" v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
-                                <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;"><code>{{apiRecord.method}}</code></td>
+                                <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;" v-bind:title="apiRecord.contentType"><code>{{apiRecord.method}}</code></td>
                                 <td v-show="logTbShow.requestAndQuery" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
                                 <td v-show="logTbShow.parameter" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
                                 <td v-show="logTbShow.payload" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.payload }}</small></td>
@@ -230,7 +230,9 @@ span.metric-default {
                     <div class="modal-content">
                         <div class="modal-header">
                           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                          <h4 class="modal-title" id="apiRecordLogsTitle">Api Request Logs</h4>
+                          <h4 class="modal-title" id="apiRecordLogsTitle">
+                            <router-link :to="{ path: '/apilogs', query: { apiRecordId: '' } }">Api Request Logs</router-link>
+                          <a href="" target="_blank"></a></h4>
                         </div>
                         <div class="modal-body">
                             <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
@@ -249,6 +251,46 @@ span.metric-default {
         </div>
     </div>
     </template>
+
+
+    <template id="apiLogs">
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <div class="table-responsive">
+                    <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
+                        <thead>
+                            <tr>
+                                <th style="min-width:116px;width:116px;word-break: break-all;">id</th>
+                                <th style="min-width:124px;width:124px;word-break: break-all;">timeStamp</th>
+                                <th style="min-width:70px;width:70px;word-break: break-all;">method</th>
+                                <th style="width:16%;">requestAndQuery</th>
+                                <th>form parameter</th>
+                                <th>payload</th>
+                                <th style="min-width:92px;width: 92px;">action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="apiRecord in apiRecordsPagedList">
+                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
+                                <td v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
+                                <td style="min-width:70px;width:70px;word-break: break-all;" v-bind:title="apiRecord.contentType"><code>{{apiRecord.method}}</code></td>
+                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
+                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
+                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.payload }}</small></td>
+                                <td style="min-width:92px;width: 92px;">
+                                    <input type="button" class="btn btn-xs btn-info" disabled="disabled" value="Log" />
+                                    <input type="button" class="btn btn-xs btn-success" value="replay" data-loading-text="pending..." v-on:click="replay(apiRecord, $event)" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </template>
+    
 
     <template id="allLogs">
     <div class="row">
@@ -349,8 +391,8 @@ span.metric-default {
                 </div>
                 <div class="btn-toolbar">
                     <div class="btn-group paginator">
-                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: queryFrom - queryCount, count: queryCount } }" class="btn btn-default" append>Prev</router-link>
-                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: queryFrom + queryCount, count: queryCount } }" class="btn btn-default" append>Next</router-link>
+                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: queryFrom - queryCount, count: queryCount } }" class="btn btn-default" append>&laquo;&nbsp;Prev</router-link>
+                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: queryFrom + queryCount, count: queryCount } }" class="btn btn-default" append>Next&nbsp;&raquo;</router-link>
                         <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: Math.floor(logCount[queryLevel] / queryCount) * queryCount, count: queryCount } }" class="btn btn-default" append>Last</router-link>
                     </div>
                     <div class="btn-toolbar-spacer"></div>
@@ -396,6 +438,6 @@ span.metric-default {
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
     <script src="https://cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js"></script>
-    <script src="js/app.js" type="text/javascript" charset="utf8"></script>
+    <script src="js/app.js?v=1_0_5" type="text/javascript" charset="utf8"></script>
 </body>
 </html>

@@ -4,11 +4,7 @@
 package com.github.jerryxia.devhelper.web.interceptor;
 
 import java.security.Principal;
-import java.util.ArrayList;
 import java.util.Enumeration;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,7 +12,6 @@ import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.server.ServletServerHttpRequest;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
@@ -30,7 +25,6 @@ import com.github.jerryxia.devhelper.web.WebConstants;
  */
 public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     private static final Logger log = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
-    private final String lineSeparator;
 
     /**
      * 只要加入了interceptors中默认启用
@@ -41,17 +35,6 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
      * 额外要记录的请求头
      */
     private String[] logRequestHeaderNames = new String[0];
-
-    public RequestResponseLogInterceptor() {
-        String pLineSeparator = null;
-        try {
-            pLineSeparator = System.getProperty("line.separator");
-        } catch (SecurityException se) {
-            pLineSeparator = "\n";
-        } finally {
-            lineSeparator = pLineSeparator;
-        }
-    }
 
     public void init() {
         StringBuilder buf = new StringBuilder(logRequestHeaderNames.length * 16);
@@ -73,7 +56,8 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
         if (this.enabled) {
             HttpSession session = request.getSession(false);
             Principal userPrincipal = request.getUserPrincipal();
-            StringBuffer sb = new StringBuffer();
+            // TODO: 默认大小支持配置
+            StringBuffer sb = new StringBuffer(512);
             appendKeyValueLine(sb, "requestURI", request.getRequestURI());
             appendKeyValueLine(sb, "contextPath", request.getContextPath());
             appendKeyValueLine(sb, "pathInfo", request.getPathInfo());
@@ -84,22 +68,17 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             appendKeyValueLine(sb, "authType", request.getAuthType());
             appendKeyValueLine(sb, "remoteUser", request.getRemoteUser());
             appendKeyValueLine(sb, "userPrincipal", userPrincipal == null ? null : userPrincipal.getName());
-            appendKeyValueLine(sb, "headers", new ServletServerHttpRequest(request).getHeaders().toString());
-            log.debug(sb.toString());
-
             // 记录额外指定的请求头
-//            LinkedHashMap<String, String[]> map = new LinkedHashMap<String, String[]>();
-//            if (logRequestHeaderNames != null && logRequestHeaderNames.length > 0) {
-//                for (int i = 0; i < logRequestHeaderNames.length; i++) {
-//                    map.put(logRequestHeaderNames[i], toStringArray(request.getHeaders(logRequestHeaderNames[i])));
-//                }
-//            }
-//            Map<String, String[]> parameterMap = request.getParameterMap();
-//            if (parameterMap != null) {
-//                map.putAll(parameterMap);
-//            }
-//            dumpRequest(map);
-
+            appendKeyValueLine(sb, "logRequestHeaderNames", "");
+            if (logRequestHeaderNames != null && logRequestHeaderNames.length > 0) {
+                for (int i = 0; i < logRequestHeaderNames.length; i++) {
+                    Enumeration<String> enumeration = request.getHeaders(logRequestHeaderNames[i]);
+                    while (enumeration.hasMoreElements()) {
+                        appendSeperateKeyValueLine(sb, logRequestHeaderNames[i], enumeration.nextElement());
+                    }
+                }
+            }
+            log.debug(sb.toString());
         }
         return true;
     }
@@ -107,11 +86,23 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
             ModelAndView modelAndView) throws Exception {
+        // org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor
         if (this.enabled) {
-            if (modelAndView != null) {
-                log.debug(modelAndView.getModelMap().toString());
-            } else {
+            if (modelAndView == null) {
                 log.debug("ModelAndView returned: null");
+            } else {
+                // org.springframework.web.servlet.ModelAndView
+                StringBuffer sb = new StringBuffer(256);
+                appendKeyValueLine(sb, "ModelAndView returned", "");
+                if (modelAndView.getStatus() == null) {
+                    appendSeperateKeyValueLine(sb, "status", null);
+                } else {
+                    appendSeperateKeyValueLine(sb, "status", modelAndView.getStatus().toString(),
+                            modelAndView.getStatus().getReasonPhrase());
+                }
+                appendSeperateKeyValueLine(sb, "view", modelAndView.getViewName());
+                appendSeperateKeyValueLine(sb, "model", modelAndView.getModelMap().toString());
+                log.debug(sb.toString());
             }
         }
     }
@@ -119,10 +110,10 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     @Override
     public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
             throws Exception {
-//        System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION));
-//        System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE));
-//        System.err.println(request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
-        if(this.enabled && ex != null) {
+        // System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION));
+        // System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE));
+        // System.err.println(request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
+        if (this.enabled && ex != null) {
             log.error(handler.toString(), ex);
         }
     }
@@ -136,75 +127,19 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     }
 
     private void appendKeyValueLine(StringBuffer sb, String key, String value) {
-        sb.append(key).append(": ").append(value).append(lineSeparator);
+        // {key}: {value}\n
+        sb.append(key).append(':').append(' ').append(value).append(System.lineSeparator());
     }
 
-    private String[] toStringArray(String item) {
-        if (item != null) {
-            String[] arr = new String[1];
-            arr[0] = item;
-            return arr;
-        } else {
-            return null;
-        }
+    private void appendSeperateKeyValueLine(StringBuffer sb, String key, String value) {
+        // - {key}: {value}\n
+        sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(value)
+                .append(System.lineSeparator());
     }
 
-    private String[] toStringArray(Enumeration<String> enumeration) {
-        if (enumeration != null) {
-            // List<String> lists = EnumerationUtils.toList(enumeration);
-            final ArrayList<String> list = new ArrayList<String>(16);
-            while (enumeration.hasMoreElements()) {
-                list.add(enumeration.nextElement());
-            }
-            String[] arr = new String[list.size()];
-            return list.toArray(arr);
-        } else {
-            return null;
-        }
+    private void appendSeperateKeyValueLine(StringBuffer sb, String key, String v1, String v2) {
+        // - {key}: {v1} {v2}\n
+        sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(v1).append(' ').append(v2)
+                .append(System.lineSeparator());
     }
-
-    private void dumpRequest(LinkedHashMap<String, String[]> map) {
-        Iterator<Entry<String, String[]>> i = map.entrySet().iterator();
-        if (!i.hasNext()) {
-            log.debug("{}");
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append('{');
-            for (;;) {
-                Entry<String, String[]> e = i.next();
-                String key = e.getKey();
-                String[] value = e.getValue();
-                sb.append(key);
-                sb.append('=');
-
-                if (value != null) {
-                    if (value.length > 1) {
-                        sb.append('[');
-                        for (int valueIndex = 0; valueIndex < value.length; valueIndex++) {
-                            sb.append(value[valueIndex]);
-                            if (valueIndex < value.length - 1) {
-                                sb.append(',').append(' ');
-                            }
-                        }
-                        sb.append("]");
-                    } else if (value.length == 1) {
-                        sb.append(value[0]);
-                    } else {
-                        // ''
-                    }
-                } else {
-                    // ''
-                }
-
-                if (!i.hasNext()) {
-                    sb.append('}');
-                    break;
-                } else {
-                    sb.append(',').append(' ');
-                }
-            }
-            log.debug(sb.toString());
-        }
-    }
-
 }

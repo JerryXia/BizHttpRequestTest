@@ -1,17 +1,21 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.LinkedHashMap;
 import java.util.UUID;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.web.util.ContentCachingResponseWrapper;
+
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -32,11 +36,11 @@ public class RequestCaptureFilter implements Filter {
     public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
     public static final String PARAM_NAME_MAX_PAYLOAD_LENGTH                    = "maxPayloadLength";
 
-    private boolean     enabled;
-    private String      contextPath;
-    private Set<String> excludesPattern;
-    private String      replayRequestIdRequestHeaderName;
-    private int         maxPayloadLength;
+    private boolean         enabled;
+    private String          contextPath;
+    private HashSet<String> excludesPattern;
+    private String          replayRequestIdRequestHeaderName;
+    private int             maxPayloadLength;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -96,9 +100,15 @@ public class RequestCaptureFilter implements Filter {
 
                 ContentRecordRequestWrapper httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest,
                         maxPayloadLength, null, new DefaultContentEndListener(httpRequestRecord));
+                ContentCachingResponseWrapper responseToUse = null;
+                if (!(response instanceof ContentCachingResponseWrapper)) {
+                    responseToUse = new ContentCachingResponseWrapper((HttpServletResponse)response);
+                }
                 try {
-                    chain.doFilter(httpRequestWrapper, response);
+                    chain.doFilter(httpRequestWrapper, responseToUse);
                 } finally {
+                    request.getServletContext().log(new String(responseToUse.getContentAsByteArray()));
+                    responseToUse.copyBodyToResponse();
                     RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
                 }
             } else {
@@ -142,7 +152,16 @@ public class RequestCaptureFilter implements Filter {
         String requestURL = httpRequest.getRequestURL().toString();
         String queryString = httpRequest.getQueryString();
         String contentType = httpRequest.getContentType();
-        Map<String, String[]> parameterMap = new HashMap<String, String[]>(httpRequest.getParameterMap());
+        LinkedHashMap<String, String[]> parameterMap = new LinkedHashMap<String, String[]>(
+                httpRequest.getParameterMap());
+        LinkedHashMap<String, String[]> headers = new LinkedHashMap<String, String[]>();
+
+        Enumeration<String> headerNames = httpRequest.getHeaderNames();
+        while (headerNames.hasMoreElements()) {
+            String headerName = headerNames.nextElement();
+            String[] headerValues = toStringArray(httpRequest.getHeaders(headerName));
+            headers.put(headerName, headerValues);
+        }
 
         HttpRequestRecord httpRequestRecord = new HttpRequestRecord(id, type, timeStamp);
         httpRequestRecord.setMethod(method);
@@ -151,6 +170,7 @@ public class RequestCaptureFilter implements Filter {
         httpRequestRecord.setQueryString(queryString);
         httpRequestRecord.setContentType(contentType);
         httpRequestRecord.setParameterMap(parameterMap);
+        httpRequestRecord.setHeaders(headers);
         return httpRequestRecord;
     }
 
@@ -215,5 +235,19 @@ public class RequestCaptureFilter implements Filter {
             }
         }
         return false;
+    }
+
+    private String[] toStringArray(Enumeration<String> enumeration) {
+        if (enumeration != null) {
+            // List<String> lists = EnumerationUtils.toList(enumeration);
+            final ArrayList<String> list = new ArrayList<String>(1);
+            while (enumeration.hasMoreElements()) {
+                list.add(enumeration.nextElement());
+            }
+            String[] arr = new String[list.size()];
+            return list.toArray(arr);
+        } else {
+            return null;
+        }
     }
 }

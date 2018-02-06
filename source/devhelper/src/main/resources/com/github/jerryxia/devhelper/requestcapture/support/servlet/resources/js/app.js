@@ -32,6 +32,7 @@ const apiRecords = {
     },
     created: function () {
         console.log('apiRecords created');
+        this.loadFromLocalDb();
         this.fetchData();
     },
     updated: function () {
@@ -47,6 +48,12 @@ const apiRecords = {
     },
     watch: {
         '$route': 'fetchData',
+        'logTbShow': {
+            handler: function (val, oldVal) {
+                this.saveLogTbShowConfigToLocalDb(val);
+            },
+            deep: true
+        },
         'serverstat': function (newVal, oldVal) {
             let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
             $('.footer ul').html(html).show();
@@ -98,6 +105,32 @@ const apiRecords = {
         }
     },
     methods: {
+        loadFromLocalDb: function () {
+            let that = this;
+            if (window.localStorage) {
+                try {
+                    let jsonStr = localStorage.getItem("requestcapture_apirecords_logTbShow");
+                    if(jsonStr && jsonStr.length > 0) {
+                        let jsonObj = JSON.parse(jsonStr);
+                        that.logTbShow = jsonObj;
+                        console.log('加载本地保存的配置');
+                    }
+                } catch(parseError) {
+                    console.error(parseError);
+                    console.log('使用的默认配置');
+                }
+            } else {
+                alert('This browser does NOT support localStorage');
+            }
+        },
+        saveLogTbShowConfigToLocalDb: function (obj) {
+            let that = this;
+            if (window.localStorage) {
+                window.localStorage.setItem("requestcapture_apirecords_logTbShow", JSON.stringify(obj));
+            } else {
+                alert('This browser does NOT support localStorage');
+            }
+        },
         fetchData: function () {
             let that = this;
 

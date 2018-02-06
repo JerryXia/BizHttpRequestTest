@@ -424,6 +424,11 @@ public class JSONWriter {
         writeString("payload");
         write(':');
         writeObject(httpRequestRecordData.getPayload());
+        write(',');
+
+        writeString("headers");
+        write(':');
+        writeObject(httpRequestRecordData.getHeaders());
 
         write('}');
     }

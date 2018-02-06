@@ -17,8 +17,6 @@ import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConsta
  *
  */
 public class Log4JAppender extends AppenderSkeleton {
-    private static final String DELIMITER = "\n";
-
     private InetAddress localHost;
     private String      hostName;
     private String      ip;
@@ -59,12 +57,12 @@ public class Log4JAppender extends AppenderSkeleton {
         log.setLoggerName(event.getLoggerName());
 
         String[] throwableStrRep = event.getThrowableStrRep();
-        if (throwableStrRep != null) {
+        if (throwableStrRep != null && throwableStrRep.length > 0) {
             // 1024 * 16
             StringBuffer sb = new StringBuffer(16384);
-            sb.append(event.getRenderedMessage()).append(DELIMITER).append(DELIMITER);
+            sb.append(event.getRenderedMessage()).append(System.lineSeparator()).append(System.lineSeparator());
             for (String line : throwableStrRep) {
-                sb.append(line).append(DELIMITER);
+                sb.append(line).append(System.lineSeparator());
             }
             log.setMessage(sb.toString());
         } else {

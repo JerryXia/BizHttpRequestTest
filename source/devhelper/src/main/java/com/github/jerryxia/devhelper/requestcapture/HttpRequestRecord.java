@@ -18,6 +18,7 @@ public class HttpRequestRecord {
     private String contentType;
     private Map<String, String[]> parameterMap;
     private String payload;
+    private Map<String, String[]> headers;
 
     public HttpRequestRecord(String uuid, HttpRequestRecordType type, long timeStamp) {
         switch (type) {
@@ -99,5 +100,13 @@ public class HttpRequestRecord {
 
     public void setPayload(String payload) {
         this.payload = payload;
+    }
+
+    public Map<String, String[]> getHeaders() {
+        return headers;
+    }
+
+    public void setHeaders(Map<String, String[]> headers) {
+        this.headers = headers;
     }
 }
