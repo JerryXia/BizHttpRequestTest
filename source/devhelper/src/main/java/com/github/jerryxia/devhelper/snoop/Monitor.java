@@ -11,9 +11,9 @@ import java.util.List;
  *
  */
 public class Monitor {
-
-    private MemoryMXBean           memoryMXBean;
-    private List<MemoryPoolMXBean> memoryPoolMXBeans;
+    private final MemoryMXBean memoryMXBean;
+    // java.utils.ArrayList
+    private final List<MemoryPoolMXBean> memoryPoolMXBeans;
 
     private Monitor() {
         memoryMXBean = ManagementFactory.getMemoryMXBean();
@@ -28,7 +28,7 @@ public class Monitor {
         memoryMXBeanInfo.setNonHeapMemoryUsag(memoryMXBean.getNonHeapMemoryUsage());
         jvmMemoryInfo.setMemoryMXBeanInfo(memoryMXBeanInfo);
         // Memory Pool MXBeans
-        List<MemoryPoolMXBeanInfo> memoryPoolMXBeansInfo = new ArrayList<MemoryPoolMXBeanInfo>(
+        ArrayList<MemoryPoolMXBeanInfo> memoryPoolMXBeansInfo = new ArrayList<MemoryPoolMXBeanInfo>(
                 memoryPoolMXBeans.size());
         for (MemoryPoolMXBean item : memoryPoolMXBeans) {
             MemoryPoolMXBeanInfo e = new MemoryPoolMXBeanInfo();

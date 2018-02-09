@@ -32,7 +32,7 @@ public class Log4JAppender extends AppenderSkeleton {
             ip = "0.0.0.0";
         }
         RequestCaptureConstants.LOG_EXT_ENABLED_MAP.put("log4j", Boolean.TRUE);
-        RequestCaptureConstants.LOG_EXT_ENABLED_STATUS = true;
+        RequestCaptureConstants.LOG_EXT_ENABLED = true;
     }
 
     @Override

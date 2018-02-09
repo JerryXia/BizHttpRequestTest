@@ -31,7 +31,7 @@
         </init-param>
         <init-param>
             <param-name>exclusions</param-name>
-            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/requestcapture/*,/druid/*,/monitoring</param-value>
+            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/requestcapture/*,/druid/*</param-value>
         </init-param>
         <init-param>
             <param-name>replayRequestIdRequestHeaderName</param-name>
@@ -50,16 +50,6 @@
         <dispatcher>INCLUDE</dispatcher>
         <dispatcher>ERROR</dispatcher>
     </filter-mapping>
-
-    <!-- Snoop Servlet -->
-    <servlet>
-        <servlet-name>snoopServlet</servlet-name>
-        <servlet-class>com.github.jerryxia.devhelper.snoop.support.servlet.SnoopServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>snoopServlet</servlet-name>
-        <url-pattern>/requestcapture/snoop</url-pattern>
-    </servlet-mapping>
 
     <!-- Request Capture Servlet -->
     <servlet>

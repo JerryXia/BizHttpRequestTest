@@ -26,7 +26,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
-import com.github.jerryxia.devhelper.snoop.support.servlet.SnoopServlet;
 import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
 import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor;
 import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
@@ -42,7 +41,6 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
     public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestIdInitFilter-registration";
     public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestCaptureFilter-registration";
     public static final String REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-requestCaptureWebServlet-registration";
-    public static final String SNOOP_SERVLET_REGISTRATION_BEAN_NAME               = "devhelper-snoopServlet-registration";
 
     @Bean
     public ServletListenerRegistrationBean<BootstrapperContextListener> bootstrapperContextListener() {
@@ -166,36 +164,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         return registrationBean;
     }
 
-    @Bean(name = SNOOP_SERVLET_REGISTRATION_BEAN_NAME)
-    @ConditionalOnMissingBean(name = SNOOP_SERVLET_REGISTRATION_BEAN_NAME)
-    public ServletRegistrationBean snoopServlet(DevHelperProperties properties, ServletContext servletContext) {
-        String servletName = "snoopServlet";
-        SnoopServletProperties config = properties.getSnoopServlet();
 
-        ServletRegistrationBean registrationBean = new ServletRegistrationBean();
-
-        SnoopServlet servlet = new SnoopServlet();
-        registrationBean.setServlet(servlet);
-        registrationBean.setName(servletName);
-
-        if (config.getUrlPattern() != null) {
-            registrationBean.addUrlMappings(config.getUrlPattern());
-        } else {
-            registrationBean.addUrlMappings("/requestcapture/snoop");
-        }
-
-        ServletRegistration servletRegistration = servletContext.getServletRegistration(servletName);
-        if (servletRegistration != null) {
-            // if webapp deployed as war in a container with MonitoringFilter and SessionListener already added by
-            // web-fragment.xml,
-            // do not add again
-            registrationBean.setEnabled(false);
-            for (Map.Entry<String, String> entry : registrationBean.getInitParameters().entrySet()) {
-                servletRegistration.setInitParameter(entry.getKey(), entry.getValue());
-            }
-        }
-        return registrationBean;
-    }
 
     @Autowired
     private DevHelperProperties devHelperProperties;

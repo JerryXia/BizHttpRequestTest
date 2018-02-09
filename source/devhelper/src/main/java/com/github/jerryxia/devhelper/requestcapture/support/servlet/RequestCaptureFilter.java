@@ -13,12 +13,12 @@ import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.web.util.ContentCachingResponseWrapper;
-
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
@@ -31,6 +31,8 @@ import com.github.jerryxia.devhelper.web.WebConstants;
  *
  */
 public class RequestCaptureFilter implements Filter {
+    private static final Logger log = LoggerFactory.getLogger(RequestCaptureFilter.class);
+
     public static final String PARAM_NAME_ENABLED                               = "enabled";
     public static final String PARAM_NAME_EXCLUSIONS                            = "exclusions";
     public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
@@ -75,10 +77,9 @@ public class RequestCaptureFilter implements Filter {
         RequestCaptureConstants.RECORD_MANAGER.init();
         WebConstants.REQUEST_CAPTURE_FILTER_ENABLED = true;
 
-        filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : true");
-        filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_status : "
-                + RequestCaptureConstants.LOG_EXT_ENABLED_STATUS);
-        filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_map    : "
+        log.debug("devhelper RequestCaptureFilter enabled                : true");
+        log.debug("devhelper RequestCaptureFilter log_ext_enabled_status : " + RequestCaptureConstants.LOG_EXT_ENABLED);
+        log.debug("devhelper RequestCaptureFilter log_ext_enabled_map    : "
                 + RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
     }
 
@@ -98,18 +99,22 @@ public class RequestCaptureFilter implements Filter {
                 RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
                 RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
 
+                // org.springframework.web.util.ContentCachingRequestWrapper
                 ContentRecordRequestWrapper httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest,
                         maxPayloadLength, null, new DefaultContentEndListener(httpRequestRecord));
-                ContentCachingResponseWrapper responseToUse = null;
-                if (!(response instanceof ContentCachingResponseWrapper)) {
-                    responseToUse = new ContentCachingResponseWrapper((HttpServletResponse)response);
+                // org.springframework.web.util.ContentCachingResponseWrapper
+                ContentRecordResponseWrapper httpResponseWrapper = null;
+                if (response instanceof ContentRecordResponseWrapper) {
+                    httpResponseWrapper = (ContentRecordResponseWrapper) response;
+                } else {
+                    httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
                 }
                 try {
-                    chain.doFilter(httpRequestWrapper, responseToUse);
+                    chain.doFilter(httpRequestWrapper, httpResponseWrapper);
                 } finally {
-                    request.getServletContext().log(new String(responseToUse.getContentAsByteArray()));
-                    responseToUse.copyBodyToResponse();
+                    log.debug(new String(httpResponseWrapper.getContentAsByteArray()));
                     RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                    httpResponseWrapper.copyBodyToResponse();
                 }
             } else {
                 // forward include error
@@ -152,6 +157,7 @@ public class RequestCaptureFilter implements Filter {
         String requestURL = httpRequest.getRequestURL().toString();
         String queryString = httpRequest.getQueryString();
         String contentType = httpRequest.getContentType();
+        // org.apache.catalina.util.ParameterMap
         LinkedHashMap<String, String[]> parameterMap = new LinkedHashMap<String, String[]>(
                 httpRequest.getParameterMap());
         LinkedHashMap<String, String[]> headers = new LinkedHashMap<String, String[]>();

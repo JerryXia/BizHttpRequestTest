@@ -45,7 +45,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
             buf.append(logRequestHeaderNames[i]);
         }
 
-        WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED = true;
+        WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED = enabled;
         log.debug("devhelper RequestResponseLogInterceptor enabled               : {}", enabled);
         log.debug("devhelper RequestResponseLogInterceptor logRequestHeaderNames : {}", buf.toString());
     }

@@ -39,7 +39,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
             ip = "0.0.0.0";
         }
         RequestCaptureConstants.LOG_EXT_ENABLED_MAP.put("logback", Boolean.TRUE);
-        RequestCaptureConstants.LOG_EXT_ENABLED_STATUS = true;
+        RequestCaptureConstants.LOG_EXT_ENABLED = true;
     }
 
     @Override

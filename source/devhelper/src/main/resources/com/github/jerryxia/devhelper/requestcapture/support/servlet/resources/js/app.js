@@ -1,5 +1,59 @@
 'use strict';
 
+const index = {
+    template: '#index',
+    data: function () {
+        return {
+            libInfo: { serverOsName: '', javaClassPath: '' },
+            memoryMXBean: {
+                heapMemoryUsag: '',
+                nonHeapMemoryUsag: ''
+            },
+            memoryPoolMXBeans: [],
+            requestAttributes: {},
+            serverstat: {}
+        }
+    },
+    created: function () {
+        console.info('index created');
+        this.fetchData();
+    },
+    updated: function () {
+        //console.info('index updated');
+    },
+    destroyed: function () {
+        console.info('index destroyed');
+    },
+    watch: {
+        '$route': 'fetchData',
+        'serverstat': function (newVal, oldVal) {
+            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
+            $('.footer ul').html(html).show();
+        }
+    },
+    computed: {
+
+    },
+    methods: {
+        fetchData: function () {
+            let that = this;
+
+            jQuery.getJSON('snoop.json?callback=?', {}, function(res) {
+                if(res && res.code === 1) {
+                    that.libInfo = res.data.libInfo;
+                    that.memoryMXBean = res.data.memoryMXBean;
+                    that.memoryPoolMXBeans = res.data.memoryPoolMXBeans;
+                    that.requestAttributes = res.data.requestAttributes;
+                    
+                    that.serverstat = res.serverstat;
+                } else {
+                    
+                }
+            });
+        }
+    }
+};
+
 const apiRecords = {
     template: '#apiRecords',
     data: function () {
@@ -13,6 +67,7 @@ const apiRecords = {
                 parameter: true,
                 payload: false
             },
+            apiRecordLogsQueryId: '',
             apiRecordLogs: [],
             serverstat: {},
             isFetchingData: false,
@@ -171,11 +226,10 @@ const apiRecords = {
             let that = this;
             var $btn = $(event.target).button('loading');
 
+            that.apiRecordLogsQueryId = recordId;
             $.getJSON('apirecordlogs.json?callback=?', { id: recordId }, function (res) {
                 if (res && res.code == 1) {
                     that.apiRecordLogs = res.data;
-
-                    //that.serverstat = res.serverstat;
                 } else {
                     that.apiRecordLogs = [];
                 }
@@ -286,10 +340,24 @@ const apiLogs = {
     template: '#apiLogs',
     data: function () {
         return {
-            msg: 'Hello, vue router!',
+            currUrl: '',
+            clipboard: null,
             isFetchingData: {
                 apiRecord: false,
                 apiRecordLogs: false
+            },
+            apiRecord: {},
+            apiRecordLogs: [],
+            logTbShow: {
+                id: false,
+                httpRequestRecordId: false,
+                timeStamp: true,
+                level: true,
+                threadName: true,
+                loggerName: true,
+                message: true,
+                host: false,
+                ip: false
             }
         }
     },
@@ -301,23 +369,43 @@ const apiLogs = {
         }
     },
     created: function () {
+        let that = this;
         console.log('apiLogs created');
+        that.fetchData();
+        that.currUrl = window.location.href;
+        let clipboard = new Clipboard('.btn');
+        clipboard.on('success', function(e) {
+            e.clearSelection();
+            window.setTimeout(function(){ 
+                $('[data-toggle="tooltip"]').tooltip('hide');
+            }, 1000);
+        });
+        that.clipboard = clipboard;
+    },
+    mounted: function () {
+        this.$nextTick(function () {
+            // Code that will run only after the entire view has been rendered
+            $('#linkApiLogs').removeClass('none');
+            $('[data-toggle="tooltip"]').tooltip();
+        });
     },
     updated: function () {
         //console.log('apiLogs updated');
     },
     destroyed: function () {
-        let that = this;
         console.log('apiLogs destroyed');
+        this.clipboard.destroy();
+        $('[data-toggle="tooltip"]').tooltip('destroy');
+        $('#linkApiLogs').addClass('none');
     },
     watch: {
-        '$route': 'fetchData'
+        //'$route': 'fetchData',
     },
     methods: {
-        fetchData: function(){
+        fetchData: function() {
             let that = this;
 
-            let queryId = $route.query.apiRecordId;
+            let queryId = that.$route.query.apiRecordId;
             if(queryId && queryId.length > 0) {
                 that.queryApiRecord(queryId);
                 that.queryApiRecordLogs(queryId);
@@ -326,12 +414,28 @@ const apiLogs = {
             }
         },
         queryApiRecord: function(apiRecordId) {
-            jQuery.ajax({
-
+            let that = this;
+            that.isFetchingData.apiRecord = true;
+            $.getJSON('apirecord.json?callback=?', { id: apiRecordId }, function (res) {
+                if (res && res.code == 1 && res.data.length > 0) {
+                    that.apiRecord = res.data[0];
+                } else {
+                    that.apiRecord = {};
+                }
+                that.isFetchingData.apiRecord = false;
             });
         },
         queryApiRecordLogs: function(apiRecordId) {
-
+            let that = this;
+            that.isFetchingData.apiRecordLogs = true;
+            $.getJSON('apirecordlogs.json?callback=?', { id: apiRecordId }, function (res) {
+                if (res && res.code == 1) {
+                    that.apiRecordLogs = res.data;
+                } else {
+                    that.apiRecordLogs = [];
+                }
+                that.isFetchingData.apiRecordLogs = false;
+            });
         }
     }
 };
@@ -583,7 +687,7 @@ const router = new VueRouter({
         { path: '/alllogs/:level', component: allLogs },
         { path: '/alllogs', redirect: '/alllogs/ALL' },
         { path: '/settings_replay', component: settingsReplay },
-        { path: '/', redirect: '/apiRecords' }
+        { path: '/', component: index }
     ]
 });
 const app = new Vue({

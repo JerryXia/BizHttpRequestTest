@@ -7,9 +7,11 @@
 <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.bootcss.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet">
 <style type="text/css">
-.w100{width:100px;}
-.w150{width:150px;}
-.w200{width:200px;}
+.w100 { width: 100px; }
+.w150 { width: 150px; }
+.w200 { width: 200px; }
+.mb20 { margin-bottom: 20px;}
+.none { display: none !important; }
 [v-cloak] { display: none !important; }
 html, body {
     height: 100%;
@@ -77,6 +79,11 @@ span.metric-default {
     margin: 20px 0;
 }
 
+.td_lable {
+	font-weight: bold;
+	width: 220px;
+	background-color: #E5E5E5;
+}
 .td_log_message{
     width: 100%;
     word-break: keep-all;
@@ -101,25 +108,22 @@ span.metric-default {
 </head>
 <body>
     <div id="wrap" v-cloak>
-        <nav class="navbar navbar-default navbar-fixed-top"
-            role="navigation">
+        <nav class="navbar navbar-default navbar-fixed-top" role="navigation">
             <div class="container">
                 <div class="navbar-header">
-                    <button type="button"
-                        class="navbar-toggle collapsed"
-                        data-toggle="collapse" data-target="#navbar"
-                        aria-expanded="false" aria-controls="navbar">
-                        <span class="sr-only">Toggle navigation</span> <span
-                            class="icon-bar"></span> <span
-                            class="icon-bar"></span> <span
-                            class="icon-bar"></span>
+                    <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
                     </button>
                     <a class="navbar-brand" href="#">Request Capture</a>
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
+                        <router-link to="/" tag="li" active-class="active" exact="true"> <a>Snoop</a></router-link>
                         <router-link to="/apirecords" tag="li" active-class="active"> <a>Api Records</a></router-link>
-                        <router-link to="/apilogs" tag="li" active-class="active"> <a>Api Logs</a></router-link>
+                        <router-link to="/apilogs" tag="li" active-class="active" class="none" id="linkApiLogs"> <a>Api Logs</a></router-link>
                         <router-link to="/alllogs" tag="li" active-class="active"> <a>All Logs</a></router-link>
                         <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Settings <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
@@ -154,6 +158,104 @@ span.metric-default {
             </ul>
         </div>
     </div>
+
+    <template id="index">
+    <div class="row">
+        <div class="col-md-12">
+            <div>
+                <div class="table-responsive">
+                    <table class="table table-condensed table-bordered table-hover">
+                        <thead>
+                            <tr><th colspan="2" style="text-align: center;">Library Information</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="td_lable"><small>Version</small></td><td style="width: 85%;"><code>{{libInfo.version}}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>RequestIdInitFilter</small></td><td style="width: 85%;"><small>{{libInfo.requestIdInitFilterEnabled}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>RequestCaptureFilter</small></td><td style="width: 85%;"><small>{{libInfo.requestCaptureFilterEnabled}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>RequestResponseLogInterceptor</small></td><td style="width: 85%;"><small>{{libInfo.requestResponseLogInterceptorEnabled}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>LogExtEnabled</small></td><td style="width: 85%;"><small>{{libInfo.logExtEnabled}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>LogExtComponent</small></td><td style="width: 85%;"><small>{{libInfo.logExtEnabledComponent}}</small></td>
+                            </tr>
+                            
+                            <tr>
+                                <td class="td_lable"><small>Java Version</small></td><td style="width: 85%;"><code>{{libInfo.javaVersion}}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Java VM Name</small></td><td style="width: 85%;"><code>{{libInfo.javaVMName}}</code></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Java Home</small></td><td style="width: 85%;"><small>{{libInfo.javaHome}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Java ClassPath</small></td><td style="width: 85%;" class="td_expand_message"><pre>{{ libInfo.serverOsName.indexOf('Windows') > -1 ? libInfo.javaClassPath.split(/;/).join('\n') : libInfo.javaClassPath.split(/;|:/).join('\n') }}</pre></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>StartTime</small></td><td style="width: 85%;"><small>{{libInfo.startTime | timeStamp('yyyy-MM-dd HH:mm:ss')}}</small></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-condensed table-bordered table-hover">
+                        <thead>
+                            <tr><th colspan="2" style="text-align: center;">Request Attributes</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(value, key) in requestAttributes">
+                                <td class="td_lable td_expand_message"><small>{{key}}</small></td><td style="width: 85%;"><small>{{value}}</small></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h2>JVM Memory Monitor</h2>
+                    <table class="table table-condensed table-bordered table-hover">
+                        <thead>
+                            <tr><th colspan="2" style="text-align: center;">Memory MXBean</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="td_lable"><small>Heap Memory Usage</small></td>
+                                <td style="width: 85%;"><small>{{memoryMXBean.heapMemoryUsag}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Non-Heap Memory Usage</small></td>
+                                <td style="width: 85%;"><small>{{memoryMXBean.nonHeapMemoryUsag}}</small></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <h3>Memory Pool MXBeans</h3>
+                    <table class="table table-condensed table-bordered table-hover" v-for="mxbean in memoryPoolMXBeans">
+                        <thead>
+                            <tr><th colspan="2" style="text-align: center;">{{mxbean.name}}</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="td_lable"><small>Type</small></td><td style="width: 85%;"><small>{{mxbean.type}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Memory Usage</small></td><td style="width: 85%;"><small>{{mxbean.memoryUsage}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Peak Usage</small></td><td style="width: 85%;"><small>{{mxbean.peakMemoryUsage}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Collection Usage</small></td><td style="width: 85%;"><small>{{mxbean.collectionUsage}}</small></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    </template>
 
 
     <template id="apiRecords">
@@ -210,7 +312,7 @@ span.metric-default {
                         <tbody>
                             <tr v-for="apiRecord in apiRecordsPagedList">
                                 <td v-show="logTbShow.id" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
-                                <td v-show="logTbShow.timeStamp" v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
+                                <td v-show="logTbShow.timeStamp" v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;" v-bind:title="apiRecord.contentType"><code>{{apiRecord.method}}</code></td>
                                 <td v-show="logTbShow.requestAndQuery" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
                                 <td v-show="logTbShow.parameter" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
@@ -231,8 +333,8 @@ span.metric-default {
                         <div class="modal-header">
                           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                           <h4 class="modal-title" id="apiRecordLogsTitle">
-                            <router-link :to="{ path: '/apilogs', query: { apiRecordId: '' } }">Api Request Logs</router-link>
-                          <a href="" target="_blank"></a></h4>
+                            <router-link :to="{ path: '/apilogs', query: { apiRecordId: apiRecordLogsQueryId } }" target="_blank">Api Request Logs</router-link>
+                          </h4>
                         </div>
                         <div class="modal-body">
                             <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
@@ -257,31 +359,100 @@ span.metric-default {
     <div class="row">
         <div class="col-md-12">
             <div>
+                <div class="input-group col-sm-9">
+                    <input type="text" id="txtShareUrl" class="form-control" v-model="currUrl" />
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-default" data-clipboard-target="#txtShareUrl" data-toggle="tooltip" data-placement="right" data-trigger="click" title="copied">
+                            <i class="fa fa-clipboard"></i>
+                        </button>
+                    </span>
+                </div>
+                <div class="table-responsive">
+                    <h3>Request Information</h3>
+                    <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
+                        <tbody>
+                            <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>timeStamp</small></td><td><small>{{ apiRecord.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td></tr>
+                            <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>method</small></td><td><code>{{ apiRecord.method }}</code></td></tr>
+                            <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>requestAndQuery</small></td><td><small>{{ apiRecord | showRequestAndQuery }}</small></td></tr>
+                            <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>contentType</small></td><td><small>{{ apiRecord.contentType }}</small></td></tr>
+                            <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>form parameter</small></td><td><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td></tr>
+                            <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>payload</small></td><td><small>{{ apiRecord.payload }}</small></td></tr>
+                        </tbody>
+                    </table>
+                    <h3>Request Headers</h3>
+                    <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
+                        <tbody>
+                            <template v-for="(value, key) in apiRecord.headers">
+                              <tr v-for="v in value">
+                                <td style="min-width:116px;width:116px;word-break: break-all;"><small>{{key}}</small></td>
+                                <td><small>{{v}}</small></td>
+                              </tr>
+                            </template>
+                        </tbody>
+                    </table>
+                </div>
+                <hr />
+                <form class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-sm-2">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.timeStamp" /> timeStamp</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.level" /> level</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.threadName" /> threadName</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-2">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.loggerName" /> loggerName</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.message" /> message</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.host" /> host</label>
+                            </div>
+                        </div>
+                        <div class="col-sm-1">
+                            <div class="checkbox">
+                                <label><input type="checkbox" v-model="logTbShow.ip" /> ip</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
                 <div class="table-responsive">
                     <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
                         <thead>
                             <tr>
-                                <th style="min-width:116px;width:116px;word-break: break-all;">id</th>
-                                <th style="min-width:124px;width:124px;word-break: break-all;">timeStamp</th>
-                                <th style="min-width:70px;width:70px;word-break: break-all;">method</th>
-                                <th style="width:16%;">requestAndQuery</th>
-                                <th>form parameter</th>
-                                <th>payload</th>
-                                <th style="min-width:92px;width: 92px;">action</th>
+                                <th v-show="logTbShow.timeStamp" style="min-width:84;width:84px;word-break: break-all;">timeStamp</th>
+                                <th v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;">level</th>
+                                <th v-show="logTbShow.threadName" style="width:10%;">threadName</th>
+                                <th v-show="logTbShow.loggerName" style="width:16%;">loggerName</th>
+                                <th>message</th>
+                                <th v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;">host</th>
+                                <th v-show="logTbShow.ip" style="min-width:102px;width:102px;word-break: break-all;">ip</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="apiRecord in apiRecordsPagedList">
-                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
-                                <td v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
-                                <td style="min-width:70px;width:70px;word-break: break-all;" v-bind:title="apiRecord.contentType"><code>{{apiRecord.method}}</code></td>
-                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
-                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
-                                <td v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.payload }}</small></td>
-                                <td style="min-width:92px;width: 92px;">
-                                    <input type="button" class="btn btn-xs btn-info" disabled="disabled" value="Log" />
-                                    <input type="button" class="btn btn-xs btn-success" value="replay" data-loading-text="pending..." v-on:click="replay(apiRecord, $event)" />
-                                </td>
+                            <tr v-for="log in apiRecordLogs">
+                                <td v-show="logTbShow.timeStamp" style="min-width:84px;width:84px;word-break: break-all;">{{log.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</td>
+                                <td v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
+                                <td v-show="logTbShow.threadName" class="td_expand_message"><small>{{log.threadName}}</small></td>
+                                <td v-show="logTbShow.loggerName" class="td_expand_message"><small>{{log.loggerName}}</small></td>
+                                <td class="td_expand_message"><pre v-if="log.message.indexOf('\n') > -1">{{log.message}}</pre><small v-else>{{log.message}}</small></td>
+                                <td v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.host}}</small></td>
+                                <td v-show="logTbShow.ip" style="min-width:102px;width:102px;word-break: break-all;"><small>{{log.ip}}</small></td>
                             </tr>
                         </tbody>
                     </table>
@@ -378,7 +549,7 @@ span.metric-default {
                         <tbody>
                             <tr v-for="log in queryedLogPagedList">
                                 <td v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.httpRequestRecordId}}</small></td>
-                                <td v-show="logTbShow.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{log.timeStamp | timeStamp('yyyy/MM/dd HH:mm:ss') }}</small></td>
+                                <td v-show="logTbShow.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{log.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
                                 <td v-show="logTbShow.threadName" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="log.threadName"><small>{{log.threadName}}</small></td>
                                 <td v-show="logTbShow.loggerName" v-on:dblclick="switchExpandMessage(log)" v-bind:class="[ log.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="log.loggerName"><small>{{log.loggerName}}</small></td>
@@ -438,6 +609,7 @@ span.metric-default {
     <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
     <script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
     <script src="https://cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js"></script>
-    <script src="js/app.js?v=1_0_5" type="text/javascript" charset="utf8"></script>
+    <script src="https://cdn.bootcss.com/clipboard.js/1.7.1/clipboard.min.js"></script>
+    <script src="js/app.js?v=1_0_6" type="text/javascript" charset="utf8"></script>
 </body>
 </html>

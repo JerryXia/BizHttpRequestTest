@@ -7,6 +7,9 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Properties;
+
+import com.github.jerryxia.devhelper.util.SystemClock;
 
 /**
  * 引导器
@@ -14,19 +17,36 @@ import java.io.InputStream;
  * @author guqk
  */
 public class Bootstrapper {
-    private String      javaHome = null;
-    private ClassLoader clToUse  = null;
+    private ClassLoader clToUse = null;
 
     /**
      * ctors
      */
     public Bootstrapper() {
-        javaHome = System.getProperty("java.home");
         clToUse = Bootstrapper.class.getClassLoader();
     }
 
     public void init() {
+        this.getCurrentLibVersion();
         this.javaMelodyChineseFontExtract();
+    }
+
+    private void getCurrentLibVersion() {
+        Constants.START_TIME = SystemClock.now();
+        // Constants.START_TIME = ManagementFactory.getRuntimeMXBean().getStartTime();
+        Constants.SERVER_OS_NAME = System.getProperty("os.name");
+        Constants.JAVA_VM_NAME = System.getProperty("java.vm.name");
+        Constants.JAVA_VERSION = System.getProperty("java.version");
+        Constants.JAVA_HOME = System.getProperty("java.home");
+        Constants.JAVA_CLASS_PATH = System.getProperty("java.class.path");
+
+        Properties prop = new Properties();
+        try {
+            prop.load(this.clToUse.getResourceAsStream("META-INF/maven/com.github.jerryxia/devhelper/pom.properties"));
+            Constants.VERSION = prop.getProperty("version");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -41,7 +61,7 @@ public class Bootstrapper {
             try {
                 // 先检查字体文件目录
                 String fontFileName = "simsun.ttc";
-                String fontFilePath = javaHome + "/lib/fonts/fallback/" + fontFileName;
+                String fontFilePath = Constants.JAVA_HOME + "/lib/fonts/fallback/" + fontFileName;
                 File fontFile = new File(fontFilePath);
                 if (!fontFile.getParentFile().exists()) {
                     if (fontFile.getParentFile().mkdirs() == false) {

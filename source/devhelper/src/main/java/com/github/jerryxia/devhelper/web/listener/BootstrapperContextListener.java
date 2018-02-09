@@ -7,7 +7,6 @@ import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 
 import com.github.jerryxia.devhelper.Bootstrapper;
-import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
  * @author Administrator
@@ -19,11 +18,8 @@ public final class BootstrapperContextListener implements ServletContextListener
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
-        long startTimeStamp = WebConstants.START_TIMESTAMP;
-        if (startTimeStamp > 0) {
-            bootstrapper = new Bootstrapper();
-            bootstrapper.init();
-        }
+        bootstrapper = new Bootstrapper();
+        bootstrapper.init();
     }
 
     @Override

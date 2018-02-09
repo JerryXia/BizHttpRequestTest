@@ -1,18 +1,29 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
 
+import com.github.jerryxia.devhelper.Constants;
+import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordStorageQueryResult;
 import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
 import com.github.jerryxia.devhelper.requestcapture.log.LogEntryStorageQueryResult;
 import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
 import com.github.jerryxia.devhelper.requestcapture.support.json.JSONWriter;
+import com.github.jerryxia.devhelper.snoop.JvmMemoryInfo;
+import com.github.jerryxia.devhelper.snoop.MemoryPoolMXBeanInfo;
+import com.github.jerryxia.devhelper.snoop.Monitor;
+import com.github.jerryxia.devhelper.util.SystemClock;
+import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
  * @author guqiankun
@@ -30,45 +41,69 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
     @Override
     public void init() throws ServletException {
-        
+
     }
 
     @Override
-    protected String process(String url) {
+    protected String process(String url, HttpServletRequest req) {
         long startTime = System.nanoTime();
-
-        String resp = null;
         Map<String, String> parameters = getParameters(url);
         String jsonpCallback = parameters.get("callback");
+        String resp = null;
         if (url.startsWith("/allapirecords.json")) {
-            HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentHttpRequestRecordStorage().queryAll();
+            HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
+                    .currentHttpRequestRecordStorage().queryAll();
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/apirecords.json")) {
             int startIndex = Integer.parseInt(parameters.get("startIndex"));
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
-            HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentHttpRequestRecordStorage().queryNextList(startIndex, endIndex);
+            HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
+                    .currentHttpRequestRecordStorage().queryNextList(startIndex, endIndex);
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
-        if (url.startsWith("/apirecordlogs.json")) {
-            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().currentLogEntryStorage().queryAll();
-            String id = parameters.get("id");
-            if (id != null && id.length() > 0) {
-                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, filterById(result.getList(), id), getServerStat(startTime));
+        if (url.startsWith("/apirecord.json")) {
+            String apiRecordId = parameters.get("id");
+            if (apiRecordId != null && apiRecordId.length() > 0) {
+                HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
+                        .currentHttpRequestRecordStorage().queryAll();
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS,
+                        filterRecordsById(result.getList(), apiRecordId), getServerStat(startTime));
             } else {
-                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, Collections.emptyList(), getServerStat(startTime));
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, Collections.emptyList(),
+                        getServerStat(startTime));
             }
         }
+        if (url.startsWith("/apirecordlogs.json")) {
+            String apiRecordId = parameters.get("id");
+            if (apiRecordId != null && apiRecordId.length() > 0) {
+                LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                        .currentLogEntryStorage().queryAll();
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS,
+                        filterLogsById(result.getList(), apiRecordId), getServerStat(startTime));
+            } else {
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, Collections.emptyList(),
+                        getServerStat(startTime));
+            }
+        }
+
         if (url.startsWith("/alllogs.json")) {
-            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().currentLogEntryStorage().queryAll();
+            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                    .currentLogEntryStorage().queryAll();
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/logs.json")) {
             int startIndex = Integer.parseInt(parameters.get("startIndex"));
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
-            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().currentLogEntryStorage().queryNextList(startIndex, endIndex);
+            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                    .currentLogEntryStorage().queryNextList(startIndex, endIndex);
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
+
+        if (url.startsWith("/snoop.json")) {
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, buildSnoopResult(req), getServerStat(startTime));
+        }
+
         if (resp == null) {
             resp = returnJSONResult(RESULT_CODE_ERROR, null, getServerStat(startTime));
         }
@@ -115,23 +150,24 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         return src.substring(indexFrom, indexTo);
     }
 
-    private Map<String, Object> getServerStat(long startTime) {
-        Map<String, Object> map = new LinkedHashMap<String, Object>();
-        map.put("time", System.currentTimeMillis());
+    private Map<String, Long> getServerStat(long startTime) {
+        Map<String, Long> map = new HashMap<String, Long>(2);
+        map.put("time", SystemClock.now());
         map.put("generated", System.nanoTime() - startTime);
         return map;
     }
 
-    private String returnJsonpResult(String jsonpCallback, int resultCode, Object content, Map<String, Object> serverStat) {
-        Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+    private String returnJsonpResult(String jsonpCallback, int resultCode, Object content,
+            Map<String, Long> serverStat) {
+        Map<String, Object> dataMap = new HashMap<String, Object>();
         dataMap.put("code", resultCode);
         dataMap.put("data", content);
         dataMap.put("serverstat", serverStat);
         return jsonpCallback + "(" + toJSONString(dataMap) + ")";
     }
 
-    private String returnJSONResult(int resultCode, Object content, Map<String, Object> serverStat) {
-        Map<String, Object> dataMap = new LinkedHashMap<String, Object>();
+    private String returnJSONResult(int resultCode, Object content, Map<String, Long> serverStat) {
+        Map<String, Object> dataMap = new HashMap<String, Object>();
         dataMap.put("code", resultCode);
         dataMap.put("data", content);
         dataMap.put("serverstat", serverStat);
@@ -144,13 +180,91 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         return writer.toString();
     }
 
-    private List<LogEntry> filterById(List<LogEntry> alllogs, String id) {
-        List<LogEntry> linkedList = new LinkedList<LogEntry>();
-        for (LogEntry log : alllogs) {
-            if (log.getHttpRequestRecordId() != null && log.getHttpRequestRecordId().equalsIgnoreCase(id)) {
-                linkedList.add(log);
+    private List<HttpRequestRecord> filterRecordsById(List<HttpRequestRecord> apiRecords, String id) {
+        ArrayList<HttpRequestRecord> arrayList = new ArrayList<HttpRequestRecord>(1);
+        Iterator<HttpRequestRecord> iterator = apiRecords.iterator();
+        while (iterator.hasNext()) {
+            HttpRequestRecord item = iterator.next();
+            if (id.equalsIgnoreCase(item.getId())) {
+                arrayList.add(item);
             }
         }
-        return linkedList;
+        return arrayList;
+    }
+
+    private List<LogEntry> filterLogsById(List<LogEntry> alllogs, String id) {
+        ArrayList<LogEntry> arrayList = new ArrayList<LogEntry>(8);
+        Iterator<LogEntry> iterator = alllogs.iterator();
+        while (iterator.hasNext()) {
+            LogEntry item = iterator.next();
+            if (id.equalsIgnoreCase(item.getHttpRequestRecordId())) {
+                arrayList.add(item);
+            }
+        }
+        return arrayList;
+    }
+
+    private HashMap<String, Object> buildSnoopResult(HttpServletRequest req) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
+
+        HashMap<String, Object> libInfo = new HashMap<String, Object>();
+        libInfo.put("version", Constants.VERSION);
+        libInfo.put("serverOsName", Constants.SERVER_OS_NAME);
+        libInfo.put("javaVMName", Constants.JAVA_VM_NAME);
+        libInfo.put("javaVersion", Constants.JAVA_VERSION);
+        libInfo.put("javaHome", Constants.JAVA_HOME);
+        libInfo.put("javaClassPath", Constants.JAVA_CLASS_PATH);
+        libInfo.put("startTime", Constants.START_TIME);
+
+        libInfo.put("requestIdInitFilterEnabled", WebConstants.REQUEST_ID_INIT_FILTER_ENABLED);
+        libInfo.put("requestCaptureFilterEnabled", WebConstants.REQUEST_CAPTURE_FILTER_ENABLED);
+        libInfo.put("requestResponseLogInterceptorEnabled", WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED);
+
+        libInfo.put("logExtEnabled", RequestCaptureConstants.LOG_EXT_ENABLED);
+        libInfo.put("logExtEnabledComponent", RequestCaptureConstants.LOG_EXT_ENABLED_MAP.toString());
+        result.put("libInfo", libInfo);
+
+
+        JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().run();
+
+        HashMap<String, String> memoryMXBean = new HashMap<String, String>();
+        memoryMXBean.put("heapMemoryUsag", jvmMemoryInfo.getMemoryMXBeanInfo().getHeapMemoryUsag().toString());
+        memoryMXBean.put("nonHeapMemoryUsag", jvmMemoryInfo.getMemoryMXBeanInfo().getNonHeapMemoryUsag().toString());
+        result.put("memoryMXBean", memoryMXBean);
+
+        ArrayList<HashMap<String, String>> beans = new ArrayList<HashMap<String, String>>(
+                jvmMemoryInfo.getMemoryPoolMXBeansInfo().size());
+        for (MemoryPoolMXBeanInfo memoryPoolMXBeanInfo : jvmMemoryInfo.getMemoryPoolMXBeansInfo()) {
+            HashMap<String, String> item = new HashMap<String, String>();
+            item.put("name", memoryPoolMXBeanInfo.getName());
+            item.put("type", memoryPoolMXBeanInfo.getType().toString());
+            item.put("memoryUsage", memoryPoolMXBeanInfo.getMemoryUsage() == null ? null
+                    : memoryPoolMXBeanInfo.getMemoryUsage().toString());
+            item.put("peakMemoryUsage", memoryPoolMXBeanInfo.getPeakMemoryUsage() == null ? null
+                    : memoryPoolMXBeanInfo.getPeakMemoryUsage().toString());
+            item.put("collectionUsage", memoryPoolMXBeanInfo.getCollectionUsage() == null ? null
+                    : memoryPoolMXBeanInfo.getCollectionUsage().toString());
+            beans.add(item);
+        }
+        result.put("memoryPoolMXBeans", beans);
+
+        LinkedHashMap<String, String> requestAttributes = new LinkedHashMap<String, String>();
+        Enumeration<String> attributeNames = req.getAttributeNames();
+        while (attributeNames.hasMoreElements()) {
+            String attributeName = attributeNames.nextElement();
+            Object val = req.getAttribute(attributeName);
+            requestAttributes.put(attributeName, val.toString());
+        }
+        result.put("requestAttributes", requestAttributes);
+
+        // for(Entry<String, Object> item : requestInfo.getRequestAttributes().entrySet()) {
+        // sb.append("<tr>");
+        // sb.append("<td>");sb.append(item.getKey().replaceAll("<", "&lt;").replaceAll(">",
+        // "&gt;"));sb.append("</td>");
+        // sb.append("<td>");sb.append(item.getValue().toString().replaceAll("<", "&lt;").replaceAll(">",
+        // "&gt;"));sb.append("</td>");
+        // sb.append("</tr>");
+        // }
+        return result;
     }
 }

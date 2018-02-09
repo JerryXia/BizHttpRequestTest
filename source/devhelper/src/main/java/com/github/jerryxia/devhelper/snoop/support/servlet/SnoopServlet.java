@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 import com.github.jerryxia.devhelper.snoop.JvmMemoryInfo;
 import com.github.jerryxia.devhelper.snoop.MemoryPoolMXBeanInfo;
 import com.github.jerryxia.devhelper.snoop.Monitor;
-import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
  * @author Administrator
@@ -35,7 +34,7 @@ public class SnoopServlet extends HttpServlet {
         sb.append("<title>");
         sb.append("Servlet Snoop Page");
         sb.append("</title>");
-        sb.append(String.format("<link href=\"https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css?t=%s\" rel=\"stylesheet\">", WebConstants.START_TIMESTAMP));
+        sb.append("<link href=\"https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css\" rel=\"stylesheet\">");
         sb.append("</head>");
         sb.append("<body>");
         sb.append("<h2>JVM Memory Monitor</h2>");
@@ -205,7 +204,7 @@ public class SnoopServlet extends HttpServlet {
         }
         sb.append("</table>");
 
-        sb.append(String.format("<script src=\"https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js?t=%s\"></script>", WebConstants.START_TIMESTAMP));
+        sb.append("<script src=\"https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js\"></script>");
         sb.append("<script>$('table').addClass('table').addClass('table-bordered').addClass('table-condensed');");
         sb.append("$('table tr th').css({'text-align':'center'});");
         sb.append("</script>");

@@ -98,7 +98,7 @@ public abstract class AbstractResourceServlet extends HttpServlet {
                 fullUrl += "?" + request.getQueryString();
             }
             response.setContentType("application/json;charset=utf-8");
-            response.getWriter().print(process(fullUrl));
+            response.getWriter().print(process(fullUrl, request));
             return;
         }
 
@@ -112,7 +112,7 @@ public abstract class AbstractResourceServlet extends HttpServlet {
      * @param url
      * @return
      */
-    protected abstract String process(String url);
+    protected abstract String process(String url, HttpServletRequest request);
 
     private byte[] readByteArrayFromResource(String resource) throws IOException {
         InputStream in = null;

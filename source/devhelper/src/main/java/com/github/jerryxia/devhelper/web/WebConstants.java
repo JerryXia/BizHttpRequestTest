@@ -3,15 +3,11 @@
  */
 package com.github.jerryxia.devhelper.web;
 
-import com.github.jerryxia.devhelper.util.SystemClock;
-
 /**
  * @author guqk
  *
  */
 public class WebConstants {
-
-    public static final long START_TIMESTAMP = SystemClock.now();
 
     /**
      * 响应头的名字， 优先读取配置，其次使用默认值
