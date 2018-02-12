@@ -38,7 +38,7 @@ public class RequestCaptureFilter implements Filter {
     public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
     public static final String PARAM_NAME_MAX_PAYLOAD_LENGTH                    = "maxPayloadLength";
 
-    private boolean         enabled;
+    private boolean         enabled = true;
     private String          contextPath;
     private HashSet<String> excludesPattern;
     private String          replayRequestIdRequestHeaderName;
@@ -51,9 +51,8 @@ public class RequestCaptureFilter implements Filter {
             this.contextPath = "/";
         }
 
-        this.enabled = true;
-        String enabledStr = filterConfig.getInitParameter(PARAM_NAME_ENABLED);
-        this.enabled = Boolean.parseBoolean(enabledStr);
+        this.enabled = Boolean.parseBoolean(filterConfig.getInitParameter(PARAM_NAME_ENABLED));
+        WebConstants.REQUEST_CAPTURE_FILTER_ENABLED = this.enabled;
 
         String exclusions = filterConfig.getInitParameter(PARAM_NAME_EXCLUSIONS);
         if (exclusions != null && exclusions.trim().length() != 0) {
@@ -75,12 +74,13 @@ public class RequestCaptureFilter implements Filter {
         }
 
         RequestCaptureConstants.RECORD_MANAGER.init();
-        WebConstants.REQUEST_CAPTURE_FILTER_ENABLED = true;
 
-        log.debug("devhelper RequestCaptureFilter enabled                : true");
-        log.debug("devhelper RequestCaptureFilter log_ext_enabled_status : " + RequestCaptureConstants.LOG_EXT_ENABLED);
-        log.debug("devhelper RequestCaptureFilter log_ext_enabled_map    : "
-                + RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
+        filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : "
+                + WebConstants.REQUEST_CAPTURE_FILTER_ENABLED);
+        filterConfig.getServletContext().log(
+                "devhelper RequestCaptureFilter log_ext_enabled_status : " + RequestCaptureConstants.LOG_EXT_ENABLED);
+        filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_map    : "
+                + RequestCaptureConstants.LOG_EXT_ENABLED_MAP.toString());
     }
 
     @Override
@@ -100,8 +100,14 @@ public class RequestCaptureFilter implements Filter {
                 RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
 
                 // org.springframework.web.util.ContentCachingRequestWrapper
-                ContentRecordRequestWrapper httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest,
-                        maxPayloadLength, null, new DefaultContentEndListener(httpRequestRecord));
+                ContentRecordRequestWrapper httpRequestWrapper = null;
+                if (httpRequest instanceof ContentRecordRequestWrapper) {
+                    httpRequestWrapper = (ContentRecordRequestWrapper) httpRequest;
+                } else {
+                    httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest, maxPayloadLength, null,
+                            new DefaultContentEndListener(httpRequestRecord));
+                }
+
                 // org.springframework.web.util.ContentCachingResponseWrapper
                 ContentRecordResponseWrapper httpResponseWrapper = null;
                 if (response instanceof ContentRecordResponseWrapper) {
@@ -109,20 +115,37 @@ public class RequestCaptureFilter implements Filter {
                 } else {
                     httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
                 }
+
                 try {
                     chain.doFilter(httpRequestWrapper, httpResponseWrapper);
                 } finally {
-                    log.debug(new String(httpResponseWrapper.getContentAsByteArray()));
+                    if (log.isDebugEnabled()) {
+                        String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
+                        log.debug(responseBody);
+                    }
                     RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
                     httpResponseWrapper.copyBodyToResponse();
                 }
             } else {
                 // forward include error
                 RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+
+                ContentRecordResponseWrapper httpResponseWrapper = null;
+                if (response instanceof ContentRecordResponseWrapper) {
+                    httpResponseWrapper = (ContentRecordResponseWrapper) response;
+                } else {
+                    httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
+                }
+
                 try {
-                    chain.doFilter(request, response);
+                    chain.doFilter(request, httpResponseWrapper);
                 } finally {
+                    if (log.isDebugEnabled()) {
+                        String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
+                        log.debug(responseBody);
+                    }
                     RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                    httpResponseWrapper.copyBodyToResponse();
                 }
             }
         }

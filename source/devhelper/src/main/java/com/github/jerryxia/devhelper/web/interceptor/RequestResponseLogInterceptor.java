@@ -78,7 +78,9 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
                     }
                 }
             }
-            log.debug(sb.toString());
+            if (log.isDebugEnabled()) {
+                log.debug(sb.toString());
+            }
         }
         return true;
     }
@@ -87,11 +89,13 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
     public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
             ModelAndView modelAndView) throws Exception {
         // org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor
+        // org.springframework.web.servlet.ModelAndView
         if (this.enabled) {
             if (modelAndView == null) {
-                log.debug("ModelAndView returned: null");
+                if (log.isDebugEnabled()) {
+                    log.debug("ModelAndView returned: null");
+                }
             } else {
-                // org.springframework.web.servlet.ModelAndView
                 StringBuffer sb = new StringBuffer(256);
                 appendKeyValueLine(sb, "ModelAndView returned", "");
                 if (modelAndView.getStatus() == null) {
@@ -102,7 +106,9 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
                 }
                 appendSeperateKeyValueLine(sb, "view", modelAndView.getViewName());
                 appendSeperateKeyValueLine(sb, "model", modelAndView.getModelMap().toString());
-                log.debug(sb.toString());
+                if (log.isDebugEnabled()) {
+                    log.debug(sb.toString());
+                }
             }
         }
     }
@@ -113,7 +119,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
         // System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION));
         // System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE));
         // System.err.println(request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
-        if (this.enabled && ex != null) {
+        if (this.enabled && ex != null && log.isErrorEnabled()) {
             log.error(handler.toString(), ex);
         }
     }

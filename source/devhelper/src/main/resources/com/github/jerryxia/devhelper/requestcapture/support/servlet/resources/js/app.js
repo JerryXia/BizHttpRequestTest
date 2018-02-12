@@ -534,6 +534,18 @@ const allLogs = {
                     return logItem.level == that.queryLevel;
                 }).slice(that.queryFrom, that.queryFrom + that.queryCount);
             }
+        },
+        lastPageStartIndex: function() {
+            let that = this;
+            
+            //let currLevelLogCount = 0;
+            //if (that.queryLevel === 'ALL') {
+            //    currLevelLogCount = that.logPagedList.length;
+            //} else {
+            //    currLevelLogCount = _.filter(that.logPagedList, function (logItem) { return logItem.level == that.queryLevel; }).length;
+            //}
+            let currLevelLogCount = that.logCount[that.queryLevel];
+            return currLevelLogCount % that.queryCount == 0 ? currLevelLogCount - that.queryCount : Math.floor(currLevelLogCount / that.queryCount) * that.queryCount;
         }
     },
     methods: {
@@ -685,7 +697,7 @@ const router = new VueRouter({
         { path: '/apirecords', component: apiRecords },
         { path: '/apilogs', component: apiLogs },
         { path: '/alllogs/:level', component: allLogs },
-        { path: '/alllogs', redirect: '/alllogs/ALL' },
+        { path: '/alllogs', redirect: { path: '/alllogs/ALL', query:{ from: 0, count: 16 } } },
         { path: '/settings_replay', component: settingsReplay },
         { path: '/', component: index }
     ]

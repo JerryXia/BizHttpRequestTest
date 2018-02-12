@@ -1,6 +1,7 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -50,6 +51,12 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         Map<String, String> parameters = getParameters(url);
         String jsonpCallback = parameters.get("callback");
         String resp = null;
+
+        if (url.startsWith("/snoop.json")) {
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, buildSnoopResult(req),
+                    getServerStat(startTime));
+        }
+
         if (url.startsWith("/allapirecords.json")) {
             HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
                     .currentHttpRequestRecordStorage().queryAll();
@@ -100,8 +107,12 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
 
-        if (url.startsWith("/snoop.json")) {
-            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, buildSnoopResult(req), getServerStat(startTime));
+        if (url.startsWith("/exceptionRecords.json")) {
+            LogEntryStorageQueryResult allLogs = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                    .currentLogEntryStorage().queryAll();
+            String levels = parameters.get("levels");
+            HashMap<String, ArrayList<String>> result = filterRecordsByLogLevel(levels.split(","), allLogs.getList());
+            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
 
         if (resp == null) {
@@ -204,6 +215,51 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         return arrayList;
     }
 
+    private HashMap<String, ArrayList<String>> filterRecordsByLogLevel(String[] levels, List<LogEntry> logs) {
+        HashMap<String, ArrayList<String>> map = new HashMap<String, ArrayList<String>>(2);
+        if (levels.length > 0) {
+            ArrayList<String> distinctedLevels = new ArrayList<String>(levels.length);
+            for (String level : levels) {
+                level = level.toUpperCase();
+                switch (level) {
+                case "TRACE":
+                case "DEBUG":
+                case "INFO":
+                case "WARN":
+                case "ERROR":
+                case "FATAL":
+                    if (distinctedLevels.indexOf(level) == -1) {
+                        distinctedLevels.add(level);
+                    }
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            if (distinctedLevels.size() > 0) {
+                for (String level : distinctedLevels) {
+                    if (map.containsKey(level) == false) {
+                        map.put(level, new ArrayList<String>());
+                    }
+                }
+
+                Iterator<LogEntry> logIterator = logs.iterator();
+                while (logIterator.hasNext()) {
+                    LogEntry log = logIterator.next();
+                    ArrayList<String> recordIds = map.get(log.getLevel());
+                    if (recordIds != null) {
+                        if (log.getHttpRequestRecordId() != null && log.getHttpRequestRecordId().length() > 0
+                                && recordIds.indexOf(log.getHttpRequestRecordId()) == -1) {
+                            recordIds.add(log.getHttpRequestRecordId());
+                        }
+                    }
+                }
+            }
+        }
+        return map;
+    }
+
     private HashMap<String, Object> buildSnoopResult(HttpServletRequest req) {
         HashMap<String, Object> result = new HashMap<String, Object>();
 
@@ -223,7 +279,6 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         libInfo.put("logExtEnabled", RequestCaptureConstants.LOG_EXT_ENABLED);
         libInfo.put("logExtEnabledComponent", RequestCaptureConstants.LOG_EXT_ENABLED_MAP.toString());
         result.put("libInfo", libInfo);
-
 
         JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().run();
 
