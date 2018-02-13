@@ -1,7 +1,8 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -93,6 +94,30 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
                         getServerStat(startTime));
             }
         }
+        if (url.startsWith("/exceptionRecords.json")) {
+            String encLevels = parameters.get("levels");
+            if (encLevels != null && encLevels.length() > 0) {
+                String decLevels = null;
+                try {
+                    decLevels = URLDecoder.decode(encLevels, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    //
+                }
+                if (decLevels != null) {
+                    String[] levels = decLevels.split(",");
+                    LogEntryStorageQueryResult allLogs = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                            .currentLogEntryStorage().queryAll();
+                    HashMap<String, ArrayList<String>> result = filterRecordsByLogLevel(levels, allLogs.getList());
+                    resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
+                } else {
+                    resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, Collections.emptyMap(),
+                            getServerStat(startTime));
+                }
+            } else {
+                resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, Collections.emptyMap(),
+                        getServerStat(startTime));
+            }
+        }
 
         if (url.startsWith("/alllogs.json")) {
             LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
@@ -104,14 +129,6 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
             LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
                     .currentLogEntryStorage().queryNextList(startIndex, endIndex);
-            resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
-        }
-
-        if (url.startsWith("/exceptionRecords.json")) {
-            LogEntryStorageQueryResult allLogs = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                    .currentLogEntryStorage().queryAll();
-            String levels = parameters.get("levels");
-            HashMap<String, ArrayList<String>> result = filterRecordsByLogLevel(levels.split(","), allLogs.getList());
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
 
@@ -311,15 +328,6 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
             requestAttributes.put(attributeName, val.toString());
         }
         result.put("requestAttributes", requestAttributes);
-
-        // for(Entry<String, Object> item : requestInfo.getRequestAttributes().entrySet()) {
-        // sb.append("<tr>");
-        // sb.append("<td>");sb.append(item.getKey().replaceAll("<", "&lt;").replaceAll(">",
-        // "&gt;"));sb.append("</td>");
-        // sb.append("<td>");sb.append(item.getValue().toString().replaceAll("<", "&lt;").replaceAll(">",
-        // "&gt;"));sb.append("</td>");
-        // sb.append("</tr>");
-        // }
         return result;
     }
 }

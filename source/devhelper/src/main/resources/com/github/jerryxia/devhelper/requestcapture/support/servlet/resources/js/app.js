@@ -27,8 +27,17 @@ const index = {
     watch: {
         '$route': 'fetchData',
         'serverstat': function (newVal, oldVal) {
-            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
-            $('.footer ul').html(html).show();
+            let htmlPartial = [
+                '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
+                '<li>MemoryStorage</li>',
+                '<li>Server Time: ',
+                new Date(newVal.time).format('yyyy-MM-dd HH:mm:ss'),
+                '</li>',
+                '<li>Generated: ',
+                newVal.generated,
+                'ns</li>'
+            ];
+            $('.footer ul').html(htmlPartial.join('')).show();
         }
     },
     computed: {
@@ -75,7 +84,11 @@ const apiRecords = {
             fetchedTickInterval: null,
             currFetchHasNew: false,
             lastRecordIndex: 0,
-            pageSize: 10
+            pageSize: 10,
+            queryLevels: 'WARN,ERROR,FATAL',
+            exceptionRecords: {},
+            isFetchingExceptionRecords: false,
+            fetchExceptionRecordsTimeout: null
         }
     },
     route: {
@@ -89,9 +102,10 @@ const apiRecords = {
         console.log('apiRecords created');
         this.loadFromLocalDb();
         this.fetchData();
+        this.fetchExceptionRecords();
     },
     updated: function () {
-        //console.log('apiRecords updated');
+        //console.debug('apiRecords updated');
     },
     destroyed: function () {
         let that = this;
@@ -99,6 +113,10 @@ const apiRecords = {
         if (that.fetchedTickInterval != null) {
             clearInterval(that.fetchedTickInterval);
             that.fetchedTickInterval = null;
+        }
+        if(that.fetchExceptionRecordsTimeout != null){
+            clearTimeout(that.fetchExceptionRecordsTimeout);
+            that.fetchExceptionRecordsTimeout = null;
         }
     },
     watch: {
@@ -110,8 +128,17 @@ const apiRecords = {
             deep: true
         },
         'serverstat': function (newVal, oldVal) {
-            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
-            $('.footer ul').html(html).show();
+            let htmlPartial = [
+                '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
+                '<li>MemoryStorage</li>',
+                '<li>Server Time: ',
+                new Date(newVal.time).format('yyyy-MM-dd HH:mm:ss'),
+                '</li>',
+                '<li>Generated: ',
+                newVal.generated,
+                'ns</li>'
+            ];
+            $('.footer ul').html(htmlPartial.join('')).show();
         },
         'isFetchingData': function (newVal, oldVal) {
             let that = this;
@@ -137,7 +164,23 @@ const apiRecords = {
                 }
                 $('#btn_loadmore').removeAttr('disabled');
             } else {
-                console.log('watch isFetchingData into extra case.');
+                console.warn('watch isFetchingData into extra case.');
+            }
+        },
+        'isFetchingExceptionRecords': function(newVal, oldVal) {
+            let that = this;
+            if (oldVal === false && newVal === true) {
+                // 开始获取
+            } else if (oldVal === true && newVal === false) {
+                // 获取结束
+                if (that.fetchExceptionRecordsTimeout != null) {
+                    clearTimeout(that.fetchExceptionRecordsTimeout);
+                }
+                that.fetchExceptionRecordsTimeout = setTimeout(function () {
+                    that.fetchExceptionRecords();
+                }, 1000);
+            } else {
+                console.warn('watch isFetchingExceptionRecords into extra case.');
             }
         }
     },
@@ -168,14 +211,26 @@ const apiRecords = {
                     if(jsonStr && jsonStr.length > 0) {
                         let jsonObj = JSON.parse(jsonStr);
                         that.logTbShow = jsonObj;
-                        console.log('加载本地保存的配置');
+                        console.info('requestcapture_apirecords_logTbShow:加载本地保存的配置');
                     }
                 } catch(parseError) {
                     console.error(parseError);
-                    console.log('使用的默认配置');
+                    console.info('requestcapture_apirecords_logTbShow:使用的默认配置');
+                }
+
+                try {
+                    let jsonStr = localStorage.getItem("requestcapture_settingsShowExceptionRecords_levels");
+                    if(jsonStr && jsonStr.length > 0) {
+                        let jsonObj = JSON.parse(jsonStr);
+                        that.queryLevels = jsonObj.join(',');
+                        console.info('settingsShowExceptionRecords:加载本地保存的配置');
+                    }
+                } catch(parseError) {
+                    console.error(parseError);
+                    console.info('settingsShowExceptionRecords:使用的默认配置');
                 }
             } else {
-                alert('This browser does NOT support localStorage');
+                alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         },
         saveLogTbShowConfigToLocalDb: function (obj) {
@@ -183,7 +238,7 @@ const apiRecords = {
             if (window.localStorage) {
                 window.localStorage.setItem("requestcapture_apirecords_logTbShow", JSON.stringify(obj));
             } else {
-                alert('This browser does NOT support localStorage');
+                alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         },
         fetchData: function () {
@@ -217,8 +272,7 @@ const apiRecords = {
                 complete: function(jqXHR, textStatus) {
                     that.isFetchingData = false;
                     // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
-                    console.log('allapirecords.json:');
-                    console.log(textStatus);
+                    console.log('allapirecords.json:' + textStatus);
                 }
             });
         },
@@ -242,7 +296,7 @@ const apiRecords = {
             if (window.localStorage) {
                 replayUrlHost = localStorage.getItem("rquestcapture:replayUrlHost");
             } else {
-                alert('This browser does NOT support localStorage');
+                alert(NOT_SUPPORT_LOCALSTORAGE);
             }
             if (replayUrlHost == null || replayUrlHost.length === 0) {
                 alert('请先前往settings:replay配置host');
@@ -262,7 +316,9 @@ const apiRecords = {
                     $btn.button('reset');
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    console.log(jqXHR); console.log(textStatus); console.log(errorThrown);
+                    console.log(jqXHR); 
+                    console.log(textStatus); 
+                    console.warn(errorThrown);
                     $btn.button('reset');
                 }
             });
@@ -322,8 +378,7 @@ const apiRecords = {
                 complete: function(jqXHR, textStatus) {
                     that.isFetchingData = false;
                     // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
-                    console.log('apirecords.json:');
-                    console.log(textStatus);
+                    console.log('apirecords.json:' + textStatus);
                 }
             });
         },
@@ -333,6 +388,75 @@ const apiRecords = {
             } else {
                 item.isExpandMessage = item.isExpandMessage ? false : true;
             }
+        },
+        fetchExceptionRecords: function () {
+            let that = this;
+
+            that.isFetchingExceptionRecords = true;
+            jQuery.ajax({
+                type: 'GET',
+                url: 'exceptionRecords.json',
+                timeout: 123000,
+                data: { levels: that.queryLevels },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        // TODO: 优化clone
+                        for(let i = 0, len = ORDERED_LEVELS.length; i < len; i ++) {
+                            let level = ORDERED_LEVELS[i];
+                            let recordIds = res.data[level];
+                            if(recordIds && recordIds.length > 0) {
+                                for(let j = 0, jlen = recordIds.length; j < jlen; j++) {
+                                    let oldVal = that.exceptionRecords[recordIds[j]];
+                                    if(oldVal) {
+                                        if(ORDERED_LEVELS_RANK[level] > ORDERED_LEVELS_RANK[oldVal]){
+                                            that.exceptionRecords[recordIds[j]] = level;
+                                        }
+                                    } else {
+                                        Vue.set(that.exceptionRecords, recordIds[j], level);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    console.log(JSON.stringify(that.exceptionRecords));
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingExceptionRecords = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('exceptionRecords.json:' + textStatus);
+                }
+            });
+        },
+        apiRecordExceptionLogLevelClassFormater: function(value) {
+            let val = '';
+            if(typeof value === 'undefined'){
+                value = '';
+            }
+            console.log(value);
+            switch (value) {
+                case 'FATAL':
+                case 'ERROR':
+                    val = 'alert-danger';
+                    break;
+                case 'WARN':
+                    val = 'alert-warning';
+                    break;
+                case 'INFO':
+                    val = 'alert-info';
+                    break;
+                case 'DEBUG':
+                    val = 'alert-success';
+                    break;
+                case 'TRACE':
+                default:
+                    val = '';
+                    break;
+            }
+            return val;
         }
     }
 };
@@ -486,8 +610,17 @@ const allLogs = {
     watch: {
         '$route': 'filterLogs',
         'serverstat': function (newVal, oldVal) {
-            let html = '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li><li>MemoryStorage</li><li>Server Time: ' + new Date(newVal.time).format('yyyy/MM/dd HH:mm:ss') + '</li><li>Generated: ' + newVal.generated + 'ns</li>';
-            $('.footer ul').html(html).show();
+            let htmlPartial = [
+                '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
+                '<li>MemoryStorage</li>',
+                '<li>Server Time: ',
+                new Date(newVal.time).format('yyyy-MM-dd HH:mm:ss'),
+                '</li>',
+                '<li>Generated: ',
+                newVal.generated,
+                'ns</li>'
+            ];
+            $('.footer ul').html(htmlPartial.join('')).show();
         },
         'isFetchingData': function (newVal, oldVal) {
             let that = this;
@@ -578,8 +711,7 @@ const allLogs = {
                 complete: function(jqXHR, textStatus) {
                     that.isFetchingData = false;
                     // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
-                    console.log('alllogs.json:');
-                    console.log(textStatus);
+                    console.log('alllogs.json:' + textStatus);
                 }
             });
         },
@@ -618,8 +750,7 @@ const allLogs = {
                 complete: function(jqXHR, textStatus) {
                     that.isFetchingData = false;
                     // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
-                    console.log('logs.json:');
-                    console.log(textStatus);
+                    console.log('logs.json:' + textStatus);
                 }
             });
         },
@@ -671,6 +802,13 @@ const settingsReplay = {
     },
     created: function () {
         this.loadFromLocalDb();
+
+        Vue.nextTick(function () {
+            $('#settings').addClass('active');
+        });
+    },
+    destroyed: function () {
+        $('#settings').removeClass('active');
     },
     methods: {
         loadFromLocalDb: function () {
@@ -678,7 +816,7 @@ const settingsReplay = {
             if (window.localStorage) {
                 that.replayUrlHost = localStorage.getItem("rquestcapture:replayUrlHost");
             } else {
-                alert('This browser does NOT support localStorage');
+                alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         },
         saveToLocalDb: function () {
@@ -686,11 +824,62 @@ const settingsReplay = {
             if (window.localStorage) {
                 window.localStorage.setItem("rquestcapture:replayUrlHost", that.replayUrlHost);
             } else {
-                alert('This browser does NOT support localStorage');
+                alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         }
     }
 };
+const settingsShowExceptionRecords = {
+    template: '#settings_show_exception_records',
+    data: function () {
+        return {
+            shownLevels: [ 'WARN', 'ERROR', 'FATAL' ]
+        }
+    },
+    created: function () {
+        this.loadFromLocalDb();
+
+        Vue.nextTick(function () {
+            $('#settings').addClass('active');
+        });
+    },
+    destroyed: function () {
+        $('#settings').removeClass('active');
+    },
+    watch: {
+        'shownLevels': function (val, oldVal) {
+            this.saveToLocalDb(val);
+        }
+    },
+    methods: {
+        loadFromLocalDb: function () {
+            let that = this;
+            try {
+                let jsonStr = localStorage.getItem("requestcapture_settingsShowExceptionRecords_levels");
+                if(jsonStr && jsonStr.length > 0) {
+                    let jsonObj = JSON.parse(jsonStr);
+                    that.shownLevels = jsonObj;
+                    console.info('settingsShowExceptionRecords:加载本地保存的配置');
+                }
+            } catch(parseError) {
+                console.error(parseError);
+                console.info('settingsShowExceptionRecords:使用的默认配置');
+            }
+        },
+        saveToLocalDb: function (obj) {
+            let that = this;
+            if (window.localStorage) {
+                window.localStorage.setItem("requestcapture_settingsShowExceptionRecords_levels", JSON.stringify(obj));
+            } else {
+                alert(NOT_SUPPORT_LOCALSTORAGE);
+            }
+        }
+    }
+};
+
+const NOT_SUPPORT_LOCALSTORAGE = 'This browser does not support localStorage';
+const ORDERED_LEVELS = [ 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL' ];
+const ORDERED_LEVELS_RANK = { TRACE: 1, DEBUG: 2, INFO: 3, WARN: 4, ERROR: 5, FATAL: 6 };
 
 const router = new VueRouter({
     routes: [
@@ -698,7 +887,8 @@ const router = new VueRouter({
         { path: '/apilogs', component: apiLogs },
         { path: '/alllogs/:level', component: allLogs },
         { path: '/alllogs', redirect: { path: '/alllogs/ALL', query:{ from: 0, count: 16 } } },
-        { path: '/settings_replay', component: settingsReplay },
+        { path: '/settings/replay', component: settingsReplay },
+        { path: '/settings/show_exception_records', component: settingsShowExceptionRecords },
         { path: '/', component: index }
     ]
 });

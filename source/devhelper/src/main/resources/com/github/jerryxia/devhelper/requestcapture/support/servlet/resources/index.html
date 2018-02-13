@@ -109,9 +109,11 @@ hr{ margin-top:1px;margin-bottom:1px; }
                         <router-link to="/apirecords" tag="li" active-class="active"> <a>Api Records</a></router-link>
                         <router-link to="/apilogs" tag="li" active-class="active" class="none" id="linkApiLogs"> <a>Api Logs</a></router-link>
                         <router-link to="/alllogs" tag="li" active-class="active"> <a>All Logs</a></router-link>
-                        <li class="dropdown"><a href="#" class="dropdown-toggle" data-toggle="dropdown">Settings <span class="caret"></span></a>
+                        <li class="dropdown" id="settings"> 
+                            <a href="javascript:;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Settings <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
-                                <router-link to="/settings_replay" tag="li" active-class="active"><a>Replay</a></router-link>
+                                <router-link to="/settings/replay" tag="li" active-class="active"><a>Replay</a></router-link>
+                                <router-link to="/settings/show_exception_records" tag="li" active-class="active"><a>ShowExceptionRecords</a></router-link>
                                 <!-- <li><a href="#">Another action</a></li>
                                 <li><a href="#">Something else here</a></li>
                                 <li class="divider"></li>
@@ -298,10 +300,10 @@ hr{ margin-top:1px;margin-bottom:1px; }
                                 <td v-show="logTbShow.id" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
                                 <td v-show="logTbShow.timeStamp" v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;" v-bind:title="apiRecord.contentType"><code>{{apiRecord.method}}</code></td>
-                                <td v-show="logTbShow.requestAndQuery" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
+                                <td v-show="logTbShow.requestAndQuery" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message', apiRecordExceptionLogLevelClassFormater(exceptionRecords[apiRecord.id]) ]" v-bind:title="apiRecord | showRequestAndQuery"><small>{{ apiRecord | showRequestAndQuery }}</small></td>
                                 <td v-show="logTbShow.parameter" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
                                 <td v-show="logTbShow.payload" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.payload }}</small></td>
-                                <td v-bind:class="['alert', 'alert-danger']" style="min-width:92px;width: 92px;">
+                                <td v-bind:class="apiRecordExceptionLogLevelClassFormater(exceptionRecords[apiRecord.id])" style="min-width:92px;width: 92px;">
                                     <input type="button" class="btn btn-xs btn-info" value="Log" data-loading-text="Loading..." v-on:click="showLogs(apiRecord.id, apiRecord.requestId, $event)" />
                                     <input type="button" class="btn btn-xs btn-success" value="replay" data-loading-text="pending..." v-on:click="replay(apiRecord, $event)" />
                                 </td>
@@ -586,6 +588,35 @@ hr{ margin-top:1px;margin-bottom:1px; }
                 <div class="col-sm-offset-2 col-sm-10">
                   <button type="button" class="btn btn-primary" v-on:click="saveToLocalDb()">Save</button>
                 </div>
+              </div>
+            </form>
+        </div>
+    </template>
+
+
+    <template id="settings_show_exception_records">
+        <div>
+            <form class="form-inline" role="form">
+              <div class="form-group">
+                <label class="col-sm-12 control-label">标注指定level的ApiRecords：</label>
+              </div>
+              <div class="checkbox">
+                <label for="TRACE"><input type="checkbox" id="TRACE" value="TRACE" v-model="shownLevels"> trace</label>
+              </div>
+              <div class="checkbox">
+                <label for="DEBUG"><input type="checkbox" id="DEBUG" value="DEBUG" v-model="shownLevels"> debug</label>
+              </div>
+              <div class="checkbox">
+                <label for="INFO"><input type="checkbox" id="INFO" value="INFO" v-model="shownLevels"> info</label>
+              </div>
+              <div class="checkbox">
+                <label for="WARN"><input type="checkbox" id="WARN" value="WARN" v-model="shownLevels"> warn</label>
+              </div>
+              <div class="checkbox">
+                <label for="ERROR"><input type="checkbox" id="ERROR" value="ERROR" v-model="shownLevels"> error</label>
+              </div>
+              <div class="checkbox">
+                <label for="FATAL"><input type="checkbox" id="FATAL" value="FATAL" v-model="shownLevels"> fatal</label>
               </div>
             </form>
         </div>
