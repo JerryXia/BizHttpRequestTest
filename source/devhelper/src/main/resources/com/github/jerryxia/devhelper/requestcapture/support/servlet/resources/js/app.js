@@ -52,13 +52,20 @@ const index = {
                     that.libInfo = res.data.libInfo;
                     that.memoryMXBean = res.data.memoryMXBean;
                     that.memoryPoolMXBeans = res.data.memoryPoolMXBeans;
-                    that.requestAttributes = res.data.requestAttributes;
+                    that.requestAttributes = that.objectNameOrderedKeyValue(res.data.requestAttributes);
                     
                     that.serverstat = res.serverstat;
                 } else {
                     
                 }
             });
+        },
+        objectNameOrderedKeyValue: function(obj) {
+            let kvArray = [];
+            for(let k in obj) {
+                kvArray.push({ key: k, value: obj[k] });
+            }
+            return _.sortBy(kvArray, function(item){ return item.key; });
         }
     }
 };
@@ -85,6 +92,8 @@ const apiRecords = {
             currFetchHasNew: false,
             lastRecordIndex: 0,
             pageSize: 10,
+            selectedFilterUrl: '',
+            allFilterUrls: [],
             queryLevels: 'WARN,ERROR,FATAL',
             exceptionRecords: {},
             isFetchingExceptionRecords: false,
@@ -182,6 +191,11 @@ const apiRecords = {
             } else {
                 console.warn('watch isFetchingExceptionRecords into extra case.');
             }
+        },
+        'apiRecordsPagedList': function(newVal, oldVal){
+            let that = this;
+            let requestURIs = _.map(newVal, function(item){ return item.requestURI; })
+            that.allFilterUrls = _.uniq(requestURIs);
         }
     },
     computed: {
@@ -199,6 +213,14 @@ const apiRecords = {
                 return ' loading...';
             } else {
                 return '' + that.fetchedTick + '秒后自动加载较新记录';
+            }
+        },
+        filteredApiRecordsPagedList: function() {
+            let that = this;
+            if(that.selectedFilterUrl === '') {
+                return that.apiRecordsPagedList;
+            } else {
+                return _.filter(that.apiRecordsPagedList, function(item){ return item.requestURI == that.selectedFilterUrl });
             }
         }
     },
@@ -419,7 +441,6 @@ const apiRecords = {
                             }
                         }
                     }
-                    console.log(JSON.stringify(that.exceptionRecords));
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
 
@@ -436,7 +457,6 @@ const apiRecords = {
             if(typeof value === 'undefined'){
                 value = '';
             }
-            console.log(value);
             switch (value) {
                 case 'FATAL':
                 case 'ERROR':

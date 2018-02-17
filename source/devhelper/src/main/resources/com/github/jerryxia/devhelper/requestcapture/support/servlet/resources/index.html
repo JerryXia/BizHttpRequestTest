@@ -173,7 +173,6 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             <tr>
                                 <td class="td_lable"><small>LogExtComponent</small></td><td style="width: 85%;"><small>{{libInfo.logExtEnabledComponent}}</small></td>
                             </tr>
-                            
                             <tr>
                                 <td class="td_lable"><small>Java Version</small></td><td style="width: 85%;"><code>{{libInfo.javaVersion}}</code></td>
                             </tr>
@@ -196,8 +195,8 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             <tr><th colspan="2" style="text-align: center;">Request Attributes</th></tr>
                         </thead>
                         <tbody>
-                            <tr v-for="(value, key) in requestAttributes">
-                                <td class="td_lable td_expand_message"><small>{{key}}</small></td><td style="width: 85%;"><small>{{value}}</small></td>
+                            <tr v-for="kvItem in requestAttributes">
+                                <td class="td_lable td_expand_message"><small>{{kvItem.key}}</small></td><td style="width: 85%;"><small>{{kvItem.value}}</small></td>
                             </tr>
                         </tbody>
                     </table>
@@ -250,6 +249,12 @@ hr{ margin-top:1px;margin-bottom:1px; }
             <div>
                 <form class="form-horizontal">
                     <div class="form-group">
+                        <div class="col-sm-4">
+                            <select class="form-control" v-model="selectedFilterUrl">
+                                <option value="">显示全部^_^o ~~~</option>
+                                <option v-for="url in allFilterUrls" v-bind:value="url">{{url}}</option>
+                            </select>
+                        </div>
                         <div class="col-sm-1">
                           <div class="checkbox">
                               <label><input type="checkbox" v-model="logTbShow.id" /> id</label>
@@ -296,7 +301,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="apiRecord in apiRecordsPagedList">
+                            <tr v-for="apiRecord in filteredApiRecordsPagedList">
                                 <td v-show="logTbShow.id" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]" v-bind:title="apiRecord.id"><small>{{apiRecord.id}}</small></td>
                                 <td v-show="logTbShow.timeStamp" v-bind:title="apiRecord.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{apiRecord.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.method" style="min-width:70px;width:70px;word-break: break-all;" v-bind:title="apiRecord.contentType"><code>{{apiRecord.method}}</code></td>
@@ -628,6 +633,6 @@ hr{ margin-top:1px;margin-bottom:1px; }
     <script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
     <script src="https://cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js"></script>
     <script src="https://cdn.bootcss.com/clipboard.js/1.7.1/clipboard.min.js"></script>
-    <script src="js/app.js?v=1_0_7" type="text/javascript" charset="utf8"></script>
+    <script src="js/app.js?v=1_0_8" type="text/javascript" charset="utf8"></script>
 </body>
 </html>
