@@ -114,7 +114,7 @@ public abstract class AbstractResourceServlet extends HttpServlet {
      */
     protected abstract String process(String url, HttpServletRequest request);
 
-    private byte[] readByteArrayFromResource(String resource) throws IOException {
+    protected byte[] readByteArrayFromResource(String resource) throws IOException {
         InputStream in = null;
         try {
             in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);
@@ -147,7 +147,7 @@ public abstract class AbstractResourceServlet extends HttpServlet {
         return count;
     }
 
-    private String readFromResource(String resource) throws IOException {
+    protected String readFromResource(String resource) throws IOException {
         InputStream in = null;
         try {
             in = Thread.currentThread().getContextClassLoader().getResourceAsStream(resource);

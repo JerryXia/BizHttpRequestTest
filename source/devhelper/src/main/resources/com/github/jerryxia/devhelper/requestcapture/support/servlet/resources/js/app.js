@@ -47,7 +47,7 @@ const index = {
         fetchData: function () {
             let that = this;
 
-            jQuery.getJSON('snoop.json?callback=?', {}, function(res) {
+            jQuery.getJSON(PATH_PREFIX + '/snoop.json?callback=?', {}, function(res) {
                 if(res && res.code === 1) {
                     that.libInfo = res.data.libInfo;
                     that.memoryMXBean = res.data.memoryMXBean;
@@ -269,7 +269,7 @@ const apiRecords = {
             that.isFetchingData = true;
             jQuery.ajax({
                 type: 'GET',
-                url: 'allapirecords.json',
+                url: PATH_PREFIX + '/allapirecords.json',
                 timeout: 123000,
                 //contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                 //data: { t: Date.now() },
@@ -303,7 +303,7 @@ const apiRecords = {
             var $btn = $(event.target).button('loading');
 
             that.apiRecordLogsQueryId = recordId;
-            $.getJSON('apirecordlogs.json?callback=?', { id: recordId }, function (res) {
+            $.getJSON(PATH_PREFIX + '/apirecordlogs.json?callback=?', { id: recordId }, function (res) {
                 if (res && res.code == 1) {
                     that.apiRecordLogs = res.data;
                 } else {
@@ -373,7 +373,7 @@ const apiRecords = {
             that.isFetchingData = true;
             jQuery.ajax({
                 type: 'GET',
-                url: 'apirecords.json',
+                url: PATH_PREFIX + '/apirecords.json',
                 timeout: 123000,
                 //contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
                 data: { startIndex: start, endIndex: end },
@@ -417,7 +417,7 @@ const apiRecords = {
             that.isFetchingExceptionRecords = true;
             jQuery.ajax({
                 type: 'GET',
-                url: 'exceptionRecords.json',
+                url: PATH_PREFIX + '/exceptionRecords.json',
                 timeout: 123000,
                 data: { levels: that.queryLevels },
                 dataType: 'jsonp',
@@ -708,7 +708,7 @@ const allLogs = {
             that.isFetchingData = true;
             jQuery.ajax({
                 type: 'GET',
-                url: 'alllogs.json',
+                url: PATH_PREFIX + '/alllogs.json',
                 timeout: 123000,
                 data: { },
                 dataType: 'jsonp',
@@ -744,7 +744,7 @@ const allLogs = {
             that.isFetchingData = true;
             jQuery.ajax({
                 type: 'GET',
-                url: 'logs.json',
+                url: PATH_PREFIX + '/logs.json',
                 timeout: 123000,
                 data: { startIndex: start, endIndex: end },
                 dataType: 'jsonp',
@@ -902,14 +902,14 @@ const ORDERED_LEVELS = [ 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL' ];
 const ORDERED_LEVELS_RANK = { TRACE: 1, DEBUG: 2, INFO: 3, WARN: 4, ERROR: 5, FATAL: 6 };
 
 const router = new VueRouter({
+    mode: 'history',
     routes: [
-        { path: '/apirecords', component: apiRecords },
-        { path: '/apilogs', component: apiLogs },
-        { path: '/alllogs/:level', component: allLogs },
-        { path: '/alllogs', redirect: { path: '/alllogs/ALL', query:{ from: 0, count: 16 } } },
-        { path: '/settings/replay', component: settingsReplay },
-        { path: '/settings/show_exception_records', component: settingsShowExceptionRecords },
-        { path: '/', component: index }
+        { path: PATH_PREFIX + '/apirecords.html', component: apiRecords },
+        { path: PATH_PREFIX + '/apilogs.html', component: apiLogs },
+        { path: PATH_PREFIX + '/alllogs/:level.html', component: allLogs },
+        { path: PATH_PREFIX + '/settings/replay.html', component: settingsReplay },
+        { path: PATH_PREFIX + '/settings/show_exception_records.html', component: settingsShowExceptionRecords },
+        { path: PATH_PREFIX + '/index.html', component: index }
     ]
 });
 const app = new Vue({

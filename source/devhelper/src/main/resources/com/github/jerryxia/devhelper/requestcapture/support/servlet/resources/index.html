@@ -105,15 +105,15 @@ hr{ margin-top:1px;margin-bottom:1px; }
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
-                        <router-link to="/" tag="li" active-class="active" exact="true"> <a>Snoop</a></router-link>
-                        <router-link to="/apirecords" tag="li" active-class="active"> <a>Api Records</a></router-link>
-                        <router-link to="/apilogs" tag="li" active-class="active" class="none" id="linkApiLogs"> <a>Api Logs</a></router-link>
-                        <router-link to="/alllogs" tag="li" active-class="active"> <a>All Logs</a></router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/index.html' }" tag="li" active-class="active" exact="true"> <a>Snoop</a></router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/apirecords.html' }" tag="li" active-class="active"> <a>Api Records</a></router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/apilogs.html' }" tag="li" active-class="active" class="none" id="linkApiLogs"> <a>Api Logs</a></router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/alllogs/ALL.html', query:{ from: 0, count: 16 } }" tag="li" active-class="active"> <a>All Logs</a></router-link>
                         <li class="dropdown" id="settings"> 
                             <a href="javascript:;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Settings <span class="caret"></span></a>
                             <ul class="dropdown-menu" role="menu">
-                                <router-link to="/settings/replay" tag="li" active-class="active"><a>Replay</a></router-link>
-                                <router-link to="/settings/show_exception_records" tag="li" active-class="active"><a>ShowExceptionRecords</a></router-link>
+                                <router-link :to="{ path: PATH_PREFIX + '/settings/replay.html' }" tag="li" active-class="active"><a>Replay</a></router-link>
+                                <router-link :to="{ path: PATH_PREFIX + '/settings/show_exception_records.html' }" tag="li" active-class="active"><a>ShowExceptionRecords</a></router-link>
                                 <!-- <li><a href="#">Another action</a></li>
                                 <li><a href="#">Something else here</a></li>
                                 <li class="divider"></li>
@@ -324,7 +324,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                         <div class="modal-header">
                           <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
                           <h4 class="modal-title" id="apiRecordLogsTitle">
-                            <router-link :to="{ path: '/apilogs', query: { apiRecordId: apiRecordLogsQueryId } }" target="_blank">Api Request Logs</router-link>
+                            <router-link :to="{ path: PATH_PREFIX + '/apilogs.html', query: { apiRecordId: apiRecordLogsQueryId } }" target="_blank">Api Request Logs</router-link>
                           </h4>
                         </div>
                         <div class="modal-body">
@@ -458,25 +458,25 @@ hr{ margin-top:1px;margin-bottom:1px; }
     <div class="row">
         <div class="col-md-2">
             <div id="loglevels" class="list-group">
-                <router-link :to="{ path: '/alllogs/ALL', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>ALL
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/ALL.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">ALL
                     <span class="badge">{{logCount.ALL}}</span>
                 </router-link>
-                <router-link :to="{ path: '/alllogs/TRACE', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>TRACE
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/TRACE.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">TRACE
                     <span class="badge">{{logCount.TRACE}}</span>
                 </router-link>
-                <router-link :to="{ path: '/alllogs/DEBUG', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>DEBUG
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/DEBUG.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">DEBUG
                     <span class="badge">{{logCount.DEBUG}}</span>
                 </router-link>
-                <router-link :to="{ path: '/alllogs/INFO', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>INFO
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/INFO.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">INFO
                     <span class="badge">{{logCount.INFO}}</span>
                 </router-link>
-                <router-link :to="{ path: '/alllogs/WARN', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>WARN
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/WARN.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">WARN
                     <span class="badge">{{logCount.WARN}}</span>
                 </router-link>
-                <router-link :to="{ path: '/alllogs/ERROR', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>ERROR
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/ERROR.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">ERROR
                     <span class="badge">{{logCount.ERROR}}</span>
                 </router-link>
-                <router-link :to="{ path: '/alllogs/FATAL', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active" append>FATAL
+                <router-link :to="{ path: PATH_PREFIX + '/alllogs/FATAL.html', query: { from: 0, count: 16 } }" class="list-group-item" active-class="active">FATAL
                     <span class="badge">{{logCount.FATAL}}</span>
                 </router-link>
             </div>
@@ -540,7 +540,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                         </thead>
                         <tbody>
                             <tr v-for="log in queryedLogPagedList">
-                                <td><router-link :to="{ path: '/apilogs', query: {apiRecordId: (log.httpRequestRecordId || '')} }" v-bind:class="['btn', 'btn-default', 'btn-xs']" v-show="log.httpRequestRecordId && log.httpRequestRecordId.length > 0" target="_blank" title="Jump to apiRecord" append> &larr; </router-link></td>
+                                <td><router-link :to="{ path: PATH_PREFIX + '/apilogs.html', query: {apiRecordId: (log.httpRequestRecordId || '')} }" v-bind:class="['btn', 'btn-default', 'btn-xs']" v-show="log.httpRequestRecordId && log.httpRequestRecordId.length > 0" target="_blank" title="Jump to apiRecord" append> &larr; </router-link></td>
                                 <td v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.httpRequestRecordId}}</small></td>
                                 <td v-show="logTbShow.timeStamp" style="min-width:124px;width:124px;word-break: break-all;"><small>{{log.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td>
                                 <td v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
@@ -555,10 +555,10 @@ hr{ margin-top:1px;margin-bottom:1px; }
                 </div>
                 <div class="btn-toolbar">
                     <div class="btn-group paginator">
-                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: 0, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom <= 0 }]" exact-active-class="active" exact="true" append>First</router-link>
-                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: queryFrom - queryCount, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom <= 0 }]" exact-active-class="active" append>&laquo;&nbsp;Prev</router-link>
-                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: queryFrom + queryCount, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom >= lastPageStartIndex }]" exact-active-class="active" append>Next&nbsp;&raquo;</router-link>
-                        <router-link :to="{ path: '/alllogs/' + queryLevel, query: { from: lastPageStartIndex, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom >= lastPageStartIndex }]" exact-active-class="active" append>Last</router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/alllogs/' + queryLevel + '.html', query: { from: 0, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom <= 0 }]" exact-active-class="active" exact="true">First</router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/alllogs/' + queryLevel + '.html', query: { from: queryFrom - queryCount, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom <= 0 }]" exact-active-class="active">&laquo;&nbsp;Prev</router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/alllogs/' + queryLevel + '.html', query: { from: queryFrom + queryCount, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom >= lastPageStartIndex }]" exact-active-class="active">Next&nbsp;&raquo;</router-link>
+                        <router-link :to="{ path: PATH_PREFIX + '/alllogs/' + queryLevel + '.html', query: { from: lastPageStartIndex, count: queryCount } }" v-bind:class="[ 'btn', 'btn-default', { disabled: queryFrom >= lastPageStartIndex }]" exact-active-class="active">Last</router-link>
                     </div>
                     <div class="btn-toolbar-spacer"></div>
                     <div class="btn-toolbar-label">Total items: {{ logCount[queryLevel] }}</div>
@@ -633,6 +633,3 @@ hr{ margin-top:1px;margin-bottom:1px; }
     <script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
     <script src="https://cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js"></script>
     <script src="https://cdn.bootcss.com/clipboard.js/1.7.1/clipboard.min.js"></script>
-    <script src="js/app.js?v=1_0_8" type="text/javascript" charset="utf8"></script>
-</body>
-</html>

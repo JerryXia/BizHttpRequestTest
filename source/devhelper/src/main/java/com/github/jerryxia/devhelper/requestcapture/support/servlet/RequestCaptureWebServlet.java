@@ -1,5 +1,6 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Map;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import com.github.jerryxia.devhelper.Constants;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
@@ -44,6 +46,48 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
     @Override
     public void init() throws ServletException {
 
+    }
+
+    @Override
+    protected void returnResourceFile(String fileName, String uri, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String filePath = getFilePath(fileName);
+
+        if (fileName.endsWith(".jpg")) {
+            byte[] bytes = super.readByteArrayFromResource(filePath);
+            if (bytes != null) {
+                response.getOutputStream().write(bytes);
+            }
+
+            return;
+        }
+
+        String text = super.readFromResource(filePath);
+        if (text == null) {
+            filePath = getFilePath("/index.html");
+            text = super.readFromResource(filePath);
+        }
+
+        if (filePath.endsWith(".html")) {
+            response.setContentType("text/html;charset=utf-8");
+        } else if (fileName.endsWith(".css")) {
+            response.setContentType("text/css;charset=utf-8");
+        } else if (fileName.endsWith(".js")) {
+            response.setContentType("text/javascript;charset=utf-8");
+        }
+        response.getWriter().write(text);
+
+        if (filePath.endsWith(".html")) {
+            response.getWriter().write("<script type=\"text/javascript\">const PATH_PREFIX = '");
+            response.getWriter().write(uri);
+            response.getWriter().write("';</script>");
+            response.getWriter().write("<script src=\"");
+            response.getWriter().write(uri);
+            response.getWriter().write("/js/app.js?v=");
+            response.getWriter().write(Constants.VERSION);
+            response.getWriter().write("\"></script> </body></html>");
+        }
     }
 
     @Override
