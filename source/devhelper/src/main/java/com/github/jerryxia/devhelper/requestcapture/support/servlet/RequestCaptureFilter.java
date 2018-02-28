@@ -90,63 +90,23 @@ public class RequestCaptureFilter implements Filter {
         if (!enabled || isExclusion(httpRequest.getRequestURI())) {
             chain.doFilter(request, response);
         } else {
-            Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
-            if (requestCaptureIdObj == null) {
-                // 首次filter
-                HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
-                httpRequest.setAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME,
-                        httpRequestRecord.getId());
-                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
-                RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
-
-                // org.springframework.web.util.ContentCachingRequestWrapper
-                ContentRecordRequestWrapper httpRequestWrapper = null;
-                if (httpRequest instanceof ContentRecordRequestWrapper) {
-                    httpRequestWrapper = (ContentRecordRequestWrapper) httpRequest;
-                } else {
-                    httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest, maxPayloadLength, null,
-                            new DefaultContentEndListener(httpRequestRecord));
-                }
-
-                // org.springframework.web.util.ContentCachingResponseWrapper
-                ContentRecordResponseWrapper httpResponseWrapper = null;
-                if (response instanceof ContentRecordResponseWrapper) {
-                    httpResponseWrapper = (ContentRecordResponseWrapper) response;
-                } else {
-                    httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
-                }
-
-                try {
-                    chain.doFilter(httpRequestWrapper, httpResponseWrapper);
-                } finally {
-                    if (log.isDebugEnabled()) {
-                        String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
-                        log.debug(responseBody);
-                    }
-                    RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
-                    httpResponseWrapper.copyBodyToResponse();
-                }
-            } else {
-                // forward include error
-                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
-
-                ContentRecordResponseWrapper httpResponseWrapper = null;
-                if (response instanceof ContentRecordResponseWrapper) {
-                    httpResponseWrapper = (ContentRecordResponseWrapper) response;
-                } else {
-                    httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
-                }
-
-                try {
-                    chain.doFilter(request, httpResponseWrapper);
-                } finally {
-                    if (log.isDebugEnabled()) {
-                        String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
-                        log.debug(responseBody);
-                    }
-                    RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
-                    httpResponseWrapper.copyBodyToResponse();
-                }
+            switch (httpRequest.getDispatcherType()) {
+            case REQUEST:
+                dispatchRequest(httpRequest, response, chain);
+                break;
+            case FORWARD:
+                dispatchForward(httpRequest, response, chain);
+                break;
+            case INCLUDE:
+                dispatchInclude(httpRequest, response, chain);
+                break;
+            case ERROR:
+                dispatchError(httpRequest, response, chain);
+                break;
+            case ASYNC:
+            default:
+                chain.doFilter(request, response);
+                break;
             }
         }
     }
@@ -154,6 +114,130 @@ public class RequestCaptureFilter implements Filter {
     @Override
     public void destroy() {
         RequestCaptureConstants.RECORD_MANAGER.shutdown();
+    }
+
+    private void dispatchRequest(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        // 首次filter
+        HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
+        // httpRequestRecord.getId() --> RequestCaptureId
+        httpRequest.setAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME, httpRequestRecord.getId());
+        // 存到当前线程
+        RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
+
+        RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+
+        // org.springframework.web.util.ContentCachingRequestWrapper
+        ContentRecordRequestWrapper httpRequestWrapper = null;
+        if (httpRequest instanceof ContentRecordRequestWrapper) {
+            httpRequestWrapper = (ContentRecordRequestWrapper) httpRequest;
+        } else {
+            httpRequestWrapper = new ContentRecordRequestWrapper(httpRequest, maxPayloadLength, null,
+                    new DefaultContentEndListener(httpRequestRecord));
+        }
+
+        // org.springframework.web.util.ContentCachingResponseWrapper
+        ContentRecordResponseWrapper httpResponseWrapper = null;
+        if (response instanceof ContentRecordResponseWrapper) {
+            httpResponseWrapper = (ContentRecordResponseWrapper) response;
+        } else {
+            httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
+        }
+
+        try {
+            if (log.isTraceEnabled()) {
+                log.trace("dispatchRequest pre doFilter");
+            }
+            chain.doFilter(httpRequestWrapper, httpResponseWrapper);
+            if (log.isTraceEnabled()) {
+                log.trace("dispatchRequest post doFilter");
+            }
+        } finally {
+            if (log.isTraceEnabled()) {
+                log.trace("dispatchRequest finally");
+            }
+            if (log.isDebugEnabled()) {
+                String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
+                log.debug(responseBody);
+            }
+            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+            httpResponseWrapper.copyBodyToResponse();
+        }
+    }
+
+    private void dispatchForward(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+        if (requestCaptureIdObj == null) {
+            // 之前的请求isExclusion = true, 那么本次forward的请求也忽略
+        } else {
+            // 其实可以不用再次赋值
+            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace(" - dispatchForward pre doFilter");
+        }
+        chain.doFilter(httpRequest, response);
+        if (log.isTraceEnabled()) {
+            log.trace(" - dispatchForward post doFilter");
+        }
+    }
+
+    private void dispatchInclude(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+        if (requestCaptureIdObj == null) {
+            // 之前的请求isExclusion = true, 那么本次Include的请求也忽略
+        } else {
+            // 其实可以不用再次赋值
+            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+        }
+        if (log.isTraceEnabled()) {
+            log.trace(" - dispatchInclude pre doFilter");
+        }
+        chain.doFilter(httpRequest, response);
+        if (log.isTraceEnabled()) {
+            log.trace(" - dispatchInclude post doFilter");
+        }
+    }
+
+    private void dispatchError(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
+        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+        if (requestCaptureIdObj == null) {
+            // 之前的请求isExclusion = true, 那么本次forward的请求也忽略
+            chain.doFilter(httpRequest, response);
+        } else {
+            // error之前的请求已经进入filter中finally块执行HTTP_REQUEST_RECORD_ID.remove()
+            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+
+            ContentRecordResponseWrapper httpResponseWrapper = null;
+            if (response instanceof ContentRecordResponseWrapper) {
+                httpResponseWrapper = (ContentRecordResponseWrapper) response;
+            } else {
+                httpResponseWrapper = new ContentRecordResponseWrapper((HttpServletResponse) response);
+            }
+
+            try {
+                if (log.isTraceEnabled()) {
+                    log.trace("dispatchError pre doFilter");
+                }
+                chain.doFilter(httpRequest, httpResponseWrapper);
+                if (log.isTraceEnabled()) {
+                    log.trace("dispatchError post doFilter");
+                }
+            } finally {
+                if (log.isTraceEnabled()) {
+                    log.trace("dispatchError finally");
+                }
+                if (log.isErrorEnabled()) {
+                    String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
+                    log.error(responseBody);
+                }
+                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                httpResponseWrapper.copyBodyToResponse();
+            }
+        }
     }
 
     private HttpRequestRecord buildHttpRequestRecord(HttpServletRequest httpRequest) {
