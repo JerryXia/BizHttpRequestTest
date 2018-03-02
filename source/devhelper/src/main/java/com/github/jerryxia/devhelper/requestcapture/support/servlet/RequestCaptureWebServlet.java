@@ -338,7 +338,26 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         libInfo.put("requestResponseLogInterceptorEnabled", WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED);
 
         libInfo.put("logExtEnabled", RequestCaptureConstants.LOG_EXT_ENABLED);
-        libInfo.put("logExtEnabledComponent", RequestCaptureConstants.LOG_EXT_ENABLED_MAP.toString());
+        libInfo.put("logExtEnabledComponent", RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
+
+        libInfo.put("reqProducerSuccessCount",
+                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerSuccessCount().get());
+        libInfo.put("reqProducerFailCount",
+                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerFailCount().get());
+        libInfo.put("reqConsumerSuccessCount",
+                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
+        libInfo.put("reqConsumerFailCount",
+                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerFailCount());
+
+        libInfo.put("logProducerSuccessCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                .viewLogEntryEventStat().getProducerSuccessCount().get());
+        libInfo.put("logProducerFailCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                .viewLogEntryEventStat().getProducerFailCount().get());
+        libInfo.put("logConsumerSuccessCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                .viewLogEntryEventStat().getConsumerSuccessCount());
+        libInfo.put("logConsumerFailCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
+                .viewLogEntryEventStat().getConsumerFailCount());
+
         result.put("libInfo", libInfo);
 
         JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().run();

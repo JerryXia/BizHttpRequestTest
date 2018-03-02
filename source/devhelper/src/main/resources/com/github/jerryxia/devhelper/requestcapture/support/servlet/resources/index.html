@@ -11,6 +11,7 @@
 .w150 { width: 150px; }
 .w200 { width: 200px; }
 .mt0 { margin-top: 0px; }
+.mr10 { margin-right: 10px;}
 .mb20 { margin-bottom: 20px;}
 .none { display: none !important; }
 [v-cloak] { display: none !important; }
@@ -63,6 +64,20 @@ hr{ margin-top:1px;margin-bottom:1px; }
     margin: 20px 0;
 }
 
+#tbLogFlow tbody tr:hover > td:first-child > a {
+    visibility: visible;  
+}
+a.anchor {
+    float: left;
+    padding-right: 4px;
+    margin-left: -26px;
+    line-height: 1;
+    z-index: 100;
+    position: absolute;
+    visibility: hidden;
+}
+
+
 .td_lable {
 	font-weight: bold;
 	width: 220px;
@@ -101,13 +116,13 @@ hr{ margin-top:1px;margin-bottom:1px; }
                         <span class="icon-bar"></span>
                         <span class="icon-bar"></span>
                     </button>
-                    <a class="navbar-brand" href="#">Request Capture</a>
+                    <a class="navbar-brand" href="javascript:;">Request Capture</a>
                 </div>
                 <div id="navbar" class="navbar-collapse collapse">
                     <ul class="nav navbar-nav">
                         <router-link :to="{ path: PATH_PREFIX + '/index.html' }" tag="li" active-class="active" exact="true"> <a>Snoop</a></router-link>
                         <router-link :to="{ path: PATH_PREFIX + '/apirecords.html' }" tag="li" active-class="active"> <a>Api Records</a></router-link>
-                        <router-link :to="{ path: PATH_PREFIX + '/apilogs.html' }" tag="li" active-class="active" class="none" id="linkApiLogs"> <a>Api Logs</a></router-link>
+                        <li class="active none" id="linkApiLogs"><a href="javascript:;">Api Logs</a></li>
                         <router-link :to="{ path: PATH_PREFIX + '/alllogs/ALL.html', query:{ from: 0, count: 16 } }" tag="li" active-class="active"> <a>All Logs</a></router-link>
                         <li class="dropdown" id="settings"> 
                             <a href="javascript:;" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" class="dropdown-toggle">Settings <span class="caret"></span></a>
@@ -127,7 +142,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
             </div>
         </nav>
 
-        <div class="container" style="margin-bottom: 20px;">
+        <div class="container mb20">
             <router-view></router-view>
         </div>
     </div>
@@ -159,19 +174,28 @@ hr{ margin-top:1px;margin-bottom:1px; }
                                 <td class="td_lable"><small>Version</small></td><td style="width: 85%;"><code>{{libInfo.version}}</code></td>
                             </tr>
                             <tr>
-                                <td class="td_lable"><small>RequestIdInitFilter</small></td><td style="width: 85%;"><small>{{libInfo.requestIdInitFilterEnabled}}</small></td>
+                                <td class="td_lable"><small>RequestIdInitFilter</small></td><td style="width: 85%;"><small><span v-bind:class="['label', libInfo.requestIdInitFilterEnabled?'label-success':'label-default']">{{libInfo.requestIdInitFilterEnabled?'On':'Off'}}</span></small></td>
                             </tr>
                             <tr>
-                                <td class="td_lable"><small>RequestCaptureFilter</small></td><td style="width: 85%;"><small>{{libInfo.requestCaptureFilterEnabled}}</small></td>
+                                <td class="td_lable"><small>RequestCaptureFilter</small></td><td style="width: 85%;"><small><span v-bind:class="['label', libInfo.requestCaptureFilterEnabled?'label-success':'label-default']">{{libInfo.requestCaptureFilterEnabled?'On':'Off'}}</span></small></td>
                             </tr>
                             <tr>
-                                <td class="td_lable"><small>RequestResponseLogInterceptor</small></td><td style="width: 85%;"><small>{{libInfo.requestResponseLogInterceptorEnabled}}</small></td>
+                                <td class="td_lable"><small>RequestResponseLogInterceptor</small></td><td style="width: 85%;"><small><span v-bind:class="['label', libInfo.requestResponseLogInterceptorEnabled?'label-success':'label-default']">{{libInfo.requestResponseLogInterceptorEnabled?'On':'Off'}}</span></small></td>
                             </tr>
                             <tr>
-                                <td class="td_lable"><small>LogExtEnabled</small></td><td style="width: 85%;"><small>{{libInfo.logExtEnabled}}</small></td>
+                                <td class="td_lable"><small>日志扩展启用</small></td><td style="width: 85%;"><small><span v-bind:class="['label', libInfo.logExtEnabled?'label-success':'label-default']">{{libInfo.logExtEnabled?'On':'Off'}}</span></small></td>
                             </tr>
                             <tr>
-                                <td class="td_lable"><small>LogExtComponent</small></td><td style="width: 85%;"><small>{{libInfo.logExtEnabledComponent}}</small></td>
+                                <td class="td_lable"><small>日志扩展组件</small></td><td style="width: 85%;"><small><span v-for="(value, key) in libInfo.logExtEnabledComponent" v-bind:class="['mr10', 'label', value?'label-primary':'label-default']">{{key}}</span></small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>启动时间</small></td><td style="width: 85%;"><small>{{libInfo.startTime | timeStamp('yyyy-MM-dd HH:mm:ss')}}</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>HttpRecord处理计数</small></td><td style="width: 85%;"><small>成功<code>{{libInfo.reqProducerSuccessCount}}</code>次，失败<code>{{libInfo.reqProducerFailCount}}</code>次</small></td>
+                            </tr>
+                            <tr>
+                                <td class="td_lable"><small>Log处理计数</small></td><td style="width: 85%;"><small>成功<code>{{libInfo.logProducerSuccessCount}}</code>次，失败<code>{{libInfo.logProducerFailCount}}</code>次</small></td>
                             </tr>
                             <tr>
                                 <td class="td_lable"><small>Java Version</small></td><td style="width: 85%;"><code>{{libInfo.javaVersion}}</code></td>
@@ -184,9 +208,6 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             </tr>
                             <tr>
                                 <td class="td_lable"><small>Java ClassPath</small></td><td style="width: 85%;" class="td_expand_message"><pre>{{ libInfo.serverOsName.indexOf('Windows') > -1 ? libInfo.javaClassPath.split(/;/).join('\n') : libInfo.javaClassPath.split(/;|:/).join('\n') }}</pre></td>
-                            </tr>
-                            <tr>
-                                <td class="td_lable"><small>StartTime</small></td><td style="width: 85%;"><small>{{libInfo.startTime | timeStamp('yyyy-MM-dd HH:mm:ss')}}</small></td>
                             </tr>
                         </tbody>
                     </table>
@@ -359,7 +380,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                     </span>
                 </div>
                 <div class="table-responsive">
-                    <h3>Request Information</h3>
+                    <h3 id="RequestInformation">Request Information</h3>
                     <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
                         <tbody>
                             <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>timeStamp</small></td><td><small>{{ apiRecord.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss') }}</small></td></tr>
@@ -370,7 +391,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             <tr><td style="min-width:116px;width:116px;word-break: break-all;"><small>payload</small></td><td><small>{{ apiRecord.payload }}</small></td></tr>
                         </tbody>
                     </table>
-                    <h3>Request Headers</h3>
+                    <h3 id="RequestHeaders">Request Headers</h3>
                     <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
                         <tbody>
                             <template v-for="(value, key) in apiRecord.headers">
@@ -383,7 +404,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                     </table>
                 </div>
                 <form class="form-horizontal">
-                    <h3 class="mt0">Log Flow</h3>
+                    <h3 class="mt0" id="LogFlow">Log Flow</h3>
                     <div class="form-group">
                         <div class="col-sm-2">
                             <div class="checkbox">
@@ -423,7 +444,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                     </div>
                 </form>
                 <div class="table-responsive">
-                    <table class="table table-condensed table-bordered table-hover" style="table-layout: fixed;">
+                    <table class="table table-condensed table-bordered table-hover" id="tbLogFlow" style="table-layout: fixed;">
                         <thead>
                             <tr>
                                 <th v-show="logTbShow.timeStamp" style="min-width:84px;width:84px;word-break: break-all;">timeStamp</th>
@@ -436,8 +457,11 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="log in apiRecordLogs">
-                                <td v-show="logTbShow.timeStamp" style="min-width:84px;width:84px;word-break: break-all;">{{log.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss.l') }}</td>
+                            <tr v-for="log in apiRecordLogs" v-bind:id="'log'+log.id">
+                                <td v-show="logTbShow.timeStamp" style="min-width:84px;width:84px;word-break: break-all;">
+                                    <a v-bind:href="'#log'+log.id" aria-hidden="true" class="anchor"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>
+                                    {{log.timeStamp | timeStamp('yyyy-MM-dd HH:mm:ss.l') }}
+                                </td>
                                 <td v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
                                 <td v-show="logTbShow.threadName" class="td_expand_message"><small>{{log.threadName}}</small></td>
                                 <td v-show="logTbShow.loggerName" class="td_expand_message"><small>{{log.loggerName}}</small></td>
@@ -539,6 +563,10 @@ hr{ margin-top:1px;margin-bottom:1px; }
                             </tr>
                         </thead>
                         <tbody>
+                            <template v-if="isFirstFetching && isFirstFetching === true && isFetchingData && isFetchingData === true">
+                            <tr><td align="center" v-bind:colspan="1+(logTbShow.timeStamp?1:0)+(logTbShow.level?1:0)+(logTbShow.threadName?1:0)+(logTbShow.loggerName?1:0)+(logTbShow.message?1:0)+(logTbShow.host?1:0)+(logTbShow.ip?1:0)"><i class="fa fa-spinner fa-spin"></i></td></tr>
+                            </template>
+                            <template v-else>
                             <tr v-for="log in queryedLogPagedList">
                                 <td><router-link :to="{ path: PATH_PREFIX + '/apilogs.html', query: {apiRecordId: (log.httpRequestRecordId || '')} }" v-bind:class="['btn', 'btn-default', 'btn-xs']" v-show="log.httpRequestRecordId && log.httpRequestRecordId.length > 0" target="_blank" title="Jump to apiRecord" append> &larr; </router-link></td>
                                 <td v-show="logTbShow.httpRequestRecordId" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.httpRequestRecordId}}</small></td>
@@ -550,6 +578,7 @@ hr{ margin-top:1px;margin-bottom:1px; }
                                 <td v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.host}}</small></td>
                                 <td v-show="logTbShow.ip" style="min-width:102px;width:102px;word-break: break-all;"><small>{{log.ip}}</small></td>
                             </tr>
+                            </template>
                         </tbody>
                     </table>
                 </div>

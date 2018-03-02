@@ -485,6 +485,7 @@ const apiLogs = {
     data: function () {
         return {
             currUrl: '',
+            initHash: '',
             clipboard: null,
             isFetchingData: {
                 apiRecord: false,
@@ -517,6 +518,7 @@ const apiLogs = {
         console.log('apiLogs created');
         that.fetchData();
         that.currUrl = window.location.href;
+        that.initHash = location.hash;
         let clipboard = new Clipboard('.btn');
         clipboard.on('success', function(e) {
             e.clearSelection();
@@ -529,8 +531,10 @@ const apiLogs = {
     mounted: function () {
         this.$nextTick(function () {
             // Code that will run only after the entire view has been rendered
+            $('body').css({ 'padding-top': '0px' });
+            $('nav').removeClass('navbar-fixed-top').addClass('navbar-static-top');
             $('#linkApiLogs').removeClass('none');
-            $('[data-toggle="tooltip"]').tooltip();
+            $('[data-toggle="tooltip"]').tooltip();          
         });
     },
     updated: function () {
@@ -539,11 +543,53 @@ const apiLogs = {
     destroyed: function () {
         console.log('apiLogs destroyed');
         this.clipboard.destroy();
-        $('[data-toggle="tooltip"]').tooltip('destroy');
         $('#linkApiLogs').addClass('none');
+        $('[data-toggle="tooltip"]').tooltip('destroy');
     },
     watch: {
-        //'$route': 'fetchData',
+        'isFetchingData': {
+            handler: function (val, oldVal) {
+                let that = this;
+                that.$nextTick(function () {
+                    // 设置tr的id
+                    $('table tr').each(function(i, v) {
+                        let idAttr = v.getAttribute('id');
+                        if(!(idAttr && idAttr.length > 0)) {
+                            let $td0 = $(v).find('td').eq(0);
+                            let td0text = $td0.text();
+                            v.setAttribute('id', td0text);
+                            $td0.html('<small><a href="#'+ td0text +'" style="color:#333;text-decoration:none;">'+ td0text +'</a></small>');
+                        }
+                    });
+                    // dom渲染完毕后，定位目标行的位置，并高亮显示
+                    if(val.apiRecord === false && val.apiRecordLogs === false) {
+                        location.hash = '';
+                        location.hash = that.initHash;
+                        if(that.initHash && that.initHash.length > 0) {
+                            let $elInitHash = $('' + that.initHash);
+                            if($elInitHash.length > 0){
+                                let showInfo = function() {
+                                    $elInitHash.addClass('alert').addClass('alert-info');
+                                };
+                                let hideInfo = function() {
+                                    $elInitHash.removeClass('alert').removeClass('alert-info');
+                                };
+                                $elInitHash.css({display: 'none'});
+                                showInfo();
+                                $elInitHash.fadeIn(3000, function() {
+                                    setTimeout(hideInfo, 50);
+                                    setTimeout(showInfo, 1050);
+                                    setTimeout(hideInfo, 2050);
+                                    setTimeout(showInfo, 3050);
+                                    setTimeout(hideInfo, 4050);
+                                });
+                            }
+                        }
+                    }
+                });
+            },
+            deep: true
+        }
     },
     methods: {
         fetchData: function() {
@@ -604,6 +650,7 @@ const allLogs = {
                 ip: false
             },
             serverstat: {},
+            isFirstFetching: true,
             isFetchingData: false,
             fetchedTickTimeout: null,
             currFetchHasNew: false,
@@ -730,6 +777,7 @@ const allLogs = {
                 },
                 complete: function(jqXHR, textStatus) {
                     that.isFetchingData = false;
+                    that.isFirstFetching = false;
                     // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
                     console.log('alllogs.json:' + textStatus);
                 }
