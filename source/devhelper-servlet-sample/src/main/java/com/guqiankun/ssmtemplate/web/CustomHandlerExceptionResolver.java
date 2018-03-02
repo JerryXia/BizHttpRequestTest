@@ -24,7 +24,7 @@ public class CustomHandlerExceptionResolver extends SimpleMappingExceptionResolv
                     ModelAndView jsonMv = new ModelAndView();
                     jsonMv.addObject("ret", 0);
                     jsonMv.addObject("msg", ex.getMessage());
-                    jsonMv.addObject("exception", null);
+                    jsonMv.addObject(DEFAULT_EXCEPTION_ATTRIBUTE, null);
                     return jsonMv;
                 } else {
                     applyStatusCodeIfPossible(request, response, statusCode);

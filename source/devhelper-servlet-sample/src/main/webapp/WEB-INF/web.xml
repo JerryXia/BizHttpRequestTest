@@ -82,7 +82,8 @@
         <servlet-name>DruidStatView</servlet-name>
         <url-pattern>/druid/*</url-pattern>
     </servlet-mapping>
-    
+
+
     <!-- SpringMVC Servlet -->
     <servlet>
         <servlet-name>ssmtemplate</servlet-name>
