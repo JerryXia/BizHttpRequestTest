@@ -17,12 +17,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
- * <p>
- * 请求唯一ID，请求一旦到达API后，API就会生成请求ID并通过响应头返回给客户端。
- * </p>
- * <p>
- * 建议客户端与后端服务都记录此请求ID，可用于问题排查与跟踪。
- * </p>
+ * <p>请求唯一ID，请求一旦到达API后，API就会生成请求ID并通过响应头返回给客户端。 </p>
+ * <p>建议客户端与后端服务都记录此请求ID，可用于问题排查与跟踪。</p>
  * 
  * @author guqk
  *

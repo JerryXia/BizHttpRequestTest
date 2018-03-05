@@ -7,17 +7,16 @@ import java.util.Map;
  *
  */
 public class HttpRequestRecord {
-
-    private final String id;
-    private final HttpRequestRecordType type;
-    private final long timeStamp;
-    private String method;
-    private String requestURL;
-    private String requestURI;
-    private String queryString;
-    private String contentType;
+    private String                id;
+    private HttpRequestRecordType type;
+    private long                  timeStamp;
+    private String                method;
+    private String                requestURL;
+    private String                requestURI;
+    private String                queryString;
+    private String                contentType;
     private Map<String, String[]> parameterMap;
-    private String payload;
+    private String                payload;
     private Map<String, String[]> headers;
 
     public HttpRequestRecord(String uuid, HttpRequestRecordType type, long timeStamp) {

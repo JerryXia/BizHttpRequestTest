@@ -5,7 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.Filter;
@@ -264,9 +266,16 @@ public class RequestCaptureFilter implements Filter {
         String requestURL = httpRequest.getRequestURL().toString();
         String queryString = httpRequest.getQueryString();
         String contentType = httpRequest.getContentType();
-        // org.apache.catalina.util.ParameterMap
-        LinkedHashMap<String, String[]> parameterMap = new LinkedHashMap<String, String[]>(
-                httpRequest.getParameterMap());
+        // deepClone org.apache.catalina.util.ParameterMap
+        LinkedHashMap<String, String[]> parameterMap = new LinkedHashMap<String, String[]>();
+        Iterator<Map.Entry<String, String[]>> iterator = httpRequest.getParameterMap().entrySet().iterator();
+        while (iterator.hasNext()) {
+            Map.Entry<String, String[]> entry = iterator.next();
+            String[] entryValue = entry.getValue();
+            parameterMap.put(entry.getKey(), Arrays.copyOf(entryValue, entryValue.length));
+        }
+        iterator = null;
+
         LinkedHashMap<String, String[]> headers = new LinkedHashMap<String, String[]>();
 
         Enumeration<String> headerNames = httpRequest.getHeaderNames();
@@ -275,6 +284,7 @@ public class RequestCaptureFilter implements Filter {
             String[] headerValues = toStringArray(httpRequest.getHeaders(headerName));
             headers.put(headerName, headerValues);
         }
+        headerNames = null;
 
         HttpRequestRecord httpRequestRecord = new HttpRequestRecord(id, type, timeStamp);
         httpRequestRecord.setMethod(method);
@@ -363,4 +373,5 @@ public class RequestCaptureFilter implements Filter {
             return null;
         }
     }
+
 }

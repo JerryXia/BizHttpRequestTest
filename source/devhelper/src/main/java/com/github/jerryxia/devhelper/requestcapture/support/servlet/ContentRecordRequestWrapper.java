@@ -37,7 +37,6 @@ public class ContentRecordRequestWrapper extends HttpServletRequestWrapper {
     private BufferedReader reader;
 
     private ContentOverflowListener contentOverflowListener;
-
     private ContentEndListener contentEndListener;
 
     /**
@@ -197,12 +196,18 @@ public class ContentRecordRequestWrapper extends HttpServletRequestWrapper {
                 if (ch == -1) {
                     if (this.end == false) {
                         this.end = true;
-                        contentEndListener.handleContentEnd(cachedContent, getCharacterEncoding());
+                        if(contentEndListener != null) {
+                            contentEndListener.handleContentEnd(cachedContent, getCharacterEncoding());
+                            contentEndListener = null;
+                        }
                     }
                 } else {
                     if (contentCacheLimit != null && cachedContent.size() == contentCacheLimit) {
                         this.overflow = true;
-                        contentOverflowListener.handleContentOverflow(contentCacheLimit);
+                        if(contentOverflowListener != null) {
+                            contentOverflowListener.handleContentOverflow(contentCacheLimit);
+                            contentOverflowListener = null;
+                        }
                     } else {
                         cachedContent.write(ch);
                     }

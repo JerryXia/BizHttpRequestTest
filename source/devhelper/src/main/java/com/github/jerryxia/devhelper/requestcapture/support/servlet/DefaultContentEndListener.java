@@ -35,6 +35,6 @@ public class DefaultContentEndListener implements ContentEndListener {
             }
         }
 
-        httpRequestRecord.setPayload(payload);
+        this.httpRequestRecord.setPayload(payload);
     }
 }
