@@ -2,11 +2,11 @@ package com.github.jerryxia.devhelper.requestcapture.support;
 
 import static org.junit.Assert.*;
 
-import com.github.jerryxia.devhelper.util.SystemClock;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordEventProducer;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordManager;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
+import com.github.jerryxia.devutil.SystemClock;
 
 import org.junit.After;
 import org.junit.Before;

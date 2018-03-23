@@ -465,7 +465,7 @@ a.anchor {
                                 <td v-show="logTbShow.level" style="min-width:70px;width:70px;word-break: break-all;"><small><span class="label" v-bind:class="log.level|logLevelFormater">{{log.level}}</span></small></td>
                                 <td v-show="logTbShow.threadName" class="td_expand_message"><small>{{log.threadName}}</small></td>
                                 <td v-show="logTbShow.loggerName" class="td_expand_message"><small>{{log.loggerName}}</small></td>
-                                <td class="td_expand_message"><pre v-if="log.message.indexOf('\n') > -1">{{log.message}}</pre><small v-else>{{log.message}}</small></td>
+                                <td class="td_expand_message"><pre v-if="(log.message || '').indexOf('\n') > -1">{{log.message}}</pre><small v-else>{{log.message}}</small></td>
                                 <td v-show="logTbShow.host" style="min-width:100px;width:100px;word-break: break-all;"><small>{{log.host}}</small></td>
                                 <td v-show="logTbShow.ip" style="min-width:102px;width:102px;word-break: break-all;"><small>{{log.ip}}</small></td>
                             </tr>

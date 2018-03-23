@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
-import com.github.jerryxia.devhelper.util.SystemClock;
-
 /**
  * 引导器
  * 
@@ -32,7 +30,7 @@ public class Bootstrapper {
     }
 
     private void getCurrentLibVersion() {
-        Constants.START_TIME = SystemClock.now();
+        Constants.START_TIME = System.currentTimeMillis();
         // Constants.START_TIME = ManagementFactory.getRuntimeMXBean().getStartTime();
         Constants.SERVER_OS_NAME = System.getProperty("os.name");
         Constants.JAVA_VM_NAME = System.getProperty("java.vm.name");

@@ -25,8 +25,8 @@ import org.slf4j.LoggerFactory;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
 import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
-import com.github.jerryxia.devhelper.util.SystemClock;
 import com.github.jerryxia.devhelper.web.WebConstants;
+import com.github.jerryxia.devutil.SystemClock;
 
 /**
  * @author guqiankun

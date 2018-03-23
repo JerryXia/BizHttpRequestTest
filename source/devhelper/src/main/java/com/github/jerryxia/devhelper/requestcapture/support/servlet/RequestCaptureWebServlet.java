@@ -26,7 +26,6 @@ import com.github.jerryxia.devhelper.requestcapture.support.json.JSONWriter;
 import com.github.jerryxia.devhelper.snoop.JvmMemoryInfo;
 import com.github.jerryxia.devhelper.snoop.MemoryPoolMXBeanInfo;
 import com.github.jerryxia.devhelper.snoop.Monitor;
-import com.github.jerryxia.devhelper.util.SystemClock;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
@@ -224,7 +223,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
     private Map<String, Long> getServerStat(long startTime) {
         Map<String, Long> map = new HashMap<String, Long>(2);
-        map.put("time", SystemClock.now());
+        map.put("time", System.currentTimeMillis());
         map.put("generated", System.nanoTime() - startTime);
         return map;
     }
