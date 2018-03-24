@@ -1,7 +1,6 @@
 <configuration>
   <appender name="DEVHELPER" class="com.github.jerryxia.devhelper.requestcapture.support.log.LogbackAppender" />
   <logger name="com.github.jerryxia.devhelper" level="DEBUG" />
-  <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor" level="DEBUG" />
 
   <root level="info">
     <appender-ref ref="DEVHELPER" />

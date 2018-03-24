@@ -21,7 +21,7 @@
 
   <runtime>java8</runtime>
   <threadsafe>true</threadsafe>
-  <instance-class>B1</instance-class>
+  <instance-class>B2</instance-class>
 <!--
 F1 (default)    128 MB  600 MHz automatic
 F2              256 MB  1.2 GHz automatic
