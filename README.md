@@ -12,7 +12,7 @@ If you are debugging apis with front-end engineers, you may encounter the follow
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper</artifactId>
-      <version>1.0.12</version>
+      <version>1.0.14</version>
     </dependency>
     
 if you use spring boot, Add the following dependency.
@@ -26,4 +26,10 @@ if you use spring boot, Add the following dependency.
 
 ## Dashboard
 
+[demo](https://res4gqk.appspot.com/)
+
 ![sample01](doc/sample01.gif)
+
+
+
+
