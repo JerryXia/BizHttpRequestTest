@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+  <!-- https://cloud.google.com/appengine/docs/standard/java/config/appref#max_idle_instances -->
+  <application>res4gqk</application>
+  <version>1</version>
+
+  <precompilation-enabled>true</precompilation-enabled>
+  <public-root>/static</public-root>
+  <ssl-enabled>true</ssl-enabled>
+  <!-- 
+  <static-files>
+    <include path="/favicon.ico" expiration="30d">
+      <http-header name="Access-Control-Allow-Origin" value="http://example.org" />
+    </include>
+    <include path="/robots.txt" expiration="1d" />
+  </static-files>
+  -->
+  <async-session-persistence enabled="true"
+    queue-name="default" />
+  <sessions-enabled>true</sessions-enabled>
+
+  <runtime>java8</runtime>
+  <threadsafe>true</threadsafe>
+  <instance-class>B1</instance-class>
+<!--
+F1 (default)    128 MB  600 MHz automatic
+F2              256 MB  1.2 GHz automatic
+F4              512 MB  2.4 GHz automatic
+F4_1G           1024 MB 2.4 GHz automatic
+
+  <automatic-scaling>
+    <min-idle-instances>0</min-idle-instances>
+    <max-idle-instances>1</max-idle-instances>
+    <min-pending-latency>1000ms</min-pending-latency>
+    <max-pending-latency>10000ms</max-pending-latency>
+    <max-concurrent-requests>64</max-concurrent-requests>
+  </automatic-scaling>
+-->
+<!--
+B1 (default)    128 MB  600 MHz manual, basic
+B2              256 MB  1.2 GHz manual, basic
+B4              512 MB  2.4 GHz manual, basic
+B4_1G           1024 MB 2.4 GHz manual, basic
+B8              1024 MB 4.8 GHz manual, basic
+-->
+  <!--
+  <basic-scaling>
+    <idle-timeout>5m</idle-timeout>
+    <max-instances>2</max-instances>
+  </basic-scaling>
+  -->
+  <manual-scaling>
+    <instances>1</instances>
+  </manual-scaling>
+
+  <env-variables>
+    <env-var name="DEFAULT_ENCODING" value="UTF-8" />
+  </env-variables>
+  <warmup-requests-enabled>false</warmup-requests-enabled>
+</appengine-web-app>
