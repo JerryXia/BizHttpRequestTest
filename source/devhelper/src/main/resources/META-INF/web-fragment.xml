@@ -31,7 +31,7 @@
         </init-param>
         <init-param>
             <param-name>exclusions</param-name>
-            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/requestcapture/*,/druid/*</param-value>
+            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/requestcapture/*</param-value>
         </init-param>
         <init-param>
             <param-name>replayRequestIdRequestHeaderName</param-name>

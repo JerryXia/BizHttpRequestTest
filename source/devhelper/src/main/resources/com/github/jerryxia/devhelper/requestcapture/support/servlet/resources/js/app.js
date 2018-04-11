@@ -298,7 +298,7 @@ const apiRecords = {
                 }
             });
         },
-        showLogs: function (recordId, requestId, event) {
+        showLogs: function (recordId, event) {
             let that = this;
             var $btn = $(event.target).button('loading');
 
@@ -326,24 +326,48 @@ const apiRecords = {
             }
 
             let that = this;
-            var $btn = $(event.target).button('loading');
-
+            let $btn = $(event.target).button('loading');
             $.ajax({
                 method: apiRecord.method,
-                url: replayUrlHost + apiRecord.requestURI,// + ((apiRecord.queryString && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : ''),
-                headers: {},
-                data: that.parameterFormat(apiRecord.parameterMap),
-                //dataType: 'json',
+                url: replayUrlHost + apiRecord.requestURI + ((apiRecord.queryString && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : ''),
+                headers: that.filteredHeaders(apiRecord.headers),
+                data: (apiRecord.contentType && apiRecord.contentType.indexOf('application/x-www-form-urlencoded;') === 0) ? that.parameterFormat(apiRecord.parameterMap) : (apiRecord.payload || ''),
                 success: function (res) {
-                    $btn.button('reset');
+                    
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
-                    console.log(jqXHR); 
-                    console.log(textStatus); 
-                    console.warn(errorThrown);
+                    console.info(jqXHR); 
+                    console.info(textStatus); 
+                    console.error(errorThrown);
+                },
+                complete: function (jqXHR, textStatus) {
                     $btn.button('reset');
                 }
             });
+        },
+        filteredHeaders: function(headers) {
+            let excludeHeaders = [ 'accept', 'accept-encoding', 'accept-language', 'connection', 'content-length', 'cookie', 'host', 'user-agent' ];
+            let requestingHeaders = {};
+            if (headers) {
+                for (let k in headers) {
+                    if(excludeHeaders.indexOf(k) > -1 || k.indexOf('x-') === 0) {
+                        console.log('exclude ' + k);
+                    } else {
+                        let v = headers[k];
+                        if (Array.isArray(v)) {
+                            if (v.length === 1) {
+                                requestingHeaders[k] = v[0];
+                            } else {
+                                requestingHeaders[k] = v;
+                            }
+                        } else {
+                            requestingHeaders[k] = v;
+                        }
+                    }
+                }
+            }
+            console.log(requestingHeaders);
+            return requestingHeaders;
         },
         parameterFormat: function (obj) {
             let formaterObj = {};

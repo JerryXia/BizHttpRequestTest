@@ -32,11 +32,11 @@ public class Bootstrapper {
     private void getCurrentLibVersion() {
         Constants.START_TIME = System.currentTimeMillis();
         // Constants.START_TIME = ManagementFactory.getRuntimeMXBean().getStartTime();
-        Constants.SERVER_OS_NAME = System.getProperty("os.name");
-        Constants.JAVA_VM_NAME = System.getProperty("java.vm.name");
-        Constants.JAVA_VERSION = System.getProperty("java.version");
-        Constants.JAVA_HOME = System.getProperty("java.home");
-        Constants.JAVA_CLASS_PATH = System.getProperty("java.class.path");
+        Constants.SERVER_OS_NAME = getSystemProperty("os.name");
+        Constants.JAVA_VM_NAME = getSystemProperty("java.vm.name");
+        Constants.JAVA_VERSION = getSystemProperty("java.version");
+        Constants.JAVA_HOME = getSystemProperty("java.home");
+        Constants.JAVA_CLASS_PATH = getSystemProperty("java.class.path");
 
         Properties prop = new Properties();
         try {
@@ -89,6 +89,16 @@ public class Bootstrapper {
                 }
             }
         }
+    }
+
+    private String getSystemProperty(String key) {
+        String p = null;
+        try {
+            p = System.getProperty(key);
+        } catch (SecurityException e) {
+            p = "unknown";
+        }
+        return p;
     }
 
     /**

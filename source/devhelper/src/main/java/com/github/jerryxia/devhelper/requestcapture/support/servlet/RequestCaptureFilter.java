@@ -1,13 +1,13 @@
 package com.github.jerryxia.devhelper.requestcapture.support.servlet;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.Filter;
@@ -29,6 +29,11 @@ import com.github.jerryxia.devhelper.web.WebConstants;
 import com.github.jerryxia.devutil.SystemClock;
 
 /**
+ * <b> reference code: </b>
+ * <p>
+ * https://github.com/vy/hrrs/blob/master/servlet-filter/src/main/java/com/vlkan/hrrs/servlet/HrrsUrlEncodedFormHelper.java
+ * </p>
+ * 
  * @author guqiankun
  *
  */
@@ -123,7 +128,7 @@ public class RequestCaptureFilter implements Filter {
         // 首次filter
         HttpRequestRecord httpRequestRecord = buildHttpRequestRecord(httpRequest);
         // httpRequestRecord.getId() --> RequestCaptureId
-        httpRequest.setAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME, httpRequestRecord.getId());
+        httpRequest.setAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ID, httpRequestRecord.getId());
         // 存到当前线程
         RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
 
@@ -169,7 +174,7 @@ public class RequestCaptureFilter implements Filter {
 
     private void dispatchForward(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ID);
         if (requestCaptureIdObj == null) {
             // 之前的请求isExclusion = true, 那么本次forward的请求也忽略
         } else {
@@ -187,7 +192,7 @@ public class RequestCaptureFilter implements Filter {
 
     private void dispatchInclude(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ID);
         if (requestCaptureIdObj == null) {
             // 之前的请求isExclusion = true, 那么本次Include的请求也忽略
         } else {
@@ -205,7 +210,7 @@ public class RequestCaptureFilter implements Filter {
 
     private void dispatchError(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_NAME);
+        Object requestCaptureIdObj = httpRequest.getAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ID);
         if (requestCaptureIdObj == null) {
             // 之前的请求isExclusion = true, 那么本次forward的请求也忽略
             chain.doFilter(httpRequest, response);
@@ -245,7 +250,7 @@ public class RequestCaptureFilter implements Filter {
     private HttpRequestRecord buildHttpRequestRecord(HttpServletRequest httpRequest) {
         String id = null;
         if (WebConstants.REQUEST_ID_INIT_FILTER_ENABLED) {
-            id = (String) httpRequest.getAttribute(WebConstants.REQUEST_ID_INIT_FILTER_NAME);
+            id = (String) httpRequest.getAttribute(WebConstants.REQUEST_ID_INIT_FILTER_ID);
         } else {
             // 如果RequestIdInitFilter没有启用，则由RequestCaptureFilter生成Id
             id = UUID.randomUUID().toString();
@@ -267,17 +272,13 @@ public class RequestCaptureFilter implements Filter {
         String queryString = httpRequest.getQueryString();
         String contentType = httpRequest.getContentType();
         // deepClone org.apache.catalina.util.ParameterMap
-        LinkedHashMap<String, String[]> parameterMap = new LinkedHashMap<String, String[]>();
-        Iterator<Map.Entry<String, String[]>> iterator = httpRequest.getParameterMap().entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, String[]> entry = iterator.next();
-            String[] entryValue = entry.getValue();
-            parameterMap.put(entry.getKey(), Arrays.copyOf(entryValue, entryValue.length));
+        String encoding = httpRequest.getCharacterEncoding();
+        if (encoding == null) {
+            encoding = "UTF-8";
         }
-        iterator = null;
+        LinkedHashMap<String, String[]> formParameters = parseFormParameters(httpRequest, encoding);
 
         LinkedHashMap<String, String[]> headers = new LinkedHashMap<String, String[]>();
-
         Enumeration<String> headerNames = httpRequest.getHeaderNames();
         while (headerNames.hasMoreElements()) {
             String headerName = headerNames.nextElement();
@@ -292,7 +293,7 @@ public class RequestCaptureFilter implements Filter {
         httpRequestRecord.setRequestURI(requestURI);
         httpRequestRecord.setQueryString(queryString);
         httpRequestRecord.setContentType(contentType);
-        httpRequestRecord.setParameterMap(parameterMap);
+        httpRequestRecord.setParameterMap(formParameters);
         httpRequestRecord.setHeaders(headers);
         return httpRequestRecord;
     }
@@ -374,4 +375,78 @@ public class RequestCaptureFilter implements Filter {
         }
     }
 
+    private String[] toStringArray(ArrayList<String> list) {
+        if (list != null) {
+            String[] arr = new String[list.size()];
+            return list.toArray(arr);
+        } else {
+            return null;
+        }
+    }
+
+    private LinkedHashMap<String, String[]> parseFormParameters(HttpServletRequest request, String encoding) {
+        LinkedHashMap<String, String[]> formParameters = new LinkedHashMap<String, String[]>();
+        LinkedHashMap<String, ArrayList<String>> queryParameters = parseQueryParameters(request, encoding);
+        Enumeration<String> parameterNames = request.getParameterNames();
+        while (parameterNames.hasMoreElements()) {
+            String parameterName = parameterNames.nextElement();
+            String[] parameterValues = request.getParameterValues(parameterName);
+            ArrayList<String> queryParameterValues = queryParameters.get(parameterName);
+            // from parameterValues exclude queryParameterValues
+            ArrayList<String> formParameterValues = new ArrayList<String>(1);
+            for (String parameterValue : parameterValues) {
+                if (queryParameterValues == null) {
+                    formParameterValues.add(parameterValue);
+                } else {
+                    int queryParameterIndex = queryParameterValues.indexOf(parameterValue);
+                    if (queryParameterIndex > -1) {
+                        queryParameterValues.remove(queryParameterIndex);
+                    } else {
+                        formParameterValues.add(parameterValue);
+                    }
+                }
+            }
+            // if formParameterValues is not empty
+            if (formParameterValues.size() > 0) {
+                formParameters.put(parameterName, toStringArray(formParameterValues));
+            }
+        }
+        return formParameters;
+    }
+
+    private LinkedHashMap<String, ArrayList<String>> parseQueryParameters(HttpServletRequest request, String encoding) {
+        LinkedHashMap<String, ArrayList<String>> map = new LinkedHashMap<String, ArrayList<String>>();
+        String queryString = request.getQueryString();
+        if (queryString == null || queryString.length() == 0) {
+            return map;
+        }
+        String[] entries = queryString.split("&");
+        if (entries.length == 0) {
+            return map;
+        }
+        for (String entry : entries) {
+            try {
+                int splitterIndex = entry.indexOf('=');
+                String key = null;
+                String value = null;
+                if (splitterIndex < 0) {
+                    key = URLDecoder.decode(entry, encoding);
+                } else {
+                    String encodedKey = entry.substring(0, splitterIndex);
+                    key = URLDecoder.decode(encodedKey, encoding);
+                    String encodedValue = entry.substring(splitterIndex + 1);
+                    value = URLDecoder.decode(encodedValue, encoding);
+                }
+                ArrayList<String> values = map.get(key);
+                if (values == null) {
+                    values = new ArrayList<String>(1);
+                    map.put(key, values);
+                }
+                values.add(value);
+            } catch (UnsupportedEncodingException error) {
+                // String message = String.format("failed to read query parameter (entry=%s)", entry);
+            }
+        }
+        return map;
+    }
 }

@@ -13,13 +13,13 @@ import com.github.jerryxia.devhelper.Bootstrapper;
  *
  */
 public final class BootstrapperContextListener implements ServletContextListener {
-
     private Bootstrapper bootstrapper;
 
     @Override
     public void contextInitialized(ServletContextEvent event) {
         bootstrapper = new Bootstrapper();
         bootstrapper.init();
+        event.getServletContext().log("devhelper BootstrapperContextListener contextInitialized");
     }
 
     @Override
@@ -27,6 +27,7 @@ public final class BootstrapperContextListener implements ServletContextListener
         if (this.bootstrapper != null) {
             this.bootstrapper = null;
         }
+        event.getServletContext().log("devhelper BootstrapperContextListener contextDestroyed");
     }
 
 }

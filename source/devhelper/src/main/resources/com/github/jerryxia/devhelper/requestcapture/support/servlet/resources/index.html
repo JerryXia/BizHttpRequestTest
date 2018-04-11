@@ -330,7 +330,7 @@ a.anchor {
                                 <td v-show="logTbShow.parameter" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.parameterMap | parameterFormater }}</small></td>
                                 <td v-show="logTbShow.payload" v-on:dblclick="switchExpandMessage(apiRecord)" v-bind:class="[ apiRecord.isExpandMessage ? 'td_expand_message' : 'td_log_message' ]"><small>{{ apiRecord.payload }}</small></td>
                                 <td v-bind:class="apiRecordExceptionLogLevelClassFormater(exceptionRecords[apiRecord.id])" style="min-width:92px;width: 92px;">
-                                    <input type="button" class="btn btn-xs btn-info" value="Log" data-loading-text="Loading..." v-on:click="showLogs(apiRecord.id, apiRecord.requestId, $event)" />
+                                    <input type="button" class="btn btn-xs btn-info" value="Log" data-loading-text="Loading..." v-on:click="showLogs(apiRecord.id, $event)" />
                                     <input type="button" class="btn btn-xs btn-success" value="replay" data-loading-text="pending..." v-on:click="replay(apiRecord, $event)" />
                                 </td>
                             </tr>

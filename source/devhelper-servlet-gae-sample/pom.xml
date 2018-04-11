@@ -12,8 +12,8 @@
   <properties>
     <!-- parent -->
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <maven.compiler.target>1.7</maven.compiler.target>
-    <maven.compiler.source>1.7</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <maven.compiler.source>1.8</maven.compiler.source>
     <junit-version>4.12</junit-version>
     <appengine-version>1.9.63</appengine-version>
   </properties>
@@ -57,36 +57,7 @@
       <version>1.7.25</version>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-      <id>development</id>
-      <properties>
-        <running.env>development</running.env>
-      </properties>
-      <activation>
-        <activeByDefault>true</activeByDefault>
-      </activation>
-    </profile>
-    <profile>
-      <id>production</id>
-      <properties>
-        <running.env>production</running.env>
-      </properties>
-    </profile>
-  </profiles>
   <build>
-    <resources>
-      <resource>
-        <directory>src/main/resources</directory>
-        <filtering>true</filtering>
-        <excludes>
-          <exclude>env/*</exclude>
-        </excludes>
-      </resource>
-    </resources>
-    <filters>
-      <filter>src/main/resources/env/${running.env}.properties</filter>
-    </filters>
     <plugins>
       <plugin>
         <groupId>com.google.cloud.tools</groupId>

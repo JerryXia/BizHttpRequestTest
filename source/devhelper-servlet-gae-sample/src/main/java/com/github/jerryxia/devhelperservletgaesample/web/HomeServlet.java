@@ -32,7 +32,7 @@ public class HomeServlet extends HttpServlet {
         if (session.getAttribute(requestFirst) == null) {
             String now = DateTime.now(DateTimeZone.UTC).toString("yyyy-MM-dd HH:mm:ss");
             log.info("first request time: {}", now);
-            log.info("session class: {}", session.getClass().toString());
+            log.info("session: {}", session.getClass().toGenericString());
             session.setAttribute(requestFirst, now);
         } else {
             log.info("session storage data: {}", session.getAttribute(requestFirst));
