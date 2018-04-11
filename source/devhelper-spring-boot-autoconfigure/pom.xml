@@ -14,8 +14,6 @@
     <junit-version>4.12</junit-version>
     <spring-boot.version>1.5.12.RELEASE</spring-boot.version>
     <spring-framework.version>4.3.16.RELEASE</spring-framework.version>
-    <slf4j-api.version>1.7.25</slf4j-api.version>
-    <logback.version>1.1.11</logback.version>
   </properties>
   <dependencies>
     <dependency>

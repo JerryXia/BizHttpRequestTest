@@ -19,7 +19,6 @@ public class LogEntryManager {
     private LogEntryEventStat         logEntryEventStat;
     private LogEntryEventHandler      consumer;
 
-    @SuppressWarnings("unchecked")
     public LogEntryManager() {
         this.disruptor = new Disruptor<>(new LogEntryEventFactory(), 1024, Executors.defaultThreadFactory(),
                 ProducerType.MULTI, new SleepingWaitStrategy());

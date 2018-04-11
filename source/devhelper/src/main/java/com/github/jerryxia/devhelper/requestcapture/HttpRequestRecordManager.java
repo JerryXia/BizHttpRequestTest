@@ -20,7 +20,6 @@ public class HttpRequestRecordManager {
     private HttpRequestRecordEventHandler     consumer;
     private LogEntryManager                   logEntryManager;
 
-    @SuppressWarnings("unchecked")
     public HttpRequestRecordManager() {
         this.disruptor = new Disruptor<>(new HttpRequestRecordEventFactory(), 1024, Executors.defaultThreadFactory(),
                 ProducerType.MULTI, new SleepingWaitStrategy());
