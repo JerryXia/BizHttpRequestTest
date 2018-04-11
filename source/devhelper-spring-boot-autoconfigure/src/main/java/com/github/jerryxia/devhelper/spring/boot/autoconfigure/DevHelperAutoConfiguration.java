@@ -177,9 +177,9 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             interceptor.setEnabled(config.getEnabled().booleanValue());
         }
         if (!StringUtils.isEmpty(config.getLogRequestHeaderNames())) {
-            String[] reqheadNames = config.getLogRequestHeaderNames().split(",");
+            String[] toLogReqHeadNames = config.getLogRequestHeaderNames().split(",");
             ArrayList<String> list = new ArrayList<String>();
-            for (String reqHeadName : reqheadNames) {
+            for (String reqHeadName : toLogReqHeadNames) {
                 String trimReqHeadName = reqHeadName.trim();
                 if (!StringUtils.isEmpty(trimReqHeadName)) {
                     list.add(trimReqHeadName);
