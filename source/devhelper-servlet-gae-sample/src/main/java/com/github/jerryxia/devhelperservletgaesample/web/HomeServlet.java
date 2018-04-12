@@ -38,7 +38,8 @@ public class HomeServlet extends HttpServlet {
             log.info("session storage data: {}", session.getAttribute(requestFirst));
         }
 
-        String appName = query();
+        String appName = "devhelper-servlet-gae-sample";
+        log.debug("appName: {}, now: {}", appName, DateTime.now(DateTimeZone.UTC).toString("yyyy-MM-dd HH:mm:ss"));
 
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("text/html");
@@ -57,14 +58,14 @@ public class HomeServlet extends HttpServlet {
 
         resp.getWriter().print("<p>now time: <span id=\"now\"></span></p>");
         resp.getWriter().print("<p><a href=\"/requestcapture/\" target=\"_blank\">requestcapture</a></p>");
-        resp.getWriter()
-                .print("<iframe src=\"/requestcapture/\" style=\"border:0px;width:100%;height:500px;\"></iframe>");
+        resp.getWriter().print(
+                "<iframe src=\"/requestcapture/apirecords.html\" style=\"border:0px;width:100%;height:500px;\"></iframe>");
         resp.getWriter()
                 .print("<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js\"></script>");
 
         resp.getWriter().print("<script>");
-        resp.getWriter()
-                .print("var now = function(){ $.post('/now.json', {}, function(res){ $('#now').html(res.t); });   };");
+        resp.getWriter().print(
+                "var now = function(){ $.post('/now.json', { r: Math.floor(Math.random() * 10000000) }, function(res){ $('#now').html(res.t); });   };");
         resp.getWriter().print("setTimeout(now, 1234);");
         resp.getWriter().print("</script>");
         resp.getWriter().print("</body></html>");
@@ -74,15 +75,13 @@ public class HomeServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         resp.setCharacterEncoding("UTF-8");
         resp.setContentType("application/json");
-        resp.getWriter().print("{\"t\":\"" + DateTime.now(DateTimeZone.UTC).toString("yyyy-MM-dd HH:mm:ss") + "\"}");
-    }
-
-    // @Cacheable("time")
-    public String query() {
-        String appName = "devhelper-servlet-gae-sample";
-        // Const.AppProperties.getProperty("app.name");
-        log.debug("appName: {}, now: {}", appName, DateTime.now(DateTimeZone.UTC).toString("yyyy-MM-dd HH:mm:ss"));
-        return appName;
+        DateTime now = DateTime.now(DateTimeZone.UTC);
+        if (now.getSecondOfMinute() % 2 == 0) {
+            log.warn("random warn message, {}", now);
+        } else {
+            log.error("random error message, {}", now);
+        }
+        resp.getWriter().print("{\"t\":\"" + now.toString("yyyy-MM-dd HH:mm:ss") + "\"}");
     }
 
 }
