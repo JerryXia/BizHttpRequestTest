@@ -37,10 +37,10 @@ public class Log4JAppender extends AppenderSkeleton {
 
     @Override
     public void close() {
-        if (this.closed) {
+        if (super.closed) {
             return;
         }
-        this.closed = true;
+        super.closed = true;
     }
 
     @Override
@@ -72,6 +72,6 @@ public class Log4JAppender extends AppenderSkeleton {
         log.setThreadName(event.getThreadName());
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
-        RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
+        RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().tryPublish(log);
     }
 }

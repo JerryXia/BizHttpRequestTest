@@ -80,7 +80,7 @@ public class RequestCaptureFilter implements Filter {
             this.maxPayloadLength = RequestCaptureConstants.DEFAULT_PAYLOAD_LENGTH;
         }
 
-        RequestCaptureConstants.RECORD_MANAGER.init();
+        RequestCaptureConstants.RECORD_MANAGER.start();
 
         filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : "
                 + WebConstants.REQUEST_CAPTURE_FILTER_ENABLED);
@@ -154,10 +154,10 @@ public class RequestCaptureFilter implements Filter {
         try {
             if (log.isTraceEnabled()) {
                 log.trace("dispatchRequest pre doFilter");
-            }
-            chain.doFilter(httpRequestWrapper, httpResponseWrapper);
-            if (log.isTraceEnabled()) {
+                chain.doFilter(httpRequestWrapper, httpResponseWrapper);
                 log.trace("dispatchRequest post doFilter");
+            } else {
+                chain.doFilter(httpRequestWrapper, httpResponseWrapper);
             }
         } finally {
             if (log.isTraceEnabled()) {
@@ -183,10 +183,10 @@ public class RequestCaptureFilter implements Filter {
         }
         if (log.isTraceEnabled()) {
             log.trace(" - dispatchForward pre doFilter");
-        }
-        chain.doFilter(httpRequest, response);
-        if (log.isTraceEnabled()) {
+            chain.doFilter(httpRequest, response);
             log.trace(" - dispatchForward post doFilter");
+        } else {
+            chain.doFilter(httpRequest, response);
         }
     }
 
@@ -201,10 +201,10 @@ public class RequestCaptureFilter implements Filter {
         }
         if (log.isTraceEnabled()) {
             log.trace(" - dispatchInclude pre doFilter");
-        }
-        chain.doFilter(httpRequest, response);
-        if (log.isTraceEnabled()) {
+            chain.doFilter(httpRequest, response);
             log.trace(" - dispatchInclude post doFilter");
+        } else {
+            chain.doFilter(httpRequest, response);
         }
     }
 
@@ -228,10 +228,10 @@ public class RequestCaptureFilter implements Filter {
             try {
                 if (log.isTraceEnabled()) {
                     log.trace("dispatchError pre doFilter");
-                }
-                chain.doFilter(httpRequest, httpResponseWrapper);
-                if (log.isTraceEnabled()) {
+                    chain.doFilter(httpRequest, httpResponseWrapper);
                     log.trace("dispatchError post doFilter");
+                } else {
+                    chain.doFilter(httpRequest, httpResponseWrapper);
                 }
             } finally {
                 if (log.isTraceEnabled()) {

@@ -23,7 +23,7 @@ public class RecordQueueProducerAndConsumerTest {
     @Before
     public void init() {
         recordManager = new HttpRequestRecordManager();
-        recordManager.init();
+        recordManager.start();
     }
 
     @Test

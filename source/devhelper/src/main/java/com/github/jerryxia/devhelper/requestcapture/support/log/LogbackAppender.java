@@ -19,8 +19,6 @@ import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConsta
  *
  */
 public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
-    private static final String TAB       = "\t";
-
     private InetAddress localHost;
     private String      hostName;
     private String      ip;
@@ -63,7 +61,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         log.setThreadName(event.getThreadName());
         log.setTimeStamp(event.getTimeStamp());
         log.setLevel(event.getLevel().toString());
-        RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().publish(log);
+        RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager().allocEventProducer().tryPublish(log);
     }
 
     private String formatException(IThrowableProxy error, StringBuffer sb) {
@@ -82,14 +80,14 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     }
 
     private void formatTopLevelError(IThrowableProxy error, StringBuffer sb) {
-        sb.append(error.getClassName()).append(": ").append(error.getMessage());
+        sb.append(error.getClassName()).append(':').append(' ').append(error.getMessage());
     }
 
     private void formatStackTraceElements(IThrowableProxy error, StringBuffer sb) {
         StackTraceElementProxy[] elements = error.getStackTraceElementProxyArray();
         if (elements != null) {
             for (StackTraceElementProxy e : elements) {
-                sb.append(System.lineSeparator()).append(TAB).append(e.getSTEAsString());
+                sb.append(System.lineSeparator()).append('\t').append(e.getSTEAsString());
             }
         }
     }

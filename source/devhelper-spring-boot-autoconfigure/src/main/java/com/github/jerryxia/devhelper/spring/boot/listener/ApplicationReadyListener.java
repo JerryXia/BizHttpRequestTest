@@ -3,13 +3,10 @@
  */
 package com.github.jerryxia.devhelper.spring.boot.listener;
 
+/**
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 
-/**
- * @author Administrator
- *
- */
 public class ApplicationReadyListener implements ApplicationListener<ApplicationReadyEvent> {
 
     @Override
@@ -21,3 +18,5 @@ public class ApplicationReadyListener implements ApplicationListener<Application
 //        }
     }
 }
+
+ */

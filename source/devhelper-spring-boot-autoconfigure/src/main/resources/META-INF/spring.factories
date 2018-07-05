@@ -4,6 +4,4 @@ org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.jerryx
 # Application Listeners
 org.springframework.context.ApplicationListener=\
 org.springframework.boot.system.ApplicationPidFileWriter,\
-org.springframework.boot.system.EmbeddedServerPortFileWriter,\
-com.github.jerryxia.devhelper.spring.boot.listener.ApplicationReadyListener
-
+org.springframework.boot.system.EmbeddedServerPortFileWriter
