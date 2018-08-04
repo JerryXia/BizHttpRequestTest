@@ -275,8 +275,8 @@
           </dependency>
           <dependency>
             <groupId>com.github.jerryxia</groupId>
-            <artifactId>devhelper</artifactId>
-            <version>1.0.12</version>
+            <artifactId>dev-utils</artifactId>
+            <version>0.0.5</version>
           </dependency>
         </dependencies>
       </plugin>
