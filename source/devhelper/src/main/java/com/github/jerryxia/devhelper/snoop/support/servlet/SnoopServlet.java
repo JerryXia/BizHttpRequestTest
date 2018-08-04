@@ -25,7 +25,7 @@ public class SnoopServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().run();
+        JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().jvmMemoryInfo();
         RequestInformation requestInfo = buildRequestInfo(req);
         StringBuffer sb = new StringBuffer(1024 * 64);
         sb.append("<html><head>");

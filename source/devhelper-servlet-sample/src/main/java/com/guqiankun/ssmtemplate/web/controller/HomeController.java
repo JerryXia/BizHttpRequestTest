@@ -1,6 +1,7 @@
 package com.guqiankun.ssmtemplate.web.controller;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -13,6 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
+
+import com.github.jerryxia.devutil.http.HttpHelper;
 
 @Controller
 public class HomeController extends BaseController {
@@ -58,6 +61,14 @@ public class HomeController extends BaseController {
         } else {
             mv.addObject(SimpleMappingExceptionResolver.DEFAULT_EXCEPTION_ATTRIBUTE, "404 Not Found");
         }
+        return mv;
+    }
+    
+    
+    @RequestMapping("/logtest")
+    public ModelAndView logtest() {
+        ModelAndView mv = new ModelAndView("home/index");
+        logger.info("logtest");
         return mv;
     }
 }

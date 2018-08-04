@@ -77,7 +77,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         }
         response.getWriter().write(text);
 
-        if (filePath.endsWith(".html")) {
+        if (filePath.endsWith("index.html")) {
             response.getWriter().write("<script type=\"text/javascript\">const PATH_PREFIX = '");
             response.getWriter().write(uri);
             response.getWriter().write("';</script>");
@@ -339,8 +339,8 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         libInfo.put("logExtEnabled", RequestCaptureConstants.LOG_EXT_ENABLED);
         libInfo.put("logExtEnabledComponent", RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
 
-        libInfo.put("reqProducerSuccessCount",
-                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerSuccessCount().get());
+        libInfo.put("reqProducerSuccessCount", RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat()
+                .getProducerSuccessCount().get());
         libInfo.put("reqProducerFailCount",
                 RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerFailCount().get());
         libInfo.put("reqConsumerSuccessCount",
@@ -359,7 +359,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
         result.put("libInfo", libInfo);
 
-        JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().run();
+        JvmMemoryInfo jvmMemoryInfo = Monitor.currentMonitor().jvmMemoryInfo();
 
         HashMap<String, String> memoryMXBean = new HashMap<String, String>();
         memoryMXBean.put("heapMemoryUsag", jvmMemoryInfo.getMemoryMXBeanInfo().getHeapMemoryUsag().toString());

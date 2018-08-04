@@ -20,7 +20,7 @@ public class Monitor {
         memoryPoolMXBeans = ManagementFactory.getMemoryPoolMXBeans();
     }
 
-    public JvmMemoryInfo run() {
+    public JvmMemoryInfo jvmMemoryInfo() {
         JvmMemoryInfo jvmMemoryInfo = new JvmMemoryInfo();
         // Memory MXBean
         MemoryMXBeanInfo memoryMXBeanInfo = new MemoryMXBeanInfo();
