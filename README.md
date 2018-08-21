@@ -12,7 +12,7 @@ If you are debugging apis with front-end engineers, you may encounter the follow
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper</artifactId>
-      <version>1.0.15</version>
+      <version>1.0.18</version>
     </dependency>
 
 if you use spring boot, Add the following dependency.
@@ -20,7 +20,7 @@ if you use spring boot, Add the following dependency.
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper-spring-boot-autoconfigure</artifactId>
-      <version>1.0.15</version>
+      <version>1.0.18</version>
     </dependency>
 
 
