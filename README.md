@@ -7,6 +7,8 @@ If you are debugging apis with front-end engineers, you may encounter the follow
 
 ## Quick Start
 
+By default, this library will working with zero configuration. In servlet-api supported web containers, you can add the following maven dependency.
+
 ### Maven
 
     <dependency>
