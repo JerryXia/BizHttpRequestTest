@@ -333,7 +333,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         libInfo.put("startTime", Constants.START_TIME);
 
         libInfo.put("requestIdInitFilterEnabled", WebConstants.REQUEST_ID_INIT_FILTER_ENABLED);
-        libInfo.put("requestCaptureFilterEnabled", WebConstants.REQUEST_CAPTURE_FILTER_ENABLED);
+        libInfo.put("requestCaptureFilterEnabled", RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ENABLED);
         libInfo.put("requestResponseLogInterceptorEnabled", WebConstants.REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED);
 
         libInfo.put("logExtEnabled", RequestCaptureConstants.LOG_EXT_ENABLED);

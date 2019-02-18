@@ -15,13 +15,14 @@ import java.util.Properties;
  * @author guqk
  */
 public class Bootstrapper {
-    private ClassLoader clToUse = null;
+    private static final ClassLoader defaultClassLoader = Bootstrapper.class.getClassLoader();
+    private final ClassLoader        clToUse;
 
     /**
      * ctors
      */
     public Bootstrapper() {
-        clToUse = Bootstrapper.class.getClassLoader();
+        this.clToUse = defaultClassLoader;
     }
 
     public void init() {
@@ -37,6 +38,7 @@ public class Bootstrapper {
         Constants.JAVA_VERSION = getSystemProperty("java.version");
         Constants.JAVA_HOME = getSystemProperty("java.home");
         Constants.JAVA_CLASS_PATH = getSystemProperty("java.class.path");
+        Constants.JAVA_IO_TMPDIR = getSystemProperty("java.io.tmpdir");
 
         Properties prop = new Properties();
         try {
@@ -115,4 +117,33 @@ public class Bootstrapper {
         }
     }
 
+    private static ClassLoader getClassLoader() {
+        if (defaultClassLoader != null) {
+            return defaultClassLoader;
+        } else {
+            return Thread.currentThread().getContextClassLoader();
+        }
+    }
+
+    /**
+     * Loads a class
+     * 
+     * @param className
+     *            - the class to load
+     * @return The loaded class
+     * @throws ClassNotFoundException
+     *             If the class cannot be found (duh!)
+     */
+    public static Class<?> classForName(String className) throws ClassNotFoundException {
+        Class<?> clazz = null;
+        try {
+            clazz = getClassLoader().loadClass(className);
+        } catch (Exception e) {
+            // Ignore. Failsafe below.
+        }
+        if (clazz == null) {
+            clazz = Class.forName(className);
+        }
+        return clazz;
+    }
 }

@@ -12,9 +12,13 @@ import javax.servlet.http.HttpSession;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
+import com.github.jerryxia.devhelper.Constants;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
@@ -23,7 +27,7 @@ import com.github.jerryxia.devhelper.web.WebConstants;
  * @author guqk
  *
  */
-public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
+public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter implements ApplicationContextAware {
     private static final Logger log = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
 
     /**
@@ -147,5 +151,12 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter {
         // - {key}: {v1} {v2}\n
         sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(v1).append(' ').append(v2)
                 .append(System.lineSeparator());
+    }
+
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        log.debug("applicationContext id: {}, name: {}",  applicationContext.getId(), applicationContext.getApplicationName());
+        Constants.SPRING_APPLICATION_CONTEXT = applicationContext;
     }
 }

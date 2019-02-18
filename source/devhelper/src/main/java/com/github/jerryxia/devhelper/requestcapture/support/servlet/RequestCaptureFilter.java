@@ -59,7 +59,7 @@ public class RequestCaptureFilter implements Filter {
         }
 
         this.enabled = Boolean.parseBoolean(filterConfig.getInitParameter(PARAM_NAME_ENABLED));
-        WebConstants.REQUEST_CAPTURE_FILTER_ENABLED = this.enabled;
+        RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ENABLED = this.enabled;
 
         String exclusions = filterConfig.getInitParameter(PARAM_NAME_EXCLUSIONS);
         if (exclusions != null && exclusions.trim().length() != 0) {
@@ -83,7 +83,7 @@ public class RequestCaptureFilter implements Filter {
         RequestCaptureConstants.RECORD_MANAGER.start();
 
         filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : "
-                + WebConstants.REQUEST_CAPTURE_FILTER_ENABLED);
+                + RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ENABLED);
         filterConfig.getServletContext().log(
                 "devhelper RequestCaptureFilter log_ext_enabled_status : " + RequestCaptureConstants.LOG_EXT_ENABLED);
         filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_map    : "

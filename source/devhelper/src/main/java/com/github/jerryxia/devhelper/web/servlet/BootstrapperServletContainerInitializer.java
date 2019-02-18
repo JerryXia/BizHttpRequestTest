@@ -25,5 +25,6 @@ public class BootstrapperServletContainerInitializer implements ServletContainer
         } catch (RuntimeException ex) {
             throw new IllegalStateException("Failed to add listener '" + listener + "' to servlet context", ex);
         }
+        // org.springframework.web.context.support.WebApplicationContextUtils.getRequiredWebApplicationContext(ctx);
     }
 }

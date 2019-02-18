@@ -15,7 +15,6 @@ public class WebConstants {
     public static final String REQUEST_ID_INIT_FILTER_ID = "com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter.Id";
 
     public static volatile boolean REQUEST_ID_INIT_FILTER_ENABLED = false;
-    public static volatile boolean REQUEST_CAPTURE_FILTER_ENABLED = false;
     public static volatile boolean REQUEST_RESPONSE_LOG_INTERCEPTOR_ENABLED = false;
 
 
