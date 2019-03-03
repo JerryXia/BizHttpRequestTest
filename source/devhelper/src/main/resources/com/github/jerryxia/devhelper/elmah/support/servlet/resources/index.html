@@ -1,0 +1,486 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=EmulateIE7" />
+<title>Error log</title>
+<style>
+body
+{
+    font-family: Verdana;
+    font-size: 70%;
+    background-color: #fff;
+}
+
+button, input
+{
+    font-size: 100%;
+}
+
+a
+{
+    color: #0033CC;
+}
+
+a:visited
+{
+    color: Navy;
+}
+
+a:hover
+{
+    color: #FF6600;
+}
+
+img 
+{
+    border: none;
+}
+
+pre, code
+{
+    font-family: "Courier New", Courier;
+}
+
+table
+{
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td
+{
+    border: solid 1px silver;
+    padding: 0.4em;
+    vertical-align: top;
+}
+
+th
+{
+    text-align: left;
+    background-color: #0A6CCE;
+    padding: 0.4em;
+    color: White;
+    vertical-align: top;
+    border: solid 1px silver;
+}
+
+.odd-row
+{
+    background-color: #e9e9e9;
+}
+
+.type-col
+{
+    font-weight: bold;
+}
+
+.code-col, .date-col, .time-col
+{
+    text-align: right;
+}
+
+#ErrorDetail
+{
+    font-size: 110%;
+    background-color: #ffffcc;
+    padding: 1em;
+    width: 100%;
+}
+
+.st-type, .st-param-type
+{
+    color: #00008B;
+}
+
+.st-param-name
+{
+    color: #666;
+}
+
+.st-method
+{
+    color: #008B8B;
+    font-weight: bolder;
+}
+
+.st-file, .st-line
+{
+    color: #8B008B;
+}
+
+@media screen
+{
+    #ErrorDetail
+    {
+        overflow: scroll;
+    }
+}
+
+#ErrorTitle
+{
+    font-weight: bold;
+    font-size: 120%;
+}
+
+#ErrorType, #ErrorMessage
+{
+    display: block;
+}
+
+#ErrorTypeMessageSeparator
+{
+    display: none;
+}
+
+.key-col
+{
+    font-weight: bold;
+}
+
+h1
+{
+    font-family: Verdana;
+    font-weight: normal;
+    color: #0A6CCE;
+    font-size: 175%;
+}
+
+.table-caption
+{
+    background-color: navy;
+    margin: 0;
+    color: white;
+    padding: 0.4em;
+    font-weight: bold;
+}
+
+@media screen 
+{
+    .scroll-view
+    {
+        width: 100%;
+        overflow: scroll;
+    }
+}
+
+#SpeedList 
+{
+    margin: 0;
+    list-style-type: none;
+    text-transform: uppercase;
+    font-size: 80%;
+    padding: 0.25em 0;
+    color: #fff;
+    background-color: #aaa;
+    border-top: solid 1px #aaa;
+    border-bottom: solid 1px #aaa;
+}
+
+#SpeedList a
+{
+    text-decoration: none;    
+    padding: 0.25em 1em;
+    border: solid 1px #aaa;
+    border-right: solid 1px #fff;
+    color: #fff;
+}
+
+#SpeedList a:hover
+{
+    background-color: #fff;
+    color: #444;
+    border: solid 1px #aaa;
+}
+
+#SpeedList li
+{
+    display: inline;
+}
+
+@media print
+{
+    #SpeedList
+    {
+        display: none;
+    }
+}
+
+[v-cloak] { display: none !important; }
+a[disabled="disabled"] { color: #696969; cursor: not-allowed; }
+</style>
+</head>
+<body>
+
+<h1 id="PageTitle">
+    Error Log for <span id="ApplicationName" title=""></span>
+</h1>
+
+<div id="wrap" v-cloak>
+    <router-view></router-view>
+</div>
+
+<p id="Footer"></p>
+
+
+<template id="error_records">
+    <table id="ErrorLog" cellspacing="0" border="0" style="border-collapse:collapse;">
+        <thead>
+        <tr>
+            <th class="host-col" style="white-space:nowrap;">Host</th><th class="code-col" style="white-space:nowrap;">Code</th><th class="type-col" style="white-space:nowrap;">Type</th><th class="error-col" style="white-space:nowrap;">Error</th><th class="user-col" style="white-space:nowrap;">User</th><th class="date-col" style="white-space:nowrap;">Date</th><th class="time-col" style="white-space:nowrap;">Time</th>
+        </tr>
+        </thead>
+        <tbody>
+            <tr v-for="(errorRecord, index) in pagedErrorInfo.list" v-bind:class="[ index % 2 == 0 ? 'even-row' : 'odd-row' ]" >
+                <td class="host-col" style="white-space:nowrap;">{{errorRecord.host}}</td>
+                <td class="code-col" style="white-space:nowrap;">{{errorRecord.statusCode}}</td>
+                <td class="type-col" style="white-space:nowrap;"><span v-bind:title="errorRecord.type">{{errorRecord.type}}</span></td>
+                <td class="error-col"><span>{{errorRecord.message}}</span>&nbsp;<a v-bind:href="'detail?id=' + errorRecord.id">Details…</a></td>
+                <td class="user-col" style="white-space:nowrap;"></td>
+                <td class="date-col" style="white-space:nowrap;"><span>{{ errorRecord.timeStamp | timeStamp('yyyy-MM-dd') }}</span></td>
+                <td class="time-col" style="white-space:nowrap;"><span>{{ errorRecord.timeStamp | timeStamp('HH:mm:ss') }}</span></td>
+            </tr>
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="7">
+                    <p>
+                    <router-link :to="{ path: PATH_PREFIX + '/', query: { offset: (pagedErrorInfo.firstPage > 1 ? pagedErrorInfo.firstPage-1 : 0)*pagedErrorInfo.pageSize, limit: queryLimit } }" v-bind:disabled="pagedErrorInfo.isFirstPage" exact-active-class="active" exact="true">First</router-link>
+                    <router-link :to="{ path: PATH_PREFIX + '/', query: { offset: (pagedErrorInfo.prePage > 1 ? pagedErrorInfo.prePage-1 : 0)*pagedErrorInfo.pageSize, limit: queryLimit } }" v-bind:disabled="!pagedErrorInfo.hasPreviousPage" exact-active-class="active">&laquo;&nbsp;Prev</router-link>
+                    <router-link :to="{ path: PATH_PREFIX + '/', query: { offset: (pagedErrorInfo.nextPage-1)*pagedErrorInfo.pageSize, limit: queryLimit } }" v-bind:disabled="!pagedErrorInfo.hasNextPage" exact-active-class="active">Next&nbsp;&raquo;</router-link>
+                    <router-link :to="{ path: PATH_PREFIX + '/', query: { offset: (pagedErrorInfo.lastPage-1)*pagedErrorInfo.pageSize, limit: queryLimit } }" v-bind:disabled="pagedErrorInfo.isLastPage" exact-active-class="active">Last</router-link>
+                    Total items: {{ pagedErrorInfo.total }}
+                    </p>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</template>
+
+<script src="https://cdn.bootcss.com/jquery/2.2.2/jquery.js"></script>
+<script src="https://cdn.bootcss.com/vue/2.5.9/vue.min.js"></script>
+<script src="https://cdn.bootcss.com/vue-router/3.0.1/vue-router.min.js"></script>
+<script>const PATH_PREFIX='';</script>
+<script>
+'use strict';
+
+var utils = { __version__: 'testVersion 0.0.1' };
+utils.format = function () {
+    if (arguments.length == 0) return null;
+    var str = arguments[0];
+    for (var i = 1; i < arguments.length; i++) {
+        var regExp = new RegExp('\\{' + (i - 1) + '\\}', 'gm');
+        str = str.replace(regExp, arguments[i])
+    }
+    return str;
+};
+//解析location.search
+utils.getQueryStringArgs = function () {
+    var qs = (window.location.search.length > 0 ? window.location.search.substring(1) : ""); //去除？
+    var args = {},
+    items = qs.length ? qs.split("&") : [];
+    var item = null,
+    name = null,
+    value = null,
+    i = 0,
+    len = items.length;
+    for (i = 0; i < len; i++) {
+        item = items[i].split("=");
+        name = decodeURIComponent(item[0]);
+        value = decodeURIComponent(item[1]);
+        if (name.length) {
+            args[name] = value;
+        };
+    }
+    return args;
+};
+utils.formPost = function(url, postData, successCallback, errorCallback, completeCallback) {
+    $.ajax({
+        method: 'post',
+        url: url,
+        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+        data: postData,
+        success: successCallback,
+        error: function (jqXHR, textStatus, errorThrown) {
+            console.info(jqXHR); 
+            console.info(textStatus); 
+            console.error(errorThrown);
+            if(typeof errorCallback !== 'undefined') {
+                errorCallback();
+            }
+        },
+        complete: function (jqXHR, textStatus) {
+            if(typeof completeCallback !== 'undefined') {
+                completeCallback(jqXHR, textStatus);
+            }
+        }
+    });
+};
+
+
+const errorRecords = {
+    template: '#error_records',
+    data: function () {
+        return {
+            contextPath: '',
+            server: '',
+
+            queryLimit: 20,
+            queryOffset: 0,
+            pagedErrorInfo: {
+                endRow: 1,
+                firstPage: 1,
+                hasNextPage: false,
+                hasPreviousPage: false,
+                isFirstPage: false,
+                isLastPage: false,
+                lastPage: 8,
+                list: [],
+                navigateFirstPage: 1,
+                navigateLastPage: 8,
+                navigatePages: 8,
+                navigatepageNums: [],
+                nextPage: 2,
+                pageNum: 1,
+                pageSize: 1,
+                pages: 0,
+                prePage: 0,
+                size: 1,
+                startRow: 1,
+                total: 0
+            },
+            isFetchingData: false,
+            fetchedTickTimeout: null
+        }
+    },
+    created: function () {
+        console.log('errorRecords created');
+        this.fetchData();
+    },
+    destroyed: function () {
+        console.log('errorRecords destroyed');
+        let that = this;
+        if (that.fetchedTickTimeout != null) {
+            clearTimeout(that.fetchedTickTimeout);
+            that.fetchedTickTimeout = null;
+        }
+    },
+    watch: {
+        '$route': 'fetchData',
+        'isFetchingData': function (newVal, oldVal) {
+           /*
+           let that = this;
+           if (oldVal === false && newVal === true) {
+               //console.log('开始获取');
+               if (that.fetchedTickTimeout != null) {
+                   clearTimeout(that.fetchedTickTimeout);
+                   that.fetchedTickTimeout = null;
+               }
+           } else if (oldVal === true && newVal === false) {
+               //console.log('获取结束');
+               if (that.fetchedTickTimeout == null) {
+                   that.fetchedTickTimeout = setTimeout(function () {
+                       that.fetchNextData();
+                   }, 1000);
+               }
+           } else {
+               console.log('watch isFetchingData into extra case.');
+           }
+           */
+       }
+    },
+    computed: {
+
+    },
+    methods: {
+        fetchData: function () {
+            console.log('fetchData');
+            let that = this;
+            that.isFetchingData = true;
+
+            let queryParams = utils.getQueryStringArgs();
+            that.queryLimit = queryParams.limit || 20;
+            that.queryOffset = queryParams.offset || 0;
+            utils.formPost('errors.json', { offset: that.queryOffset, limit: that.queryLimit }, function(res) {
+                if(res) {
+                    $('#ApplicationName').text(utils.format('{0} on {1}', res.contextPath, res.server));
+                    $('#Footer').html(utils.format('<span>Powered by <a href="https://github.com/JerryXia/BizHttpRequestTest/tree/master/source/devhelper/src/main/java/com/github/jerryxia/devhelper/elmah" target="_blank">ELMAH</a>, version {0}. </span>Server datetime is {1}.', res.libVersion, new Date(res.serverDate).format('yyyy-MM-dd HH:mm:ss')));
+                    that.pagedErrorInfo = res.pagedErrorInfo;
+                }
+            }, function(jqXHR, textStatus, errorThrown) {
+                // 
+            }, function(jqXHR, textStatus) {
+                that.isFetchingData = false;
+                // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                console.log('errors.json:' + textStatus);
+            });
+        },
+        fetchNextData: function () {
+            let that = this;
+            // that.fetchData();
+        }
+    }
+};
+const router = new VueRouter({
+    mode: 'history',
+    routes: [
+        { path: PATH_PREFIX + '/', component: errorRecords }
+        //{ path: PATH_PREFIX + '/detail', component: detail }
+    ]
+});
+const app = new Vue({
+    router: router
+}).$mount('#wrap');
+
+
+if (typeof Date.prototype.format == 'undefined') {
+    Date.prototype.format = function (mask) {
+        var d = this;
+        var zeroize = function (value, length) {
+            if (!length) length = 2;
+            value = String(value);
+            for (var i = 0, zeros = ''; i < (length - value.length); i++) {
+                zeros += '0';
+            }
+            return zeros + value;
+        };
+
+        return mask.replace(/"[^"]*"|'[^']*'|\b(?:d{1,4}|m{1,4}|yy(?:yy)?|([hHMstT])\1?|[lLZ])\b/g, function ($0) {
+            switch ($0) {
+                case 'd': return d.getDate();
+                case 'dd': return zeroize(d.getDate());
+                case 'ddd': return ['Sun', 'Mon', 'Tue', 'Wed', 'Thr', 'Fri', 'Sat'][d.getDay()];
+                case 'dddd': return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][d.getDay()];
+                case 'M': return d.getMonth() + 1;
+                case 'MM': return zeroize(d.getMonth() + 1);
+                case 'MMM': return ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][d.getMonth()];
+                case 'MMMM': return ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][d.getMonth()];
+                case 'yy': return String(d.getFullYear()).substr(2);
+                case 'yyyy': return d.getFullYear();
+                case 'h': return d.getHours() % 12 || 12;
+                case 'hh': return zeroize(d.getHours() % 12 || 12);
+                case 'H': return d.getHours();
+                case 'HH': return zeroize(d.getHours());
+                case 'm': return d.getMinutes();
+                case 'mm': return zeroize(d.getMinutes());
+                case 's': return d.getSeconds();
+                case 'ss': return zeroize(d.getSeconds());
+                case 'l': return zeroize(d.getMilliseconds(), 3);
+                case 'L': var m = d.getMilliseconds();
+                    if (m > 99) m = Math.round(m / 10);
+                    return zeroize(m);
+                case 'tt': return d.getHours() < 12 ? 'am' : 'pm';
+                case 'TT': return d.getHours() < 12 ? 'AM' : 'PM';
+                case 'Z': return d.toUTCString().match(/[A-Z]+$/);
+                // Return quoted strings with the surrounding quotes removed
+                default: return $0.substr(1, $0.length - 2);
+            }
+        });
+    };
+};
+
+Vue.filter('timeStamp', function (value, formater) {
+    return new Date(value).format(formater);
+});
+</script>
+</body>
+</html>

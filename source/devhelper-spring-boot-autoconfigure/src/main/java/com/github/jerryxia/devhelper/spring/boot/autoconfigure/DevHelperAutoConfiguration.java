@@ -24,6 +24,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
+import com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
 import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
@@ -41,6 +42,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
     public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestIdInitFilter-registration";
     public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestCaptureFilter-registration";
     public static final String REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-requestCaptureWebServlet-registration";
+    public static final String ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME           = "devhelper-elmahWebServlet-registration";
 
     @Bean
     public ServletListenerRegistrationBean<BootstrapperContextListener> bootstrapperContextListener() {
@@ -144,11 +146,12 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         RequestCaptureWebServlet servlet = new RequestCaptureWebServlet();
         registrationBean.setServlet(servlet);
         registrationBean.setName(servletName);
+        registrationBean.setLoadOnStartup(1);
 
         if (config.getUrlPattern() != null) {
             registrationBean.addUrlMappings(config.getUrlPattern());
         } else {
-            registrationBean.addUrlMappings("/requestcapture/*");
+            registrationBean.addUrlMappings("/admin/requestcapture/*");
         }
 
         ServletRegistration servletRegistration = servletContext.getServletRegistration(servletName);
@@ -164,7 +167,46 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         return registrationBean;
     }
 
+    @Bean(name = ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME)
+    @ConditionalOnMissingBean(name = ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME)
+    public ServletRegistrationBean elmahWebServlet(DevHelperProperties properties, ServletContext servletContext) {
+        String servletName = "elmahWebServlet";
+        ElmahServletProperties config = properties.getElmahServlet();
 
+        ServletRegistrationBean registrationBean = new ServletRegistrationBean();
+
+        ElmahServlet servlet = new ElmahServlet();
+        registrationBean.setServlet(servlet);
+        registrationBean.setName(servletName);
+        registrationBean.setLoadOnStartup(1);
+
+        if (config.getUrlPattern() != null) {
+            registrationBean.addUrlMappings(config.getUrlPattern());
+        } else {
+            registrationBean.addUrlMappings("/admin/elmah/*");
+        }
+
+        if (config.getErrorRecordStorage() != null) {
+            registrationBean.addInitParameter(ElmahServlet.PARAM_NAME_ERROR_RECORD_STORAGE,
+                    config.getErrorRecordStorage());
+        }
+        if (config.getErrorRecordFileStoragePath() != null) {
+            registrationBean.addInitParameter(ElmahServlet.PARAM_NAME_ERROR_RECORD_FILE_STORAGE_PATH,
+                    config.getErrorRecordFileStoragePath());
+        }
+
+        ServletRegistration servletRegistration = servletContext.getServletRegistration(servletName);
+        if (servletRegistration != null) {
+            // if webapp deployed as war in a container with MonitoringFilter and SessionListener already added by
+            // web-fragment.xml,
+            // do not add again
+            registrationBean.setEnabled(false);
+            for (Map.Entry<String, String> entry : registrationBean.getInitParameters().entrySet()) {
+                servletRegistration.setInitParameter(entry.getKey(), entry.getValue());
+            }
+        }
+        return registrationBean;
+    }
 
     @Autowired
     private DevHelperProperties devHelperProperties;

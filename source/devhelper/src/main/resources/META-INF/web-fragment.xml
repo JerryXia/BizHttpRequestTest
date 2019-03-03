@@ -31,7 +31,7 @@
         </init-param>
         <init-param>
             <param-name>exclusions</param-name>
-            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/requestcapture/*</param-value>
+            <param-value>*.js,*.gif,*.jpg,*.png,*.css,*.ico,/admin/requestcapture/*,/admin/elmah/*</param-value>
         </init-param>
         <init-param>
             <param-name>replayRequestIdRequestHeaderName</param-name>
@@ -59,10 +59,30 @@
             <param-name>resetEnable</param-name>
             <param-value>true</param-value>
         </init-param>
+        <load-on-startup>1</load-on-startup>
     </servlet>
     <servlet-mapping>
         <servlet-name>requestCaptureWebServlet</servlet-name>
-        <url-pattern>/requestcapture/*</url-pattern>
+        <url-pattern>/admin/requestcapture/*</url-pattern>
+    </servlet-mapping>
+
+    <!-- Elmah Servlet -->
+    <servlet>
+        <servlet-name>elmahServlet</servlet-name>
+        <servlet-class>com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet</servlet-class>
+        <init-param>
+            <param-name>errorRecordStorage</param-name>
+            <param-value>ErrorRecordFileStorage</param-value>
+        </init-param>
+        <init-param>
+            <param-name>errorRecordFileStoragePath</param-name>
+            <param-value></param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>elmahServlet</servlet-name>
+        <url-pattern>/admin/elmah/*</url-pattern>
     </servlet-mapping>
 
     <!-- BootstrapperContextListener -->

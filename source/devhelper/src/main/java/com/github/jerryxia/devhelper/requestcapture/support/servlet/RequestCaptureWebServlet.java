@@ -26,6 +26,7 @@ import com.github.jerryxia.devhelper.requestcapture.support.json.JSONWriter;
 import com.github.jerryxia.devhelper.snoop.JvmMemoryInfo;
 import com.github.jerryxia.devhelper.snoop.MemoryPoolMXBeanInfo;
 import com.github.jerryxia.devhelper.snoop.Monitor;
+import com.github.jerryxia.devhelper.support.json.RuntimeJsonComponentProviderFactory;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
@@ -44,7 +45,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
 
     @Override
     public void init() throws ServletException {
-
+        getServletContext().log("RequestCaptureWebServlet init");
     }
 
     @Override
@@ -246,9 +247,13 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
     }
 
     private String toJSONString(Object o) {
-        JSONWriter writer = new JSONWriter();
-        writer.writeObject(o);
-        return writer.toString();
+        try {
+            return RuntimeJsonComponentProviderFactory.tryFindImplementation().toJson(o);
+        } catch(NoClassDefFoundError error) {
+            JSONWriter writer = new JSONWriter();
+            writer.writeObject(o);
+            return writer.toString();
+        }
     }
 
     private List<HttpRequestRecord> filterRecordsById(List<HttpRequestRecord> apiRecords, String id) {

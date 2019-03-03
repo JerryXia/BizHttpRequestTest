@@ -17,6 +17,4 @@ public final class Constants {
     public static String JAVA_HOME       = null;
     public static String JAVA_CLASS_PATH = null;
     public static String JAVA_IO_TMPDIR  = null;
-
-    public static org.springframework.context.ApplicationContext SPRING_APPLICATION_CONTEXT = null;
 }

@@ -8,6 +8,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.SimpleMappingExceptionResolver;
 
+import com.github.jerryxia.devhelper.elmah.ErrorInfoCapture;
+
 public class CustomHandlerExceptionResolver extends SimpleMappingExceptionResolver {
     private static final Logger log = LoggerFactory.getLogger(CustomHandlerExceptionResolver.class);
 
@@ -15,6 +17,7 @@ public class CustomHandlerExceptionResolver extends SimpleMappingExceptionResolv
     protected ModelAndView doResolveException(HttpServletRequest request, HttpServletResponse response, Object handler,
             Exception ex) {
         log.error(handler.toString(), ex);
+        ErrorInfoCapture.capture(ex, request, response);
         String viewName = determineViewName(ex, request);
         if (viewName != null) {
             Integer statusCode = determineStatusCode(request, viewName);

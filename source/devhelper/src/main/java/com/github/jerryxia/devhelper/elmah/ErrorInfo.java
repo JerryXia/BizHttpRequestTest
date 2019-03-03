@@ -9,13 +9,9 @@ import java.util.Map;
  * @author Administrator
  *
  */
-/**
- * @author Administrator
- *
- */
-public final class ErrorInfo {
-    private final String id;
-    private final long   timeStamp;
+public class ErrorInfo {
+    private String id;
+    private long   timeStamp;
 
     private String message;
     private String detail;
@@ -23,6 +19,7 @@ public final class ErrorInfo {
     private String source;
 
     private String                host;
+    private String                ip;
     private int                   statusCode;
     private String                method;
     private String                requestURL;
@@ -33,6 +30,10 @@ public final class ErrorInfo {
     private Map<String, String[]> headers;
     private String                user;
 
+    public ErrorInfo() {
+
+    }
+
     public ErrorInfo(String id, long timeStamp) {
         this.id = id;
         this.timeStamp = timeStamp;
@@ -42,8 +43,16 @@ public final class ErrorInfo {
         return id;
     }
 
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public long getTimeStamp() {
         return timeStamp;
+    }
+
+    public void setTimeStamp(long timeStamp) {
+        this.timeStamp = timeStamp;
     }
 
     public String getMessage() {
@@ -84,6 +93,14 @@ public final class ErrorInfo {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
     public int getStatusCode() {

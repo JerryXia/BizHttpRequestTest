@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jerryxia</groupId>
   <artifactId>devhelper</artifactId>
-  <version>1.0.19</version>
+  <version>1.0.24</version>
   <packaging>jar</packaging>
   <name>devhelper</name>
 
@@ -38,7 +38,12 @@
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>dev-utils</artifactId>
-      <version>0.0.10</version>
+      <version>0.0.11</version>
+    </dependency>
+    <dependency>
+      <groupId>io.springside</groupId>
+      <artifactId>springside-utils</artifactId>
+      <version>5.0.0-RC1</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>
@@ -49,18 +54,35 @@
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>${logback.version}</version>
+      <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
       <artifactId>log4j</artifactId>
       <version>1.2.17</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>2.8.6</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.github.pagehelper</groupId>
+      <artifactId>pagehelper</artifactId>
+      <version>5.1.4</version>
+      <scope>provided</scope>
       <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-webmvc</artifactId>
       <version>${spring-framework.version}</version>
+      <scope>provided</scope>
       <optional>true</optional>
       <exclusions>
         <exclusion>

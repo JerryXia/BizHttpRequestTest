@@ -57,9 +57,9 @@ public class HomeServlet extends HttpServlet {
         resp.getWriter().print("</p>");
 
         resp.getWriter().print("<p>now time: <span id=\"now\"></span></p>");
-        resp.getWriter().print("<p><a href=\"/requestcapture/\" target=\"_blank\">requestcapture</a></p>");
+        resp.getWriter().print("<p><a href=\"/admin/requestcapture/\" target=\"_blank\">requestcapture</a></p>");
         resp.getWriter().print(
-                "<iframe src=\"/requestcapture/apirecords.html\" style=\"border:0px;width:100%;height:500px;\"></iframe>");
+                "<iframe src=\"/admin/requestcapture/apirecords.html\" style=\"border:0px;width:100%;height:500px;\"></iframe>");
         resp.getWriter()
                 .print("<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js\"></script>");
 

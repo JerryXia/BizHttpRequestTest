@@ -18,7 +18,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import com.github.jerryxia.devhelper.Constants;
+import com.github.jerryxia.devhelper.support.spring.SpringTools;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
@@ -55,8 +55,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
     }
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler)
-            throws Exception {
+    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
         if (this.enabled) {
             HttpSession session = request.getSession(false);
             Principal userPrincipal = request.getUserPrincipal();
@@ -90,8 +89,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
     }
 
     @Override
-    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler,
-            ModelAndView modelAndView) throws Exception {
+    public void postHandle(HttpServletRequest request, HttpServletResponse response, Object handler, ModelAndView modelAndView) throws Exception {
         // org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor
         // org.springframework.web.servlet.ModelAndView
         if (this.enabled) {
@@ -105,8 +103,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
                 if (modelAndView.getStatus() == null) {
                     appendSeperateKeyValueLine(sb, "status", null);
                 } else {
-                    appendSeperateKeyValueLine(sb, "status", modelAndView.getStatus().toString(),
-                            modelAndView.getStatus().getReasonPhrase());
+                    appendSeperateKeyValueLine(sb, "status", modelAndView.getStatus().toString(), modelAndView.getStatus().getReasonPhrase());
                 }
                 appendSeperateKeyValueLine(sb, "view", modelAndView.getViewName());
                 appendSeperateKeyValueLine(sb, "model", modelAndView.getModelMap().toString());
@@ -118,8 +115,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
     }
 
     @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex)
-            throws Exception {
+    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) throws Exception {
         // System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION));
         // System.err.println(request.getAttribute(RequestDispatcher.ERROR_EXCEPTION_TYPE));
         // System.err.println(request.getAttribute(RequestDispatcher.ERROR_MESSAGE));
@@ -143,20 +139,17 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
 
     private void appendSeperateKeyValueLine(StringBuffer sb, String key, String value) {
         // - {key}: {value}\n
-        sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(value)
-                .append(System.lineSeparator());
+        sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(value).append(System.lineSeparator());
     }
 
     private void appendSeperateKeyValueLine(StringBuffer sb, String key, String v1, String v2) {
         // - {key}: {v1} {v2}\n
-        sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(v1).append(' ').append(v2)
-                .append(System.lineSeparator());
+        sb.append(' ').append('-').append(' ').append(key).append(':').append(' ').append(v1).append(' ').append(v2).append(System.lineSeparator());
     }
-
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        log.debug("applicationContext id: {}, name: {}",  applicationContext.getId(), applicationContext.getApplicationName());
-        Constants.SPRING_APPLICATION_CONTEXT = applicationContext;
+        log.debug("applicationContext id: {}", applicationContext.getId());
+        SpringTools.setApplicationContext(applicationContext);
     }
 }

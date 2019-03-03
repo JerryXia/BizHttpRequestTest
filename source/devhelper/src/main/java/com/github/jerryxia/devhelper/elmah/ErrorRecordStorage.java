@@ -3,14 +3,14 @@
  */
 package com.github.jerryxia.devhelper.elmah;
 
-import java.util.List;
+import com.github.pagehelper.PageInfo;
 
 /**
  * @author Administrator
  *
  */
 public interface ErrorRecordStorage {
-    List<ErrorInfo> queryLimitData(String offset, int limit);
+    PageInfo<ErrorInfo> queryLimitData(int offset, int limit);
     long size();
     ErrorInfo detail(String id);
     boolean save(ErrorInfo errorInfo);

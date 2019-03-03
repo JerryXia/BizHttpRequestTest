@@ -82,6 +82,20 @@
         <servlet-name>DruidStatView</servlet-name>
         <url-pattern>/druid/*</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>elmahServlet</servlet-name>
+        <servlet-class>com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet</servlet-class>
+        <init-param>
+            <param-name>errorRecordStorage</param-name>
+            <param-value>com.guqiankun.ssmtemplate.infrastructure.elmah.ErrorRecordMysqlStorage</param-value>
+        </init-param>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>elmahServlet</servlet-name>
+        <url-pattern>/admin/elmah/*</url-pattern>
+    </servlet-mapping>
 
 
     <!-- SpringMVC Servlet -->

@@ -11,11 +11,12 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "devhelper")
 public class DevHelperProperties {
-    private RequestIdInitFilterProperties requestIdInit = new RequestIdInitFilterProperties();
-    private RequestCaptureFilterProperties requestCapture = new RequestCaptureFilterProperties();
+    private RequestIdInitFilterProperties      requestIdInit         = new RequestIdInitFilterProperties();
+    private RequestCaptureFilterProperties     requestCapture        = new RequestCaptureFilterProperties();
     private RequestCaptureWebServletProperties requestCaptureServlet = new RequestCaptureWebServletProperties();
-    //private SnoopServletProperties snoopServlet = new SnoopServletProperties();
+    // private SnoopServletProperties snoopServlet = new SnoopServletProperties();
     private RequestResponseLogProperties requestResponseLog = new RequestResponseLogProperties();
+    private ElmahServletProperties       elmahServlet       = new ElmahServletProperties();
 
     public RequestIdInitFilterProperties getRequestIdInit() {
         return requestIdInit;
@@ -47,5 +48,13 @@ public class DevHelperProperties {
 
     public void setRequestResponseLog(RequestResponseLogProperties requestResponseLog) {
         this.requestResponseLog = requestResponseLog;
+    }
+
+    public ElmahServletProperties getElmahServlet() {
+        return elmahServlet;
+    }
+
+    public void setElmahServlet(ElmahServletProperties elmahServlet) {
+        this.elmahServlet = elmahServlet;
     }
 }
