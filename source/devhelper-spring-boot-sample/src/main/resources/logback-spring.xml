@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<configuration>
+  <include resource="org/springframework/boot/logging/logback/base.xml" />
+
+  <appender name="DEVHELPER" class="com.github.jerryxia.devhelper.requestcapture.support.log.LogbackAppender" />
+  <logger name="com.github.jerryxia.devhelper" level="DEBUG" />
+  <logger name="org.springframework.web.servlet.mvc.method.annotation.RequestResponseBodyMethodProcessor" level="INFO" />
+
+  <springProfile name="dev">
+    <root level="INFO">
+      <appender-ref ref="DEVHELPER" />
+    </root>
+  </springProfile>
+  <springProfile name="test">
+    <root level="INFO">
+      <appender-ref ref="DEVHELPER" />
+    </root>
+  </springProfile>
+  <springProfile name="prod">
+    <root level="INFO">
+      <appender-ref ref="DEVHELPER" />
+    </root>
+  </springProfile>
+</configuration>

@@ -46,7 +46,7 @@ public class HomeServlet extends HttpServlet {
         resp.getWriter().print("<html>");
         resp.getWriter().print("<head>");
         resp.getWriter().print("<title>devhelper-servlet-gae-sample</title>");
-        resp.getWriter().print("</head>");
+        resp.getWriter().print("</head><body>");
         resp.getWriter().print("<h1>devhelper-servlet-gae-sample</h1>");
         resp.getWriter().print("<p>first request: ");
         resp.getWriter().print(session.getAttribute(requestFirst));
