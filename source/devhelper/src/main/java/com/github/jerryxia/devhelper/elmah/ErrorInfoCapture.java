@@ -12,12 +12,11 @@ import java.util.LinkedHashMap;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.springside.modules.utils.net.NetUtil;
-
 import com.github.jerryxia.devhelper.support.spring.SpringTools;
 import com.github.jerryxia.devhelper.util.ServletUtil;
 import com.github.jerryxia.devutil.ObjectId;
 import com.github.jerryxia.devutil.SystemClock;
+import com.vip.vjtools.vjkit.net.NetUtil;
 
 /**
  * @author guqk

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
-import org.springside.modules.utils.time.DateFormatUtil;
 
 import com.github.jerryxia.devutil.SystemClock;
 import com.github.jerryxia.devutil.dataobject.web.response.SimpleRes;
+import com.vip.vjtools.vjkit.time.DateFormatUtil;
 
 import lombok.extern.slf4j.Slf4j;
 

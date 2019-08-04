@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jerryxia</groupId>
   <artifactId>devhelper</artifactId>
-  <version>1.0.24</version>
+  <version>1.0.25</version>
   <packaging>jar</packaging>
   <name>devhelper</name>
 
@@ -38,12 +38,12 @@
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>dev-utils</artifactId>
-      <version>0.0.11</version>
+      <version>0.0.12</version>
     </dependency>
     <dependency>
-      <groupId>io.springside</groupId>
-      <artifactId>springside-utils</artifactId>
-      <version>5.0.0-RC1</version>
+      <groupId>com.vip.vjtools</groupId>
+      <artifactId>vjkit</artifactId>
+      <version>1.0.8</version>
     </dependency>
     <dependency>
       <groupId>org.slf4j</groupId>

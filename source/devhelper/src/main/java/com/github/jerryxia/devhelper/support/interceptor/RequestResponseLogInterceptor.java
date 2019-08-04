@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.github.jerryxia.devhelper.web.interceptor;
+package com.github.jerryxia.devhelper.support.interceptor;
 
 import java.security.Principal;
 import java.util.Enumeration;
@@ -22,7 +22,7 @@ import com.github.jerryxia.devhelper.support.spring.SpringTools;
 import com.github.jerryxia.devhelper.web.WebConstants;
 
 /**
- * 用于log请求、响应
+ ** 用于log请求、响应
  * 
  * @author guqk
  *
@@ -31,12 +31,12 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
     private static final Logger log = LoggerFactory.getLogger(RequestResponseLogInterceptor.class);
 
     /**
-     * 只要加入了interceptors中默认启用
+     ** 只要加入了interceptors中默认启用
      */
     private boolean enabled = true;
 
     /**
-     * 额外要记录的请求头
+     ** 额外要记录的请求头
      */
     private String[] logRequestHeaderNames = new String[0];
 
@@ -149,7 +149,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        log.debug("applicationContext id: {}", applicationContext.getId());
         SpringTools.setApplicationContext(applicationContext);
+        log.debug("applicationContext: {} has set into SpringTools.", applicationContext.getId());
     }
 }

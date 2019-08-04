@@ -9,12 +9,12 @@ import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springside.modules.utils.io.FilePathUtil;
-import org.springside.modules.utils.io.FileUtil;
 
 import com.github.jerryxia.devhelper.support.json.RuntimeJsonComponentProviderFactory;
 import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
+import com.vip.vjtools.vjkit.io.FilePathUtil;
+import com.vip.vjtools.vjkit.io.FileUtil;
 
 /**
  * @author Administrator
@@ -86,7 +86,7 @@ public class ErrorRecordFileStorage implements ErrorRecordStorage {
 
     @Override
     public ErrorInfo detail(String id) {
-        File savedFile = new File(FilePathUtil.contact(this.storageDirectory.getPath(), id));
+        File savedFile = new File(FilePathUtil.concat(this.storageDirectory.getPath(), id));
         String jsonString = null;
         try {
             jsonString = FileUtil.toString(savedFile);
@@ -100,7 +100,7 @@ public class ErrorRecordFileStorage implements ErrorRecordStorage {
 
     @Override
     public boolean save(ErrorInfo errorInfo) {
-        File saveingFile = new File(FilePathUtil.contact(this.storageDirectory.getPath(), errorInfo.getId()));
+        File saveingFile = new File(FilePathUtil.concat(this.storageDirectory.getPath(), errorInfo.getId()));
         String jsonString = RuntimeJsonComponentProviderFactory.tryFindImplementation().toJson(errorInfo);
         try {
             FileUtil.write(jsonString, saveingFile);

@@ -5,7 +5,7 @@
     http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
 
   <bean id="requestResponseLogInterceptor"
-    class="com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor"
+    class=" com.github.jerryxia.devhelper.support.interceptor.RequestResponseLogInterceptor"
     init-method="init">
     <property name="enabled" value="true" />
     <property name="logRequestHeaderNames">

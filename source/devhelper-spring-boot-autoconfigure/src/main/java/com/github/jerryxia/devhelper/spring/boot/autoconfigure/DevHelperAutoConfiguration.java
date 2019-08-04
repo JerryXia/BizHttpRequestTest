@@ -27,8 +27,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 import com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
+import com.github.jerryxia.devhelper.support.interceptor.RequestResponseLogInterceptor;
 import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
-import com.github.jerryxia.devhelper.web.interceptor.RequestResponseLogInterceptor;
 import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
 
 /**

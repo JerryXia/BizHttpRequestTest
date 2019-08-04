@@ -12,9 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springside.modules.utils.io.FilePathUtil;
-import org.springside.modules.utils.io.ResourceUtil;
-import org.springside.modules.utils.net.NetUtil;
+
 
 import com.github.jerryxia.devhelper.Bootstrapper;
 import com.github.jerryxia.devhelper.Constants;
@@ -26,6 +24,9 @@ import com.github.jerryxia.devhelper.elmah.ErrorRecordStorage;
 import com.github.jerryxia.devhelper.support.json.RuntimeJsonComponentProviderFactory;
 import com.github.jerryxia.devutil.SystemClock;
 import com.github.pagehelper.PageInfo;
+import com.vip.vjtools.vjkit.io.FilePathUtil;
+import com.vip.vjtools.vjkit.io.ResourceUtil;
+import com.vip.vjtools.vjkit.net.NetUtil;
 
 /**
  * require jackson component
@@ -52,7 +53,7 @@ public class ElmahServlet extends HttpServlet {
         case "ErrorRecordFileStorage":
             String errorRecordFileStoragePath = getServletConfig().getInitParameter(PARAM_NAME_ERROR_RECORD_FILE_STORAGE_PATH);
             if (errorRecordFileStoragePath == null || errorRecordFileStoragePath.length() == 0) {
-                errorRecordFileStoragePath = FilePathUtil.contact(Constants.JAVA_IO_TMPDIR, "elmah");
+                errorRecordFileStoragePath = FilePathUtil.concat(Constants.JAVA_IO_TMPDIR, "elmah");
             }
             try {
                 ErrorRecordFileStorage errorRecordFileStorage = new ErrorRecordFileStorage(errorRecordFileStoragePath);
