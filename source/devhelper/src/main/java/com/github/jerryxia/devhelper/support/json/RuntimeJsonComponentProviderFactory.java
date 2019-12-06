@@ -35,7 +35,7 @@ public class RuntimeJsonComponentProviderFactory {
                             jacksonObjectMapper = new ObjectMapper();
                         }
                     }
-                    log.info("final jacksonObjectMapper is: {}", jacksonObjectMapper.getClass().toString());
+                    log.info("final jacksonObjectMapper is: {}", jacksonObjectMapper.getClass().getName());
                     JsonComponentProvider provider = new JacksonProvider(jacksonObjectMapper);
                     target = provider;
                 }

@@ -41,6 +41,7 @@ public class HttpRequestRecordManager {
         // new TimeoutBlockingWaitStrategy(0, TimeUnit.MILLISECONDS);
 
         this.logEntryManager = new LogEntryManager();
+        this.logEntryManager.start();
     }
 
     public synchronized void start() {
@@ -57,7 +58,6 @@ public class HttpRequestRecordManager {
         // init producer
         this.producer = new WorkingHttpRequestRecordEventProducer(this.disruptor.getRingBuffer(), this.eventStat);
         setStarted();
-        this.logEntryManager.start();
     }
 
     public boolean shutdown() {

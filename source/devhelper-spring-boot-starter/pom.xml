@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns="http://maven.apache.org/POM/4.0.0"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.github.jerryxia</groupId>
+    <artifactId>devhelper-spring-boot</artifactId>
+    <version>1.0.26</version>
+  </parent>
+  <artifactId>devhelper-spring-boot-starter</artifactId>
+  <name>devhelper-spring-boot-starter</name>
+  <dependencies>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jerryxia</groupId>
+      <artifactId>devhelper-spring-boot-autoconfigure</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>com.github.jerryxia</groupId>
+      <artifactId>devhelper</artifactId>
+    </dependency>
+  </dependencies>
+</project>

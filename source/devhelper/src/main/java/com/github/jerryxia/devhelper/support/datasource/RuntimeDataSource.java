@@ -35,7 +35,7 @@ public class RuntimeDataSource {
                             log.warn("can not find any bean object inherit javax.sql.DataSource");
                         }
                     }
-                    log.info("final dataSourceObject is: {}", dataSourceObject.getClass().toString());
+                    log.info("final dataSourceObject is: {}", dataSourceObject.getClass().getName());
                     target = dataSourceObject;
                 }
             }
