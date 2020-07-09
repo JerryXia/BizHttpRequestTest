@@ -41,7 +41,7 @@ public class HomeController {
             log.info("session storage data: {}", session.getAttribute(requestFirst));
         }
 
-        String appName = "devhelper-servlet-gae-sample";
+        String appName = "devhelper-spring-boot-sample";
         log.debug("appName: {}, now: {}", appName, DateFormatUtil.DEFAULT_ON_SECOND_FORMAT.format(SystemClock.nowDate()));
 
         ModelAndView mv = new ModelAndView("home/index");

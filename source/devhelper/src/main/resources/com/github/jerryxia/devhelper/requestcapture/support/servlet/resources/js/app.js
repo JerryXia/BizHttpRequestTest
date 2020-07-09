@@ -2,7 +2,7 @@
 
 const index = {
     template: '#index',
-    data: function () {
+    data: function() {
         return {
             libInfo: { serverOsName: '', javaClassPath: '' },
             memoryMXBean: {
@@ -14,19 +14,19 @@ const index = {
             serverstat: {}
         }
     },
-    created: function () {
+    created: function() {
         console.info('index created');
         this.fetchData();
     },
-    updated: function () {
+    updated: function() {
         //console.info('index updated');
     },
-    destroyed: function () {
+    destroyed: function() {
         console.info('index destroyed');
     },
     watch: {
         '$route': 'fetchData',
-        'serverstat': function (newVal, oldVal) {
+        'serverstat': function(newVal, oldVal) {
             let htmlPartial = [
                 '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
                 '<li>MemoryStorage</li>',
@@ -44,35 +44,35 @@ const index = {
 
     },
     methods: {
-        fetchData: function () {
+        fetchData: function() {
             let that = this;
 
             jQuery.getJSON(PATH_PREFIX + '/snoop.json?callback=?', {}, function(res) {
-                if(res && res.code === 1) {
+                if (res && res.code === 1) {
                     that.libInfo = res.data.libInfo;
                     that.memoryMXBean = res.data.memoryMXBean;
                     that.memoryPoolMXBeans = res.data.memoryPoolMXBeans;
                     that.requestAttributes = that.objectNameOrderedKeyValue(res.data.requestAttributes);
-                    
+
                     that.serverstat = res.serverstat;
                 } else {
-                    
+
                 }
             });
         },
         objectNameOrderedKeyValue: function(obj) {
             let kvArray = [];
-            for(let k in obj) {
+            for (let k in obj) {
                 kvArray.push({ key: k, value: obj[k] });
             }
-            return _.sortBy(kvArray, function(item){ return item.key; });
+            return _.sortBy(kvArray, function(item) { return item.key; });
         }
     }
 };
 
 const apiRecords = {
     template: '#apiRecords',
-    data: function () {
+    data: function() {
         return {
             apiRecordsPagedList: [],
             logTbShow: {
@@ -85,6 +85,7 @@ const apiRecords = {
             },
             apiRecordLogsQueryId: '',
             apiRecordLogs: [],
+            clipboard: null,
             serverstat: {},
             isFetchingData: false,
             fetchedTick: 5,
@@ -101,29 +102,43 @@ const apiRecords = {
         }
     },
     route: {
-        data: function (transition) {
+        data: function(transition) {
             //transition.next({
             //    currentPath: transition.to.path
             //})
         }
     },
-    created: function () {
+    created: function() {
+        let that = this;
         console.log('apiRecords created');
-        this.loadFromLocalDb();
-        this.fetchData();
-        this.fetchExceptionRecords();
+        that.loadFromLocalDb();
+        that.fetchData();
+        that.fetchExceptionRecords();
+
+        let clipboard = new Clipboard('.btn-clipboard-logmessage');
+        clipboard.on('success', function(e) {
+            e.clearSelection();
+            window.setTimeout(function() {
+                $(e.trigger).tooltip('hide');
+            }, 1000);
+        });
+        that.clipboard = clipboard;
     },
-    updated: function () {
-        //console.debug('apiRecords updated');
+    mounted: function() {
+
     },
-    destroyed: function () {
+    updated: function() {
+        // console.debug('apiRecords updated');
+    },
+    destroyed: function() {
         let that = this;
         console.log('apiRecords destroyed');
+        that.clipboard.destroy();
         if (that.fetchedTickInterval != null) {
             clearInterval(that.fetchedTickInterval);
             that.fetchedTickInterval = null;
         }
-        if(that.fetchExceptionRecordsTimeout != null){
+        if (that.fetchExceptionRecordsTimeout != null) {
             clearTimeout(that.fetchExceptionRecordsTimeout);
             that.fetchExceptionRecordsTimeout = null;
         }
@@ -131,12 +146,12 @@ const apiRecords = {
     watch: {
         '$route': 'fetchData',
         'logTbShow': {
-            handler: function (val, oldVal) {
+            handler: function(val, oldVal) {
                 this.saveLogTbShowConfigToLocalDb(val);
             },
             deep: true
         },
-        'serverstat': function (newVal, oldVal) {
+        'serverstat': function(newVal, oldVal) {
             let htmlPartial = [
                 '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
                 '<li>MemoryStorage</li>',
@@ -149,7 +164,7 @@ const apiRecords = {
             ];
             $('.footer ul').html(htmlPartial.join('')).show();
         },
-        'isFetchingData': function (newVal, oldVal) {
+        'isFetchingData': function(newVal, oldVal) {
             let that = this;
             if (oldVal === false && newVal === true) {
                 // 开始获取
@@ -162,7 +177,7 @@ const apiRecords = {
                 // 获取结束
                 if (that.fetchedTickInterval == null) {
                     that.fetchedTick = 5;
-                    that.fetchedTickInterval = setInterval(function () {
+                    that.fetchedTickInterval = setInterval(function() {
                         let newFetchedTick = that.fetchedTick - 1;
                         if (newFetchedTick > 0) {
                             that.fetchedTick = newFetchedTick;
@@ -185,29 +200,29 @@ const apiRecords = {
                 if (that.fetchExceptionRecordsTimeout != null) {
                     clearTimeout(that.fetchExceptionRecordsTimeout);
                 }
-                that.fetchExceptionRecordsTimeout = setTimeout(function () {
+                that.fetchExceptionRecordsTimeout = setTimeout(function() {
                     that.fetchExceptionRecords();
                 }, 1000);
             } else {
                 console.warn('watch isFetchingExceptionRecords into extra case.');
             }
         },
-        'apiRecordsPagedList': function(newVal, oldVal){
+        'apiRecordsPagedList': function(newVal, oldVal) {
             let that = this;
-            let requestURIs = _.map(newVal, function(item){ return item.requestURI; })
+            let requestURIs = _.map(newVal, function(item) { return item.requestURI; })
             that.allFilterUrls = _.uniq(requestURIs);
         }
     },
     computed: {
-        logCount: function () {
+        logCount: function() {
             let that = this;
             return 0;
         },
-        fetchedMessage: function () {
+        fetchedMessage: function() {
             let that = this;
             return that.currFetchHasNew ? '' : '找不到与当前过滤条件相符的更新的记录。';
         },
-        fetchedButtonValue: function () {
+        fetchedButtonValue: function() {
             let that = this;
             if (that.isFetchingData) {
                 return ' loading...';
@@ -217,37 +232,37 @@ const apiRecords = {
         },
         filteredApiRecordsPagedList: function() {
             let that = this;
-            if(that.selectedFilterUrl === '') {
+            if (that.selectedFilterUrl === '') {
                 return that.apiRecordsPagedList;
             } else {
-                return _.filter(that.apiRecordsPagedList, function(item){ return item.requestURI == that.selectedFilterUrl });
+                return _.filter(that.apiRecordsPagedList, function(item) { return item.requestURI == that.selectedFilterUrl });
             }
         }
     },
     methods: {
-        loadFromLocalDb: function () {
+        loadFromLocalDb: function() {
             let that = this;
             if (window.localStorage) {
                 try {
                     let jsonStr = localStorage.getItem("requestcapture_apirecords_logTbShow");
-                    if(jsonStr && jsonStr.length > 0) {
+                    if (jsonStr && jsonStr.length > 0) {
                         let jsonObj = JSON.parse(jsonStr);
                         that.logTbShow = jsonObj;
                         console.info('requestcapture_apirecords_logTbShow:加载本地保存的配置');
                     }
-                } catch(parseError) {
+                } catch (parseError) {
                     console.error(parseError);
                     console.info('requestcapture_apirecords_logTbShow:使用的默认配置');
                 }
 
                 try {
                     let jsonStr = localStorage.getItem("requestcapture_settingsShowExceptionRecords_levels");
-                    if(jsonStr && jsonStr.length > 0) {
+                    if (jsonStr && jsonStr.length > 0) {
                         let jsonObj = JSON.parse(jsonStr);
                         that.queryLevels = jsonObj.join(',');
                         console.info('settingsShowExceptionRecords:加载本地保存的配置');
                     }
-                } catch(parseError) {
+                } catch (parseError) {
                     console.error(parseError);
                     console.info('settingsShowExceptionRecords:使用的默认配置');
                 }
@@ -255,7 +270,7 @@ const apiRecords = {
                 alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         },
-        saveLogTbShowConfigToLocalDb: function (obj) {
+        saveLogTbShowConfigToLocalDb: function(obj) {
             let that = this;
             if (window.localStorage) {
                 window.localStorage.setItem("requestcapture_apirecords_logTbShow", JSON.stringify(obj));
@@ -263,7 +278,7 @@ const apiRecords = {
                 alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         },
-        fetchData: function () {
+        fetchData: function() {
             let that = this;
 
             that.isFetchingData = true;
@@ -298,22 +313,26 @@ const apiRecords = {
                 }
             });
         },
-        showLogs: function (recordId, event) {
+        showLogs: function(recordId, event) {
             let that = this;
             var $btn = $(event.target).button('loading');
+            $('[data-toggle="tooltip"]').tooltip('destroy');
 
             that.apiRecordLogsQueryId = recordId;
-            $.getJSON(PATH_PREFIX + '/apirecordlogs.json?callback=?', { id: recordId }, function (res) {
+            $.getJSON(PATH_PREFIX + '/apirecordlogs.json?callback=?', { id: recordId }, function(res) {
                 if (res && res.code == 1) {
                     that.apiRecordLogs = res.data;
                 } else {
                     that.apiRecordLogs = [];
                 }
+                that.$nextTick(function() {
+                    $('[data-toggle="tooltip"]').tooltip();
+                });
                 $btn.button('reset');
                 $('.bs-example-modal-lg').modal();
             });
         },
-        replay: function (apiRecord, event) {
+        replay: function(apiRecord, event) {
             let replayUrlHost = '';
             if (window.localStorage) {
                 replayUrlHost = localStorage.getItem("rquestcapture:replayUrlHost");
@@ -329,28 +348,28 @@ const apiRecords = {
             let $btn = $(event.target).button('loading');
             $.ajax({
                 method: apiRecord.method,
-                url: replayUrlHost + apiRecord.requestURI + ((apiRecord.queryString && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : ''),
+                url: replayUrlHost + apiRecord.requestURI + ((apiRecord.queryString && apiRecord.queryString.length > 0) ? '?' + apiRecord.queryString : ''),
                 headers: that.filteredHeaders(apiRecord.headers),
                 data: (apiRecord.contentType && apiRecord.contentType.indexOf('application/x-www-form-urlencoded;') === 0) ? that.parameterFormat(apiRecord.parameterMap) : (apiRecord.payload || ''),
-                success: function (res) {
-                    
+                success: function(res) {
+
                 },
-                error: function (jqXHR, textStatus, errorThrown) {
-                    console.info(jqXHR); 
-                    console.info(textStatus); 
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.info(jqXHR);
+                    console.info(textStatus);
                     console.error(errorThrown);
                 },
-                complete: function (jqXHR, textStatus) {
+                complete: function(jqXHR, textStatus) {
                     $btn.button('reset');
                 }
             });
         },
         filteredHeaders: function(headers) {
-            let excludeHeaders = [ 'accept', 'accept-encoding', 'accept-language', 'connection', 'content-length', 'cookie', 'host', 'user-agent' ];
+            let excludeHeaders = ['accept', 'accept-encoding', 'accept-language', 'connection', 'content-length', 'cookie', 'host', 'user-agent'];
             let requestingHeaders = {};
             if (headers) {
                 for (let k in headers) {
-                    if(excludeHeaders.indexOf(k) > -1 || k.indexOf('x-') === 0) {
+                    if (excludeHeaders.indexOf(k) > -1 || k.indexOf('x-') === 0) {
                         console.log('exclude ' + k);
                     } else {
                         let v = headers[k];
@@ -369,7 +388,7 @@ const apiRecords = {
             console.log(requestingHeaders);
             return requestingHeaders;
         },
-        parameterFormat: function (obj) {
+        parameterFormat: function(obj) {
             let formaterObj = {};
             //obj = JSON.parse(JSON.stringify(obj));
             if (obj) {
@@ -388,7 +407,7 @@ const apiRecords = {
             }
             return formaterObj;
         },
-        fetchNextData: function () {
+        fetchNextData: function() {
             let that = this;
 
             let start = that.lastRecordIndex;
@@ -428,14 +447,14 @@ const apiRecords = {
                 }
             });
         },
-        switchExpandMessage: function (item) {
+        switchExpandMessage: function(item) {
             if (typeof item.isExpandMessage === 'undefined') {
                 Vue.set(item, 'isExpandMessage', true);
             } else {
                 item.isExpandMessage = item.isExpandMessage ? false : true;
             }
         },
-        fetchExceptionRecords: function () {
+        fetchExceptionRecords: function() {
             let that = this;
 
             that.isFetchingExceptionRecords = true;
@@ -448,14 +467,14 @@ const apiRecords = {
                 success: function(res, textStatus, jqXHR) {
                     if (res && res.code == 1) {
                         // TODO: 优化clone
-                        for(let i = 0, len = ORDERED_LEVELS.length; i < len; i ++) {
+                        for (let i = 0, len = ORDERED_LEVELS.length; i < len; i++) {
                             let level = ORDERED_LEVELS[i];
                             let recordIds = res.data[level];
-                            if(recordIds && recordIds.length > 0) {
-                                for(let j = 0, jlen = recordIds.length; j < jlen; j++) {
+                            if (recordIds && recordIds.length > 0) {
+                                for (let j = 0, jlen = recordIds.length; j < jlen; j++) {
                                     let oldVal = that.exceptionRecords[recordIds[j]];
-                                    if(oldVal) {
-                                        if(ORDERED_LEVELS_RANK[level] > ORDERED_LEVELS_RANK[oldVal]){
+                                    if (oldVal) {
+                                        if (ORDERED_LEVELS_RANK[level] > ORDERED_LEVELS_RANK[oldVal]) {
                                             that.exceptionRecords[recordIds[j]] = level;
                                         }
                                     } else {
@@ -478,7 +497,7 @@ const apiRecords = {
         },
         apiRecordExceptionLogLevelClassFormater: function(value) {
             let val = '';
-            if(typeof value === 'undefined'){
+            if (typeof value === 'undefined') {
                 value = '';
             }
             switch (value) {
@@ -506,7 +525,7 @@ const apiRecords = {
 };
 const apiLogs = {
     template: '#apiLogs',
-    data: function () {
+    data: function() {
         return {
             currUrl: '',
             initHash: '',
@@ -531,13 +550,13 @@ const apiLogs = {
         }
     },
     route: {
-        data: function (transition) {
+        data: function(transition) {
             //transition.next({
             //    currentPath: transition.to.path
             //})
         }
     },
-    created: function () {
+    created: function() {
         let that = this;
         console.log('apiLogs created');
         that.fetchData();
@@ -546,25 +565,25 @@ const apiLogs = {
         let clipboard = new Clipboard('.btn');
         clipboard.on('success', function(e) {
             e.clearSelection();
-            window.setTimeout(function(){ 
+            window.setTimeout(function() {
                 $('[data-toggle="tooltip"]').tooltip('hide');
             }, 1000);
         });
         that.clipboard = clipboard;
     },
-    mounted: function () {
-        this.$nextTick(function () {
+    mounted: function() {
+        this.$nextTick(function() {
             // Code that will run only after the entire view has been rendered
             $('body').css({ 'padding-top': '0px' });
             $('nav').removeClass('navbar-fixed-top').addClass('navbar-static-top');
             $('#linkApiLogs').removeClass('none');
-            $('[data-toggle="tooltip"]').tooltip();          
+            $('[data-toggle="tooltip"]').tooltip();
         });
     },
-    updated: function () {
+    updated: function() {
         //console.log('apiLogs updated');
     },
-    destroyed: function () {
+    destroyed: function() {
         console.log('apiLogs destroyed');
         this.clipboard.destroy();
         $('#linkApiLogs').addClass('none');
@@ -572,33 +591,33 @@ const apiLogs = {
     },
     watch: {
         'isFetchingData': {
-            handler: function (val, oldVal) {
+            handler: function(val, oldVal) {
                 let that = this;
-                that.$nextTick(function () {
+                that.$nextTick(function() {
                     // 设置tr的id
                     $('table tr').each(function(i, v) {
                         let idAttr = v.getAttribute('id');
-                        if(!(idAttr && idAttr.length > 0)) {
+                        if (!(idAttr && idAttr.length > 0)) {
                             let $td0 = $(v).find('td').eq(0);
                             let td0text = $td0.text();
                             v.setAttribute('id', td0text);
-                            $td0.html('<small><a href="#'+ td0text +'" style="color:#333;text-decoration:none;">'+ td0text +'</a></small>');
+                            $td0.html('<small><a href="#' + td0text + '" style="color:#333;text-decoration:none;">' + td0text + '</a></small>');
                         }
                     });
                     // dom渲染完毕后，定位目标行的位置，并高亮显示
-                    if(val.apiRecord === false && val.apiRecordLogs === false) {
+                    if (val.apiRecord === false && val.apiRecordLogs === false) {
                         location.hash = '';
                         location.hash = that.initHash;
-                        if(that.initHash && that.initHash.length > 0) {
+                        if (that.initHash && that.initHash.length > 0) {
                             let $elInitHash = $('' + that.initHash);
-                            if($elInitHash.length > 0){
+                            if ($elInitHash.length > 0) {
                                 let showInfo = function() {
                                     $elInitHash.addClass('alert').addClass('alert-info');
                                 };
                                 let hideInfo = function() {
                                     $elInitHash.removeClass('alert').removeClass('alert-info');
                                 };
-                                $elInitHash.css({display: 'none'});
+                                $elInitHash.css({ display: 'none' });
                                 showInfo();
                                 $elInitHash.fadeIn(3000, function() {
                                     setTimeout(hideInfo, 50);
@@ -620,7 +639,7 @@ const apiLogs = {
             let that = this;
 
             let queryId = that.$route.query.apiRecordId;
-            if(queryId && queryId.length > 0) {
+            if (queryId && queryId.length > 0) {
                 that.queryApiRecord(queryId);
                 that.queryApiRecordLogs(queryId);
             } else {
@@ -630,7 +649,7 @@ const apiLogs = {
         queryApiRecord: function(apiRecordId) {
             let that = this;
             that.isFetchingData.apiRecord = true;
-            $.getJSON('apirecord.json?callback=?', { id: apiRecordId }, function (res) {
+            $.getJSON('apirecord.json?callback=?', { id: apiRecordId }, function(res) {
                 if (res && res.code == 1 && res.data.length > 0) {
                     that.apiRecord = res.data[0];
                 } else {
@@ -642,7 +661,7 @@ const apiLogs = {
         queryApiRecordLogs: function(apiRecordId) {
             let that = this;
             that.isFetchingData.apiRecordLogs = true;
-            $.getJSON('apirecordlogs.json?callback=?', { id: apiRecordId }, function (res) {
+            $.getJSON('apirecordlogs.json?callback=?', { id: apiRecordId }, function(res) {
                 if (res && res.code == 1) {
                     that.apiRecordLogs = res.data;
                 } else {
@@ -655,7 +674,7 @@ const apiLogs = {
 };
 const allLogs = {
     template: '#allLogs',
-    data: function () {
+    data: function() {
         return {
             logLevels: ['ALL', 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'],
             queryLevel: 'ALL',
@@ -682,15 +701,15 @@ const allLogs = {
             pageSize: 16
         }
     },
-    created: function () {
+    created: function() {
         console.log('allLogs created');
         this.fetchData();
         this.filterLogs();
     },
-    updated: function () {
+    updated: function() {
         //console.log('allLogs updated');
     },
-    destroyed: function () {
+    destroyed: function() {
         let that = this;
         console.log('allLogs destroyed');
         if (that.fetchedTickTimeout != null) {
@@ -700,7 +719,7 @@ const allLogs = {
     },
     watch: {
         '$route': 'filterLogs',
-        'serverstat': function (newVal, oldVal) {
+        'serverstat': function(newVal, oldVal) {
             let htmlPartial = [
                 '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
                 '<li>MemoryStorage</li>',
@@ -713,7 +732,7 @@ const allLogs = {
             ];
             $('.footer ul').html(htmlPartial.join('')).show();
         },
-        'isFetchingData': function (newVal, oldVal) {
+        'isFetchingData': function(newVal, oldVal) {
             let that = this;
             if (oldVal === false && newVal === true) {
                 // 开始获取
@@ -725,7 +744,7 @@ const allLogs = {
             } else if (oldVal === true && newVal === false) {
                 // 获取结束
                 if (that.fetchedTickTimeout == null) {
-                    that.fetchedTickTimeout = setTimeout(function () {
+                    that.fetchedTickTimeout = setTimeout(function() {
                         that.fetchNextData();
                     }, 1000);
                 }
@@ -736,16 +755,16 @@ const allLogs = {
         }
     },
     computed: {
-        logCount: function () {
+        logCount: function() {
             let that = this;
             return {
                 ALL: that.logPagedList.length,
-                TRACE: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'TRACE'; }).length,
-                DEBUG: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'DEBUG'; }).length,
-                INFO: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'INFO'; }).length,
-                WARN: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'WARN'; }).length,
-                ERROR: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'ERROR'; }).length,
-                FATAL: _.filter(that.logPagedList, function (logItem) { return logItem.level == 'FATAL'; }).length
+                TRACE: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'TRACE'; }).length,
+                DEBUG: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'DEBUG'; }).length,
+                INFO: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'INFO'; }).length,
+                WARN: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'WARN'; }).length,
+                ERROR: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'ERROR'; }).length,
+                FATAL: _.filter(that.logPagedList, function(logItem) { return logItem.level == 'FATAL'; }).length
             }
         },
         queryedLogPagedList: function() {
@@ -754,14 +773,14 @@ const allLogs = {
             if (that.queryLevel === 'ALL') {
                 return that.logPagedList.slice(that.queryFrom, that.queryFrom + that.queryCount);
             } else {
-                return _.filter(that.logPagedList, function (logItem) {
+                return _.filter(that.logPagedList, function(logItem) {
                     return logItem.level == that.queryLevel;
                 }).slice(that.queryFrom, that.queryFrom + that.queryCount);
             }
         },
         lastPageStartIndex: function() {
             let that = this;
-            
+
             //let currLevelLogCount = 0;
             //if (that.queryLevel === 'ALL') {
             //    currLevelLogCount = that.logPagedList.length;
@@ -773,7 +792,7 @@ const allLogs = {
         }
     },
     methods: {
-        fetchData: function () {
+        fetchData: function() {
             let that = this;
 
             that.isFetchingData = true;
@@ -781,13 +800,13 @@ const allLogs = {
                 type: 'GET',
                 url: PATH_PREFIX + '/alllogs.json',
                 timeout: 123000,
-                data: { },
+                data: {},
                 dataType: 'jsonp',
                 success: function(res, textStatus, jqXHR) {
                     if (res && res.code == 1) {
                         that.lastRecordIndex = res.data.lastIndex;
                         that.logPagedList = res.data.list;
-                        
+
                         that.serverstat = res.serverstat;
                         that.currFetchHasNew = res.data.list && res.data.list.length > 0;
                     } else {
@@ -807,7 +826,7 @@ const allLogs = {
                 }
             });
         },
-        fetchNextData: function () {
+        fetchNextData: function() {
             let that = this;
 
             let start = that.lastRecordIndex;
@@ -856,7 +875,7 @@ const allLogs = {
                     queryLevel = that.$route.params.level;
                 }
             }
-            if(that.queryLevel != queryLevel) {
+            if (that.queryLevel != queryLevel) {
                 that.queryLevel = queryLevel;
             }
 
@@ -864,7 +883,7 @@ const allLogs = {
             if (that.$route.query.from) {
                 queryFrom = typeof that.$route.query.from === 'string' ? parseInt(that.$route.query.from) : that.$route.query.from;
             }
-            if(that.queryFrom != queryFrom) {
+            if (that.queryFrom != queryFrom) {
                 that.queryFrom = queryFrom;
             }
 
@@ -872,11 +891,11 @@ const allLogs = {
             if (that.$route.query.count) {
                 queryCount = typeof that.$route.query.count === 'string' ? parseInt(that.$route.query.count) : that.$route.query.count;
             }
-            if(that.queryCount != queryCount) {
+            if (that.queryCount != queryCount) {
                 that.queryCount = queryCount;
             }
         },
-        switchExpandMessage: function (item) {
+        switchExpandMessage: function(item) {
             if (typeof item.isExpandMessage === 'undefined') {
                 Vue.set(item, 'isExpandMessage', true);
             } else {
@@ -887,23 +906,23 @@ const allLogs = {
 };
 const settingsReplay = {
     template: '#settings_replay',
-    data: function () {
+    data: function() {
         return {
             replayUrlHost: ''
         }
     },
-    created: function () {
+    created: function() {
         this.loadFromLocalDb();
 
-        Vue.nextTick(function () {
+        Vue.nextTick(function() {
             $('#settings').addClass('active');
         });
     },
-    destroyed: function () {
+    destroyed: function() {
         $('#settings').removeClass('active');
     },
     methods: {
-        loadFromLocalDb: function () {
+        loadFromLocalDb: function() {
             let that = this;
             if (window.localStorage) {
                 that.replayUrlHost = localStorage.getItem("rquestcapture:replayUrlHost");
@@ -911,7 +930,7 @@ const settingsReplay = {
                 alert(NOT_SUPPORT_LOCALSTORAGE);
             }
         },
-        saveToLocalDb: function () {
+        saveToLocalDb: function() {
             let that = this;
             if (window.localStorage) {
                 window.localStorage.setItem("rquestcapture:replayUrlHost", that.replayUrlHost);
@@ -923,42 +942,42 @@ const settingsReplay = {
 };
 const settingsShowExceptionRecords = {
     template: '#settings_show_exception_records',
-    data: function () {
+    data: function() {
         return {
-            shownLevels: [ 'WARN', 'ERROR', 'FATAL' ]
+            shownLevels: ['WARN', 'ERROR', 'FATAL']
         }
     },
-    created: function () {
+    created: function() {
         this.loadFromLocalDb();
 
-        Vue.nextTick(function () {
+        Vue.nextTick(function() {
             $('#settings').addClass('active');
         });
     },
-    destroyed: function () {
+    destroyed: function() {
         $('#settings').removeClass('active');
     },
     watch: {
-        'shownLevels': function (val, oldVal) {
+        'shownLevels': function(val, oldVal) {
             this.saveToLocalDb(val);
         }
     },
     methods: {
-        loadFromLocalDb: function () {
+        loadFromLocalDb: function() {
             let that = this;
             try {
                 let jsonStr = localStorage.getItem("requestcapture_settingsShowExceptionRecords_levels");
-                if(jsonStr && jsonStr.length > 0) {
+                if (jsonStr && jsonStr.length > 0) {
                     let jsonObj = JSON.parse(jsonStr);
                     that.shownLevels = jsonObj;
                     console.info('settingsShowExceptionRecords:加载本地保存的配置');
                 }
-            } catch(parseError) {
+            } catch (parseError) {
                 console.error(parseError);
                 console.info('settingsShowExceptionRecords:使用的默认配置');
             }
         },
-        saveToLocalDb: function (obj) {
+        saveToLocalDb: function(obj) {
             let that = this;
             if (window.localStorage) {
                 window.localStorage.setItem("requestcapture_settingsShowExceptionRecords_levels", JSON.stringify(obj));
@@ -970,7 +989,7 @@ const settingsShowExceptionRecords = {
 };
 
 const NOT_SUPPORT_LOCALSTORAGE = 'This browser does not support localStorage';
-const ORDERED_LEVELS = [ 'TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL' ];
+const ORDERED_LEVELS = ['TRACE', 'DEBUG', 'INFO', 'WARN', 'ERROR', 'FATAL'];
 const ORDERED_LEVELS_RANK = { TRACE: 1, DEBUG: 2, INFO: 3, WARN: 4, ERROR: 5, FATAL: 6 };
 
 const router = new VueRouter({
@@ -989,9 +1008,9 @@ const app = new Vue({
 }).$mount('#wrap');
 
 if (typeof Date.prototype.format == 'undefined') {
-    Date.prototype.format = function (mask) {
+    Date.prototype.format = function(mask) {
         var d = this;
-        var zeroize = function (value, length) {
+        var zeroize = function(value, length) {
             if (!length) length = 2;
             value = String(value);
             for (var i = 0, zeros = ''; i < (length - value.length); i++) {
@@ -1000,7 +1019,7 @@ if (typeof Date.prototype.format == 'undefined') {
             return zeros + value;
         };
 
-        return mask.replace(/"[^"]*"|'[^']*'|\b(?:d{1,4}|m{1,4}|yy(?:yy)?|([hHMstT])\1?|[lLZ])\b/g, function ($0) {
+        return mask.replace(/"[^"]*"|'[^']*'|\b(?:d{1,4}|m{1,4}|yy(?:yy)?|([hHMstT])\1?|[lLZ])\b/g, function($0) {
             switch ($0) {
                 case 'd': return d.getDate();
                 case 'dd': return zeroize(d.getDate());
@@ -1034,17 +1053,17 @@ if (typeof Date.prototype.format == 'undefined') {
     };
 };
 
-Vue.filter('objectIdTimeStamp', function (value, formater) {
+Vue.filter('objectIdTimeStamp', function(value, formater) {
     return new Date(parseInt(value.substring(0, 8), 16) * 1000).format(formater);
 });
-Vue.filter('timeStamp', function (value, formater) {
+Vue.filter('timeStamp', function(value, formater) {
     return new Date(value).format(formater);
 });
-Vue.filter('showRequestAndQuery', function (apiRecord) {
-    let val = apiRecord.requestURI + ( (apiRecord.queryString && apiRecord.queryString.length>0) ? '?'+ apiRecord.queryString : '');
+Vue.filter('showRequestAndQuery', function(apiRecord) {
+    let val = apiRecord.requestURI + ((apiRecord.queryString && apiRecord.queryString.length > 0) ? '?' + apiRecord.queryString : '');
     return val;
 });
-Vue.filter('parameterFormater', function (obj) {
+Vue.filter('parameterFormater', function(obj) {
     let formaterObj = {};
     //obj = JSON.parse(JSON.stringify(obj));
     if (obj) {
@@ -1063,7 +1082,7 @@ Vue.filter('parameterFormater', function (obj) {
     }
     return JSON.stringify(formaterObj);
 });
-Vue.filter('logLevelFormater', function (value) {
+Vue.filter('logLevelFormater', function(value) {
     let val = '';
     switch (value.toLowerCase()) {
         case 'fatal':

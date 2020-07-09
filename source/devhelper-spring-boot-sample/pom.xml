@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.github.jerryxia</groupId>
     <artifactId>devhelper-spring-boot</artifactId>
-    <version>1.0.26</version>
+    <version>1.0.27</version>
   </parent>
   <artifactId>devhelper-spring-boot-sample</artifactId>
   <packaging>jar</packaging>
