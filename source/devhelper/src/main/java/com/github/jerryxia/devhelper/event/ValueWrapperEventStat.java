@@ -1,24 +1,18 @@
 /**
  * 
  */
-package com.github.jerryxia.devhelper.requestcapture.log;
+package com.github.jerryxia.devhelper.event;
 
 import java.util.concurrent.atomic.AtomicLong;
 
-/**
- * producer is muti threads and consumer is single thread
- * 
- * @author Administrator
- *
- */
-public class LogEntryEventStat {
+public class ValueWrapperEventStat {
 
     private final AtomicLong producerSuccessCount = new AtomicLong();
     private final AtomicLong producerFailCount    = new AtomicLong();
     private volatile long    consumerSuccessCount = 0;
     private volatile long    consumerFailCount    = 0;
 
-    public LogEntryEventStat() {
+    public ValueWrapperEventStat() {
 
     }
 

@@ -1,7 +1,4 @@
-/**
- * 
- */
-package com.github.jerryxia.devhelper.requestcapture.log;
+package com.github.jerryxia.devhelper.log;
 
 import java.util.ArrayList;
 

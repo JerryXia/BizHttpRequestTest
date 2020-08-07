@@ -4,6 +4,7 @@
 package com.github.jerryxia.devhelper.util;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -50,5 +51,23 @@ public class MapTest {
 
         v2[0] = "123";
         System.out.println(originMap.get(lastKey)[0]);
+    }
+    
+    @Test
+    public void testPutAllIsOk() {
+        HashMap<String, Object> origin = new HashMap<String, Object>();
+        String a0 = new String("a0");
+        String a1 = new String("a1");
+        String a2 = new String("a2");
+        origin.put("a0", a0);
+        origin.put("a1", a1);
+        origin.put("a2", a2);
+        HashMap<String, Object> target = new HashMap<String, Object>();
+        target.put("a1", a1);
+        target.put("a2", "asdfdas");
+
+        target.putAll(origin);
+        Assert.assertTrue(target.get("a1") == a1);
+        Assert.assertTrue(target.get("a2") == a2);
     }
 }

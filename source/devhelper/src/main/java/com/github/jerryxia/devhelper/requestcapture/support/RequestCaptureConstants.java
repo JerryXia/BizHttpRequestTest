@@ -5,8 +5,6 @@ package com.github.jerryxia.devhelper.requestcapture.support;
 
 import java.util.HashMap;
 
-import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordManager;
-
 /**
  * @author Administrator
  *
@@ -20,8 +18,6 @@ public class RequestCaptureConstants {
 
     public static volatile boolean               LOG_EXT_ENABLED     = false;
     public static final HashMap<String, Boolean> LOG_EXT_ENABLED_MAP = new HashMap<String, Boolean>();
-
-    public static final HttpRequestRecordManager RECORD_MANAGER = new HttpRequestRecordManager();
 
     static {
         LOG_EXT_ENABLED_MAP.put("log4j", Boolean.FALSE);

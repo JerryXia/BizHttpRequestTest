@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
-import java.util.UUID;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -18,11 +17,13 @@ import javax.servlet.ServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.jerryxia.devhelper.Constants;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
 import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
 import com.github.jerryxia.devhelper.util.ServletUtil;
 import com.github.jerryxia.devhelper.web.WebConstants;
+import com.github.jerryxia.devutil.ObjectId;
 import com.github.jerryxia.devutil.SystemClock;
 
 /**
@@ -77,8 +78,6 @@ public class RequestCaptureFilter implements Filter {
             this.maxPayloadLength = RequestCaptureConstants.DEFAULT_PAYLOAD_LENGTH;
         }
 
-        RequestCaptureConstants.RECORD_MANAGER.start();
-
         filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : "
                 + RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ENABLED);
         filterConfig.getServletContext().log(
@@ -117,7 +116,7 @@ public class RequestCaptureFilter implements Filter {
 
     @Override
     public void destroy() {
-        RequestCaptureConstants.RECORD_MANAGER.shutdown();
+        Constants.EVENT_WORKING_GROUP.shutdown();
     }
 
     private void dispatchRequest(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
@@ -129,7 +128,7 @@ public class RequestCaptureFilter implements Filter {
         // 存到当前线程
         RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
 
-        RequestCaptureConstants.RECORD_MANAGER.allocEventProducer().publish(httpRequestRecord);
+        Constants.EVENT_WORKING_GROUP.allocEventProducer().publish(httpRequestRecord);
 
         // org.springframework.web.util.ContentCachingRequestWrapper
         ContentRecordRequestWrapper httpRequestWrapper = null;
@@ -250,7 +249,7 @@ public class RequestCaptureFilter implements Filter {
             id = (String) httpRequest.getAttribute(WebConstants.REQUEST_ID_INIT_FILTER_ID);
         } else {
             // 如果RequestIdInitFilter没有启用，则由RequestCaptureFilter生成Id
-            id = UUID.randomUUID().toString();
+            id = ObjectId.get().toString();
         }
 
         long timeStamp = SystemClock.now();

@@ -19,8 +19,8 @@ import javax.servlet.http.HttpServletResponse;
 import com.github.jerryxia.devhelper.Constants;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordStorageQueryResult;
-import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
-import com.github.jerryxia.devhelper.requestcapture.log.LogEntryStorageQueryResult;
+import com.github.jerryxia.devhelper.log.LogEntry;
+import com.github.jerryxia.devhelper.log.LogEntryStorageQueryResult;
 import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
 import com.github.jerryxia.devhelper.requestcapture.support.json.JSONWriter;
 import com.github.jerryxia.devhelper.snoop.JvmMemoryInfo;
@@ -103,22 +103,19 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         }
 
         if (url.startsWith("/allapirecords.json")) {
-            HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
-                    .currentHttpRequestRecordStorage().queryAll();
+            HttpRequestRecordStorageQueryResult result = Constants.HTTP_REQUEST_RECORD_MANAGER.currentHttpRequestRecordStorage().queryAll();
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/apirecords.json")) {
             int startIndex = Integer.parseInt(parameters.get("startIndex"));
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
-            HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
-                    .currentHttpRequestRecordStorage().queryNextList(startIndex, endIndex);
+            HttpRequestRecordStorageQueryResult result = Constants.HTTP_REQUEST_RECORD_MANAGER.currentHttpRequestRecordStorage().queryNextList(startIndex, endIndex);
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/apirecord.json")) {
             String apiRecordId = parameters.get("id");
             if (apiRecordId != null && apiRecordId.length() > 0) {
-                HttpRequestRecordStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER
-                        .currentHttpRequestRecordStorage().queryAll();
+                HttpRequestRecordStorageQueryResult result = Constants.HTTP_REQUEST_RECORD_MANAGER.currentHttpRequestRecordStorage().queryAll();
                 resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS,
                         filterRecordsById(result.getList(), apiRecordId), getServerStat(startTime));
             } else {
@@ -129,8 +126,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         if (url.startsWith("/apirecordlogs.json")) {
             String apiRecordId = parameters.get("id");
             if (apiRecordId != null && apiRecordId.length() > 0) {
-                LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                        .currentLogEntryStorage().queryAll();
+                LogEntryStorageQueryResult result = Constants.LOG_ENTRY_MANAGER.currentLogEntryStorage().queryAll();
                 resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS,
                         filterLogsById(result.getList(), apiRecordId), getServerStat(startTime));
             } else {
@@ -149,8 +145,7 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
                 }
                 if (decLevels != null) {
                     String[] levels = decLevels.split(",");
-                    LogEntryStorageQueryResult allLogs = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                            .currentLogEntryStorage().queryAll();
+                    LogEntryStorageQueryResult allLogs = Constants.LOG_ENTRY_MANAGER.currentLogEntryStorage().queryAll();
                     HashMap<String, ArrayList<String>> result = filterRecordsByLogLevel(levels, allLogs.getList());
                     resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
                 } else {
@@ -164,15 +159,13 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         }
 
         if (url.startsWith("/alllogs.json")) {
-            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                    .currentLogEntryStorage().queryAll();
+            LogEntryStorageQueryResult result = Constants.LOG_ENTRY_MANAGER.currentLogEntryStorage().queryAll();
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
         if (url.startsWith("/logs.json")) {
             int startIndex = Integer.parseInt(parameters.get("startIndex"));
             int endIndex = Integer.parseInt(parameters.get("endIndex"));
-            LogEntryStorageQueryResult result = RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                    .currentLogEntryStorage().queryNextList(startIndex, endIndex);
+            LogEntryStorageQueryResult result = Constants.LOG_ENTRY_MANAGER.currentLogEntryStorage().queryNextList(startIndex, endIndex);
             resp = returnJsonpResult(jsonpCallback, RESULT_CODE_SUCCESS, result, getServerStat(startTime));
         }
 
@@ -344,23 +337,15 @@ public class RequestCaptureWebServlet extends AbstractResourceServlet {
         libInfo.put("logExtEnabled", RequestCaptureConstants.LOG_EXT_ENABLED);
         libInfo.put("logExtEnabledComponent", RequestCaptureConstants.LOG_EXT_ENABLED_MAP);
 
-        libInfo.put("reqProducerSuccessCount", RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat()
-                .getProducerSuccessCount().get());
-        libInfo.put("reqProducerFailCount",
-                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerFailCount().get());
-        libInfo.put("reqConsumerSuccessCount",
-                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
-        libInfo.put("reqConsumerFailCount",
-                RequestCaptureConstants.RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerFailCount());
+        libInfo.put("reqProducerSuccessCount", Constants.HTTP_REQUEST_RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerSuccessCount().get());
+        libInfo.put("reqProducerFailCount", Constants.HTTP_REQUEST_RECORD_MANAGER.viewHttpRequestRecordEventStat().getProducerFailCount().get());
+        libInfo.put("reqConsumerSuccessCount", Constants.HTTP_REQUEST_RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerSuccessCount());
+        libInfo.put("reqConsumerFailCount", Constants.HTTP_REQUEST_RECORD_MANAGER.viewHttpRequestRecordEventStat().getConsumerFailCount());
 
-        libInfo.put("logProducerSuccessCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                .viewLogEntryEventStat().getProducerSuccessCount().get());
-        libInfo.put("logProducerFailCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                .viewLogEntryEventStat().getProducerFailCount().get());
-        libInfo.put("logConsumerSuccessCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                .viewLogEntryEventStat().getConsumerSuccessCount());
-        libInfo.put("logConsumerFailCount", RequestCaptureConstants.RECORD_MANAGER.currentLogEntryManager()
-                .viewLogEntryEventStat().getConsumerFailCount());
+        libInfo.put("logProducerSuccessCount", Constants.LOG_ENTRY_MANAGER.viewLogEntryEventStat().getProducerSuccessCount().get());
+        libInfo.put("logProducerFailCount", Constants.LOG_ENTRY_MANAGER.viewLogEntryEventStat().getProducerFailCount().get());
+        libInfo.put("logConsumerSuccessCount", Constants.LOG_ENTRY_MANAGER.viewLogEntryEventStat().getConsumerSuccessCount());
+        libInfo.put("logConsumerFailCount", Constants.LOG_ENTRY_MANAGER.viewLogEntryEventStat().getConsumerFailCount());
 
         result.put("libInfo", libInfo);
 

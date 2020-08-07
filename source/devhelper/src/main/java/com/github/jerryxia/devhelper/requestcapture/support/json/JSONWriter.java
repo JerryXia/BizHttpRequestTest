@@ -7,8 +7,8 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import com.github.jerryxia.devhelper.requestcapture.log.LogEntry;
-import com.github.jerryxia.devhelper.requestcapture.log.LogEntryStorageQueryResult;
+import com.github.jerryxia.devhelper.log.LogEntry;
+import com.github.jerryxia.devhelper.log.LogEntryStorageQueryResult;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordStorageQueryResult;
 

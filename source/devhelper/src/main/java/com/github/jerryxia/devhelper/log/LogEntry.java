@@ -1,4 +1,4 @@
-package com.github.jerryxia.devhelper.requestcapture.log;
+package com.github.jerryxia.devhelper.log;
 
 /**
  * @author guqk

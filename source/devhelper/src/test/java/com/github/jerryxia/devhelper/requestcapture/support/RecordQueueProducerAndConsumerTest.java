@@ -2,8 +2,9 @@ package com.github.jerryxia.devhelper.requestcapture.support;
 
 import static org.junit.Assert.*;
 
+import com.github.jerryxia.devhelper.Constants;
+import com.github.jerryxia.devhelper.event.ValueWrapperEventProducer;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
-import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordEventProducer;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordManager;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
 import com.github.jerryxia.devutil.SystemClock;
@@ -19,17 +20,19 @@ import org.junit.Test;
 public class RecordQueueProducerAndConsumerTest {
 
     private HttpRequestRecordManager recordManager;
-    
+
     @Before
     public void init() {
-        recordManager = new HttpRequestRecordManager();
-        recordManager.start();
+        Constants.EVENT_WORKING_GROUP.start();
+        recordManager = Constants.HTTP_REQUEST_RECORD_MANAGER;
+        System.out.print("    init: ");
+        System.out.println(Constants.EVENT_WORKING_GROUP);
     }
 
     @Test
     public void testDisruptorOneThreadIsOk() {
         // 1 threads 13.710s
-        HttpRequestRecordEventProducer producer = recordManager.allocEventProducer();
+        ValueWrapperEventProducer producer = recordManager.allocEventProducer();
         int count = 100 * 10000;
         String threadName = Thread.currentThread().getName();
         for (long l = 0; l < count; l++) {
@@ -57,8 +60,8 @@ public class RecordQueueProducerAndConsumerTest {
                 @Override
                 public void run() {
                     String threadName = Thread.currentThread().getName();
-                    for(int l = 0; l < count; l++) {
-                        HttpRequestRecordEventProducer producer = recordManager.allocEventProducer();
+                    for (int l = 0; l < count; l++) {
+                        ValueWrapperEventProducer producer = recordManager.allocEventProducer();
                         producer.publish(new HttpRequestRecord(String.format("%s_%s", threadName, l), HttpRequestRecordType.NORMAL, SystemClock.now()));
                     }
                 }
@@ -83,6 +86,9 @@ public class RecordQueueProducerAndConsumerTest {
 
     @After
     public void shutdown() {
-        recordManager.shutdown();
+        Constants.EVENT_WORKING_GROUP.shutdown();
+
+        System.out.print("shutdown: ");
+        System.out.println(Constants.EVENT_WORKING_GROUP);
     }
 }
