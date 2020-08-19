@@ -6,6 +6,7 @@
   <context:annotation-config />
 
   <context:property-placeholder location="classpath:*.properties" />
+  <import resource="spring-aop.xml" />
   <import resource="spring-dao.xml" />
   <import resource="spring-redis.xml" />
   <import resource="spring-service.xml" />

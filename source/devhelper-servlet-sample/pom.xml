@@ -276,7 +276,7 @@
           <dependency>
             <groupId>com.github.jerryxia</groupId>
             <artifactId>dev-utils</artifactId>
-            <version>0.0.11</version>
+            <version>0.0.15</version>
           </dependency>
         </dependencies>
       </plugin>

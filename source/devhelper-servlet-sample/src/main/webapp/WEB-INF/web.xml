@@ -82,7 +82,7 @@
         <servlet-name>DruidStatView</servlet-name>
         <url-pattern>/druid/*</url-pattern>
     </servlet-mapping>
-    
+
     <servlet>
         <servlet-name>elmahServlet</servlet-name>
         <servlet-class>com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet</servlet-class>
@@ -96,7 +96,6 @@
         <servlet-name>elmahServlet</servlet-name>
         <url-pattern>/admin/elmah/*</url-pattern>
     </servlet-mapping>
-
 
     <!-- SpringMVC Servlet -->
     <servlet>

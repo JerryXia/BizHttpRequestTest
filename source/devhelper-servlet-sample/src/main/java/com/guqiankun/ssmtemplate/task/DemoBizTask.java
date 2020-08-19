@@ -18,8 +18,13 @@ public class DemoBizTask {
 
     @Scheduled(cron = "0/40  *  *  *  *  ? ")
     public void cacheClear() {
+        logger.info("@Scheduled-------cacheClear()");
+    }
 
-            logger.info("@Scheduled-------cacheClear()");
-
+    @Scheduled(cron = "0/40  *  *  *  *  ? ")
+    public void erroThrow() {
+        logger.info("erroThrow ...............");
+        int a = 1 / 0;
+        logger.info("erroThrow ============");
     }
 }

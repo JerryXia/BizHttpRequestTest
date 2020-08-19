@@ -11,7 +11,9 @@ import javax.servlet.FilterRegistration;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletRegistration;
 
+import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -20,16 +22,20 @@ import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.StringUtils;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 import com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
-import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet;
-import com.github.jerryxia.devhelper.support.interceptor.RequestResponseLogInterceptor;
-import com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter;
-import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
+import com.github.jerryxia.devhelper.support.spring.SpringTools;
+import com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledAnnotationPointcutAdvisorFactory;
+import com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledTaskRunRecordAutoInjectInterceptor;
+import com.github.jerryxia.devhelper.support.spring.web.interceptor.RequestResponseLogInterceptor;
+import com.github.jerryxia.devhelper.support.web.filter.RequestIdInitFilter;
+import com.github.jerryxia.devhelper.support.web.listener.BootstrapperContextListener;
+import com.github.jerryxia.devhelper.support.web.servlet.DispatchWebRequestServlet;
 
 /**
  * @author guqk
@@ -39,10 +45,13 @@ import com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener;
 @EnableConfigurationProperties(DevHelperProperties.class)
 @ConditionalOnWebApplication
 public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
-    public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestIdInitFilter-registration";
-    public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME      = "devhelper-requestCaptureFilter-registration";
-    public static final String REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-requestCaptureWebServlet-registration";
-    public static final String ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME           = "devhelper-elmahWebServlet-registration";
+    public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME       = "devhelper-requestIdInitFilter-registration";
+    public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME       = "devhelper-requestCaptureFilter-registration";
+    public static final String DISPATCH_WEB_REQUEST_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-dispatchWebRequestServlet-registration";
+    public static final String ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME            = "devhelper-elmahWebServlet-registration";
+
+    @Autowired
+    private DevHelperProperties properties;
 
     @Bean
     public ServletListenerRegistrationBean<BootstrapperContextListener> bootstrapperContextListener() {
@@ -71,8 +80,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         // 优先使用此filter
         registrationBean.setOrder(FilterRegistrationBean.REQUEST_WRAPPER_FILTER_MAX_ORDER);
         if (config.getRequestIdResponseHeaderName() != null) {
-            registrationBean.addInitParameter(RequestIdInitFilter.PARAM_NAME_REQUEST_ID_RESPONSE_HEADER_NAME,
-                    config.getRequestIdResponseHeaderName());
+            registrationBean.addInitParameter(RequestIdInitFilter.PARAM_NAME_REQUEST_ID_RESPONSE_HEADER_NAME, config.getRequestIdResponseHeaderName());
         }
 
         registrationBean.addUrlPatterns("/*");
@@ -110,17 +118,14 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_EXCLUSIONS, config.getExclusions());
         }
         if (config.getReplayRequestIdRequestHeaderName() != null) {
-            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME,
-                    config.getReplayRequestIdRequestHeaderName());
+            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME, config.getReplayRequestIdRequestHeaderName());
         }
         if (config.getMaxPayloadLength() != null) {
-            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_MAX_PAYLOAD_LENGTH,
-                    config.getMaxPayloadLength().toString());
+            registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_MAX_PAYLOAD_LENGTH, config.getMaxPayloadLength().toString());
         }
 
         registrationBean.addUrlPatterns("/*");
-        registrationBean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE,
-                DispatcherType.ERROR);
+        registrationBean.setDispatcherTypes(DispatcherType.REQUEST, DispatcherType.FORWARD, DispatcherType.INCLUDE, DispatcherType.ERROR);
 
         FilterRegistration filterRegistration = servletContext.getFilterRegistration(filterName);
         if (filterRegistration != null) {
@@ -134,16 +139,15 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         return registrationBean;
     }
 
-    @Bean(name = REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME)
-    @ConditionalOnMissingBean(name = REQUEST_CAPTURE_WEB_SERVLET_REGISTRATION_BEAN_NAME)
-    public ServletRegistrationBean requestCaptureWebServlet(DevHelperProperties properties,
-            ServletContext servletContext) {
-        String servletName = "requestCaptureWebServlet";
+    @Bean(name = DISPATCH_WEB_REQUEST_SERVLET_REGISTRATION_BEAN_NAME)
+    @ConditionalOnMissingBean(name = DISPATCH_WEB_REQUEST_SERVLET_REGISTRATION_BEAN_NAME)
+    public ServletRegistrationBean dispatchWebRequestServlet(DevHelperProperties properties, ServletContext servletContext) {
+        String servletName = "dispatchWebServlet";
         RequestCaptureWebServletProperties config = properties.getRequestCaptureServlet();
 
         ServletRegistrationBean registrationBean = new ServletRegistrationBean();
 
-        RequestCaptureWebServlet servlet = new RequestCaptureWebServlet();
+        DispatchWebRequestServlet servlet = new DispatchWebRequestServlet();
         registrationBean.setServlet(servlet);
         registrationBean.setName(servletName);
         registrationBean.setLoadOnStartup(1);
@@ -187,12 +191,10 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         }
 
         if (config.getErrorRecordStorage() != null) {
-            registrationBean.addInitParameter(ElmahServlet.PARAM_NAME_ERROR_RECORD_STORAGE,
-                    config.getErrorRecordStorage());
+            registrationBean.addInitParameter(ElmahServlet.PARAM_NAME_ERROR_RECORD_STORAGE, config.getErrorRecordStorage());
         }
         if (config.getErrorRecordFileStoragePath() != null) {
-            registrationBean.addInitParameter(ElmahServlet.PARAM_NAME_ERROR_RECORD_FILE_STORAGE_PATH,
-                    config.getErrorRecordFileStoragePath());
+            registrationBean.addInitParameter(ElmahServlet.PARAM_NAME_ERROR_RECORD_FILE_STORAGE_PATH, config.getErrorRecordFileStoragePath());
         }
 
         ServletRegistration servletRegistration = servletContext.getServletRegistration(servletName);
@@ -208,12 +210,9 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         return registrationBean;
     }
 
-    @Autowired
-    private DevHelperProperties devHelperProperties;
-
     @Bean(initMethod = "init")
     public RequestResponseLogInterceptor requestResponseLogInterceptor() {
-        RequestResponseLogProperties config = devHelperProperties.getRequestResponseLog();
+        RequestResponseLogProperties config = properties.getRequestResponseLog();
         RequestResponseLogInterceptor interceptor = new RequestResponseLogInterceptor();
         if (config.getEnabled() != null) {
             interceptor.setEnabled(config.getEnabled().booleanValue());
@@ -238,6 +237,25 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         // addPathPatterns 用于添加拦截规则
         // excludePathPatterns 用户排除拦截
         registry.addInterceptor(requestResponseLogInterceptor()).addPathPatterns("/**");
+    }
+
+    @Bean
+    @ConditionalOnClass(Scheduled.class)
+    public ScheduledTaskRunRecordAutoInjectInterceptor scheduledTaskRunRecordAutoInjectInterceptor() {
+        TaskRunProperties config = properties.getTaskRun();
+        ScheduledTaskRunRecordAutoInjectInterceptor interceptpr = new ScheduledTaskRunRecordAutoInjectInterceptor();
+        if (config.getLazyMode() != null) {
+            interceptpr.setLazyMode(config.getLazyMode().booleanValue());
+        }
+        interceptpr.setInstanceName(SpringTools.getApplicationContext().getId());
+        return interceptpr;
+    }
+
+    @Bean
+    public DefaultPointcutAdvisor scheduledAdvisor() {
+        DefaultPointcutAdvisor scheduledAdvisor = ScheduledAnnotationPointcutAdvisorFactory.getScheduledAdvisor();
+        scheduledAdvisor.setAdvice(scheduledTaskRunRecordAutoInjectInterceptor());
+        return scheduledAdvisor;
     }
 
 }

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
   <!-- https://cloud.google.com/appengine/docs/standard/java/config/appref#max_idle_instances -->
-  <!-- <application>res4gqk</application>
-  <version>1</version> -->
+  <application>res4gqk</application>
+  <version>1</version>
 
   <precompilation-enabled>false</precompilation-enabled>
   <public-root>/static</public-root>
@@ -15,8 +15,7 @@
     <include path="/robots.txt" expiration="1d" />
   </static-files>
   -->
-  <async-session-persistence enabled="true"
-    queue-name="default" />
+  <async-session-persistence enabled="true" queue-name="default" />
   <sessions-enabled>true</sessions-enabled>
 
   <runtime>java8</runtime>

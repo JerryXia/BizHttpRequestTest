@@ -9,7 +9,6 @@
 
     <task:annotation-driven />
     <context:component-scan base-package="com.guqiankun.ssmtemplate.task" /> 
-    
 
 
 </beans>

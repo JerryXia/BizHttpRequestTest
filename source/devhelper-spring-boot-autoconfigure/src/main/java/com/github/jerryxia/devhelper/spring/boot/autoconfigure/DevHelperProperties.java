@@ -17,6 +17,7 @@ public class DevHelperProperties {
     // private SnoopServletProperties snoopServlet = new SnoopServletProperties();
     private RequestResponseLogProperties requestResponseLog = new RequestResponseLogProperties();
     private ElmahServletProperties       elmahServlet       = new ElmahServletProperties();
+    private TaskRunProperties            taskRun            = new TaskRunProperties();
 
     public RequestIdInitFilterProperties getRequestIdInit() {
         return requestIdInit;
@@ -57,4 +58,15 @@ public class DevHelperProperties {
     public void setElmahServlet(ElmahServletProperties elmahServlet) {
         this.elmahServlet = elmahServlet;
     }
+
+
+    public TaskRunProperties getTaskRun() {
+        return taskRun;
+    }
+
+
+    public void setTaskRun(TaskRunProperties taskRun) {
+        this.taskRun = taskRun;
+    }
+
 }
