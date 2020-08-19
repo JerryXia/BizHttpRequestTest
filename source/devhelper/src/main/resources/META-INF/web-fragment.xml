@@ -9,7 +9,7 @@
     <!-- Request Id Init Filter -->
     <filter>
         <filter-name>requestIdInitFilter</filter-name>
-        <filter-class>com.github.jerryxia.devhelper.web.filter.RequestIdInitFilter</filter-class>
+        <filter-class>com.github.jerryxia.devhelper.support.web.filter.RequestIdInitFilter</filter-class>
         <init-param>
             <param-name>requestIdResponseHeaderName</param-name>
             <param-value>X-Call-RequestId</param-value>
@@ -54,7 +54,7 @@
     <!-- Request Capture Servlet -->
     <servlet>
         <servlet-name>requestCaptureWebServlet</servlet-name>
-        <servlet-class>com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureWebServlet</servlet-class>
+        <servlet-class>com.github.jerryxia.devhelper.support.web.servlet.DispatchWebRequestServlet</servlet-class>
         <init-param>  
             <param-name>resetEnable</param-name>
             <param-value>true</param-value>
@@ -87,6 +87,6 @@
 
     <!-- BootstrapperContextListener -->
     <listener>
-      <listener-class>com.github.jerryxia.devhelper.web.listener.BootstrapperContextListener</listener-class>
+      <listener-class>com.github.jerryxia.devhelper.support.web.listener.BootstrapperContextListener</listener-class>
     </listener>
 </web-fragment>

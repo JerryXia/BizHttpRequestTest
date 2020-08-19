@@ -1,6 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+  xmlns:aop="http://www.springframework.org/schema/aop"
+  xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd">
+  <!-- 开启注解AOP -->
+  <!--
+  <aop:aspectj-autoproxy proxy-target-class="true" />
+  -->
 
+  <!--
+  <bean id="scheduledTaskRunRecordAutoInject"
+    class="com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledTaskRunRecordAutoInject"
+    init-method="init">
+    <property name="lazyMode" value="true" />
+  </bean>
+  <aop:config>
+    <aop:aspect ref="scheduledTaskRunRecordAutoInject">
+      <aop:pointcut id="scheduledTaskRunRecordAutoInject_pointcut" expression="@annotation(org.springframework.scheduling.annotation.Scheduled)" />
+
+      <aop:before          pointcut-ref="scheduledTaskRunRecordAutoInject_pointcut" method="doBefore" />
+      <aop:after           pointcut-ref="scheduledTaskRunRecordAutoInject_pointcut" method="doAfter" />
+      <aop:after-returning pointcut-ref="scheduledTaskRunRecordAutoInject_pointcut" method="doAfterReturning" returning="retVal" />
+      <aop:after-throwing  pointcut-ref="scheduledTaskRunRecordAutoInject_pointcut" method="doAfterThrowing" throwing="t" />
+    </aop:aspect>
+  </aop:config>
+  -->
+
+  <bean id="scheduledTaskRunRecordAutoInjectInterceptor"
+    class="com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledTaskRunRecordAutoInjectInterceptor">
+    <property name="lazyMode" value="true" />
+  </bean>
+
+  <bean id="scheduledAdvisor" 
+    class="com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledAnnotationPointcutAdvisorFactory"
+    factory-method="getScheduledAdvisor">
+    <property name="advice" ref="scheduledTaskRunRecordAutoInjectInterceptor" />
+  </bean>
 </beans>

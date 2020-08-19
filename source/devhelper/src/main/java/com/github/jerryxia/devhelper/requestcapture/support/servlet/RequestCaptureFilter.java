@@ -18,11 +18,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.jerryxia.devhelper.Constants;
+import com.github.jerryxia.devhelper.log.LogEntrySource;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecord;
 import com.github.jerryxia.devhelper.requestcapture.HttpRequestRecordType;
 import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
+import com.github.jerryxia.devhelper.support.log.LogConstants;
+import com.github.jerryxia.devhelper.support.web.WebConstants;
 import com.github.jerryxia.devhelper.util.ServletUtil;
-import com.github.jerryxia.devhelper.web.WebConstants;
 import com.github.jerryxia.devutil.ObjectId;
 import com.github.jerryxia.devutil.SystemClock;
 
@@ -80,10 +82,6 @@ public class RequestCaptureFilter implements Filter {
 
         filterConfig.getServletContext().log("devhelper RequestCaptureFilter enabled                : "
                 + RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ENABLED);
-        filterConfig.getServletContext().log(
-                "devhelper RequestCaptureFilter log_ext_enabled_status : " + RequestCaptureConstants.LOG_EXT_ENABLED);
-        filterConfig.getServletContext().log("devhelper RequestCaptureFilter log_ext_enabled_map    : "
-                + RequestCaptureConstants.LOG_EXT_ENABLED_MAP.toString());
     }
 
     @Override
@@ -116,7 +114,7 @@ public class RequestCaptureFilter implements Filter {
 
     @Override
     public void destroy() {
-        Constants.EVENT_WORKING_GROUP.shutdown();
+        
     }
 
     private void dispatchRequest(HttpServletRequest httpRequest, ServletResponse response, FilterChain chain)
@@ -126,7 +124,8 @@ public class RequestCaptureFilter implements Filter {
         // httpRequestRecord.getId() --> RequestCaptureId
         httpRequest.setAttribute(RequestCaptureConstants.REQUEST_CAPTURE_FILTER_ID, httpRequestRecord.getId());
         // 存到当前线程
-        RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set(httpRequestRecord.getId());
+        LogConstants.LOG_ENTRY_SOURCE.set(LogEntrySource.HTTP_REQUEST);
+        LogConstants.RECORD_ID.set(httpRequestRecord.getId());
 
         Constants.EVENT_WORKING_GROUP.allocEventProducer().publish(httpRequestRecord);
 
@@ -163,7 +162,8 @@ public class RequestCaptureFilter implements Filter {
                 String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
                 log.debug(responseBody);
             }
-            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+            LogConstants.LOG_ENTRY_SOURCE.remove();
+            LogConstants.RECORD_ID.remove();
             httpResponseWrapper.copyBodyToResponse();
         }
     }
@@ -175,7 +175,7 @@ public class RequestCaptureFilter implements Filter {
             // 之前的请求isExclusion = true, 那么本次forward的请求也忽略
         } else {
             // 其实可以不用再次赋值
-            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+            LogConstants.RECORD_ID.set((String) requestCaptureIdObj);
         }
         if (log.isTraceEnabled()) {
             log.trace(" - dispatchForward pre doFilter");
@@ -193,7 +193,7 @@ public class RequestCaptureFilter implements Filter {
             // 之前的请求isExclusion = true, 那么本次Include的请求也忽略
         } else {
             // 其实可以不用再次赋值
-            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+            LogConstants.RECORD_ID.set((String) requestCaptureIdObj);
         }
         if (log.isTraceEnabled()) {
             log.trace(" - dispatchInclude pre doFilter");
@@ -211,8 +211,9 @@ public class RequestCaptureFilter implements Filter {
             // 之前的请求isExclusion = true, 那么本次forward的请求也忽略
             chain.doFilter(httpRequest, response);
         } else {
-            // error之前的请求已经进入filter中finally块执行HTTP_REQUEST_RECORD_ID.remove()
-            RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.set((String) requestCaptureIdObj);
+            LogConstants.LOG_ENTRY_SOURCE.set(LogEntrySource.HTTP_REQUEST);
+            // error之前的请求已经进入filter中finally块执行RECORD_ID.remove()
+            LogConstants.RECORD_ID.set((String) requestCaptureIdObj);
 
             ContentRecordResponseWrapper httpResponseWrapper = null;
             if (response instanceof ContentRecordResponseWrapper) {
@@ -237,7 +238,8 @@ public class RequestCaptureFilter implements Filter {
                     String responseBody = new String(httpResponseWrapper.getContentAsByteArray());
                     log.error(responseBody);
                 }
-                RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.remove();
+                LogConstants.LOG_ENTRY_SOURCE.remove();
+                LogConstants.RECORD_ID.remove();
                 httpResponseWrapper.copyBodyToResponse();
             }
         }

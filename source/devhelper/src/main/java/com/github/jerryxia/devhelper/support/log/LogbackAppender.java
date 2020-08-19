@@ -13,7 +13,7 @@ import ch.qos.logback.core.UnsynchronizedAppenderBase;
 
 import com.github.jerryxia.devhelper.Constants;
 import com.github.jerryxia.devhelper.log.LogEntry;
-import com.github.jerryxia.devhelper.requestcapture.support.RequestCaptureConstants;
+import com.github.jerryxia.devhelper.log.LogEntrySource;
 
 /**
  * @author Administrator
@@ -37,14 +37,15 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
             hostName = "UnKnown";
             ip = "0.0.0.0";
         }
-        RequestCaptureConstants.LOG_EXT_ENABLED_MAP.put("logback", Boolean.TRUE);
-        RequestCaptureConstants.LOG_EXT_ENABLED = true;
+        Constants.LOG_EXT_ENABLED_MAP.put(LogProvider.logback.name(), Boolean.TRUE);
+        Constants.LOG_EXT_ENABLED = true;
     }
 
     @Override
     protected void append(ILoggingEvent event) {
-        String httpRequestRecordId = RequestCaptureConstants.HTTP_REQUEST_RECORD_ID.get();
-        LogEntry log = new LogEntry(httpRequestRecordId);
+        LogEntrySource logEntrySouce = LogConstants.LOG_ENTRY_SOURCE.get();
+        String recordId = LogConstants.RECORD_ID.get();
+        LogEntry log = new LogEntry(logEntrySouce, recordId);
         log.setHost(this.hostName);
         log.setIp(this.ip);
         log.setLoggerName(event.getLoggerName());

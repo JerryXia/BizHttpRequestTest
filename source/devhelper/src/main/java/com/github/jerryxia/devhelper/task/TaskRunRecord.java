@@ -8,11 +8,12 @@ import java.util.Map;
 public class TaskRunRecord {
     private String              id;
     private TaskRunRecordType   type;
-    private long                timeStamp;
+    private long                startTimeStamp;
+    private long                endTimeStamp;
     private String              declaringClass;
     private String              method;
     private Map<String, Object> parameterMap;
-    private String              host;
+    private String              hostName;
     private String              ip;
     private String              instanceName;
 
@@ -22,7 +23,7 @@ public class TaskRunRecord {
         case REPLAY:
             this.id = uuid;
             this.type = type;
-            this.timeStamp = timeStamp;
+            this.startTimeStamp = timeStamp;
             break;
         case UNKNOWN:
         default:
@@ -38,8 +39,16 @@ public class TaskRunRecord {
         return type;
     }
 
-    public long getTimeStamp() {
-        return timeStamp;
+    public long getStartTimeStamp() {
+        return startTimeStamp;
+    }
+
+    public long getEndTimeStamp() {
+        return endTimeStamp;
+    }
+
+    public void setEndTimeStamp(long endTimeStamp) {
+        this.endTimeStamp = endTimeStamp;
     }
 
     public String getDeclaringClass() {
@@ -66,12 +75,12 @@ public class TaskRunRecord {
         this.parameterMap = parameterMap;
     }
 
-    public String getHost() {
-        return host;
+    public String getHostName() {
+        return hostName;
     }
 
-    public void setHost(String host) {
-        this.host = host;
+    public void setHostName(String hostName) {
+        this.hostName = hostName;
     }
 
     public String getIp() {

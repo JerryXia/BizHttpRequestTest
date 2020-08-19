@@ -13,8 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 
-
-import com.github.jerryxia.devhelper.Bootstrapper;
 import com.github.jerryxia.devhelper.Constants;
 import com.github.jerryxia.devhelper.elmah.ErrorInfo;
 import com.github.jerryxia.devhelper.elmah.ErrorInfoCapture;
@@ -22,6 +20,7 @@ import com.github.jerryxia.devhelper.elmah.ErrorRecordFileStorage;
 import com.github.jerryxia.devhelper.elmah.ErrorRecordNoOpStorage;
 import com.github.jerryxia.devhelper.elmah.ErrorRecordStorage;
 import com.github.jerryxia.devhelper.support.json.RuntimeJsonComponentProviderFactory;
+import com.github.jerryxia.devhelper.util.ClassUtil;
 import com.github.jerryxia.devutil.SystemClock;
 import com.github.pagehelper.PageInfo;
 import com.vip.vjtools.vjkit.io.FilePathUtil;
@@ -68,7 +67,7 @@ public class ElmahServlet extends HttpServlet {
             break;
         default:
             try {
-                Class<?> errorRecordStorageClass = Bootstrapper.classForName(errorRecordStorage);
+                Class<?> errorRecordStorageClass = ClassUtil.classForName(errorRecordStorage);
                 if (ErrorRecordStorage.class.isAssignableFrom(errorRecordStorageClass)) {
                     ErrorInfoCapture.setErrorRecordStorage(errorRecordStorageClass);
                 } else {

@@ -3,31 +3,32 @@
  */
 package com.github.jerryxia.devhelper;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
+import com.github.jerryxia.devhelper.util.ClassUtil;
+
 /**
- * 引导器
+ ** 引导器
  * 
  * @author guqk
  */
 public class Bootstrapper {
-    private static final ClassLoader defaultClassLoader = Bootstrapper.class.getClassLoader();
-    private final ClassLoader        clToUse;
+    private final ClassLoader clToUse;
 
     /**
      * ctors
      */
     public Bootstrapper() {
-        this.clToUse = defaultClassLoader;
+        this.clToUse = ClassUtil.getClassLoader();
     }
 
     public void init() {
         this.getCurrentLibVersion();
-        this.javaMelodyChineseFontExtract();
+    }
+
+    public void shutdown() {
+        Constants.EVENT_WORKING_GROUP.shutdown();
     }
 
     private void getCurrentLibVersion() {
@@ -49,50 +50,6 @@ public class Bootstrapper {
         }
     }
 
-    /**
-     * 解压宋体的字体文件到 {java.home}/lib/fonts/fallback/
-     */
-    private void javaMelodyChineseFontExtract() {
-        String javaMelodyMonitoringFilterClassName = "net.bull.javamelody.MonitoringFilter";
-        boolean existsJavaMelodyClass = classforName(javaMelodyMonitoringFilterClassName) != null;
-        if (existsJavaMelodyClass) {
-            InputStream is = null;
-            FileOutputStream fos = null;
-            try {
-                // 先检查字体文件目录
-                String fontFileName = "simsun.ttc";
-                String fontFilePath = Constants.JAVA_HOME + "/lib/fonts/fallback/" + fontFileName;
-                File fontFile = new File(fontFilePath);
-                if (!fontFile.getParentFile().exists()) {
-                    if (fontFile.getParentFile().mkdirs() == false) {
-                        return;
-                    }
-                }
-                // 释放字体文件
-                is = clToUse.getResourceAsStream(fontFileName);
-                fos = new FileOutputStream(fontFilePath);
-                byte[] buffer = new byte[8192];
-                int length;
-                while ((length = is.read(buffer)) > 0) {
-                    fos.write(buffer, 0, length);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } finally {
-                try {
-                    if (is != null) {
-                        is.close();
-                    }
-                    if (fos != null) {
-                        fos.close();
-                    }
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
     private String getSystemProperty(String key) {
         String p = null;
         try {
@@ -103,47 +60,4 @@ public class Bootstrapper {
         return p;
     }
 
-    /**
-     * 判断类是否存在
-     * 
-     * @param className
-     * @return
-     */
-    private Class<?> classforName(String className) {
-        try {
-            return clToUse != null ? clToUse.loadClass(className) : Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
-    }
-
-    private static ClassLoader getClassLoader() {
-        if (defaultClassLoader != null) {
-            return defaultClassLoader;
-        } else {
-            return Thread.currentThread().getContextClassLoader();
-        }
-    }
-
-    /**
-     * Loads a class
-     * 
-     * @param className
-     *            - the class to load
-     * @return The loaded class
-     * @throws ClassNotFoundException
-     *             If the class cannot be found (duh!)
-     */
-    public static Class<?> classForName(String className) throws ClassNotFoundException {
-        Class<?> clazz = null;
-        try {
-            clazz = getClassLoader().loadClass(className);
-        } catch (Exception e) {
-            // Ignore. Failsafe below.
-        }
-        if (clazz == null) {
-            clazz = Class.forName(className);
-        }
-        return clazz;
-    }
 }

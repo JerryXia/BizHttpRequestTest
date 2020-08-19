@@ -5,27 +5,33 @@ package com.github.jerryxia.devhelper.log;
  *
  */
 public class LogEntry {
-    private long   id;
-    private String httpRequestRecordId;
-    private String host;
-    private String ip;
-    private String loggerName;
-    private String message;
-    private String threadName;
-    private long   timeStamp;
-    private String level;
+    private long           id;
+    private LogEntrySource source;
+    private String         recordId;
+    private String         host;
+    private String         ip;
+    private String         loggerName;
+    private String         message;
+    private String         threadName;
+    private long           timeStamp;
+    private String         level;
 
-    public LogEntry(String httpRequestRecordId) {
+    public LogEntry(LogEntrySource source, String recordId) {
         this.id = LogConstants.LOG_ENTRY_ID.incrementAndGet();
-        this.httpRequestRecordId = httpRequestRecordId;
+        this.source = source;
+        this.recordId = recordId;
     }
 
     public long getId() {
         return id;
     }
 
-    public String getHttpRequestRecordId() {
-        return httpRequestRecordId;
+    public LogEntrySource getSource() {
+        return source;
+    }
+
+    public String getRecordId() {
+        return recordId;
     }
 
     public String getHost() {
@@ -82,5 +88,13 @@ public class LogEntry {
 
     public void setLevel(String level) {
         this.level = level;
+    }
+
+    public String getHttpRequestRecordId() {
+        return LogEntrySource.HTTP_REQUEST == this.source ? this.recordId : null;
+    }
+
+    public String getTaskScheduleRecordId() {
+        return LogEntrySource.TASK_SCHEDULE == this.source ? this.recordId : null;
     }
 }

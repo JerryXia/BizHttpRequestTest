@@ -5,17 +5,17 @@ package com.github.jerryxia.devhelper.task;
 
 public enum TaskRunRecordType {
     /**
-     * 未知
+     ** 未知
      */
     UNKNOWN("未知", 0),
 
     /**
-     * 常规请求
+     ** 常规请求
      */
     NORMAL("常规", 1),
 
     /**
-     * 重放请求
+     ** 重放请求
      */
     REPLAY("重放", 2);
 

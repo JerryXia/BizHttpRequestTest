@@ -460,7 +460,7 @@ const apiRecords = {
             that.isFetchingExceptionRecords = true;
             jQuery.ajax({
                 type: 'GET',
-                url: PATH_PREFIX + '/exceptionRecords.json',
+                url: PATH_PREFIX + '/exceptionApiRecords.json',
                 timeout: 123000,
                 data: { levels: that.queryLevels },
                 dataType: 'jsonp',
@@ -669,6 +669,442 @@ const apiLogs = {
                 }
                 that.isFetchingData.apiRecordLogs = false;
             });
+        }
+    }
+};
+const taskRecords = {
+    template: '#taskRecords',
+    data: function() {
+        return {
+            taskRecordsPagedList: [],
+            logTbShow: {
+                id: false,
+                startTimeStamp: true,
+                endTimeStamp: true,
+                declaringClass: true,
+                method: true,
+                parameter: false
+            },
+            taskRecordLogsQueryId: '',
+            taskRecordLogs: [],
+            clipboard: null,
+            serverstat: {},
+            isFetchingData: false,
+            fetchedTick: 5,
+            fetchedTickInterval: null,
+            currFetchHasNew: false,
+            lastRecordIndex: 0,
+            pageSize: 10,
+            selectedFilterTask: '',
+            allFilterTasks: [],
+            queryLevels: 'WARN,ERROR,FATAL',
+            exceptionRecords: {},
+            isFetchingExceptionRecords: false,
+            fetchExceptionRecordsTimeout: null
+        }
+    },
+    route: {
+        data: function(transition) {
+            //transition.next({
+            //    currentPath: transition.to.path
+            //})
+        }
+    },
+    created: function() {
+        let that = this;
+        console.log('taskRecords created');
+        that.loadFromLocalDb();
+        that.fetchData();
+        that.fetchExceptionRecords();
+
+        let clipboard = new Clipboard('.btn-clipboard-logmessage');
+        clipboard.on('success', function(e) {
+            e.clearSelection();
+            window.setTimeout(function() {
+                $(e.trigger).tooltip('hide');
+            }, 1000);
+        });
+        that.clipboard = clipboard;
+    },
+    mounted: function() {
+
+    },
+    updated: function() {
+        // console.debug('apiRecords updated');
+    },
+    destroyed: function() {
+        let that = this;
+        console.log('taskRecords destroyed');
+        that.clipboard.destroy();
+        if (that.fetchedTickInterval != null) {
+            clearInterval(that.fetchedTickInterval);
+            that.fetchedTickInterval = null;
+        }
+        if (that.fetchExceptionRecordsTimeout != null) {
+            clearTimeout(that.fetchExceptionRecordsTimeout);
+            that.fetchExceptionRecordsTimeout = null;
+        }
+    },
+    watch: {
+        '$route': 'fetchData',
+        'logTbShow': {
+            handler: function(val, oldVal) {
+                this.saveLogTbShowConfigToLocalDb(val);
+            },
+            deep: true
+        },
+        'serverstat': function(newVal, oldVal) {
+            let htmlPartial = [
+                '<li><a href="https://github.com/JerryXia/BizHttpRequestTest" target="_blank">devHelper.ReqeustCapture</a></li>',
+                '<li>MemoryStorage</li>',
+                '<li>Server Time: ',
+                new Date(newVal.time).format('yyyy-MM-dd HH:mm:ss'),
+                '</li>',
+                '<li>Generated: ',
+                newVal.generated,
+                'ns</li>'
+            ];
+            $('.footer ul').html(htmlPartial.join('')).show();
+        },
+        'isFetchingData': function(newVal, oldVal) {
+            let that = this;
+            if (oldVal === false && newVal === true) {
+                // 开始获取
+                if (that.fetchedTickInterval != null) {
+                    clearInterval(that.fetchedTickInterval);
+                    that.fetchedTickInterval = null;
+                }
+                $('#btn_loadmore').attr('disabled', 'disabled');
+            } else if (oldVal === true && newVal === false) {
+                // 获取结束
+                if (that.fetchedTickInterval == null) {
+                    that.fetchedTick = 5;
+                    that.fetchedTickInterval = setInterval(function() {
+                        let newFetchedTick = that.fetchedTick - 1;
+                        if (newFetchedTick > 0) {
+                            that.fetchedTick = newFetchedTick;
+                        } else {
+                            that.fetchNextData();
+                        }
+                    }, 1000);
+                }
+                $('#btn_loadmore').removeAttr('disabled');
+            } else {
+                console.warn('watch isFetchingData into extra case.');
+            }
+        },
+        'isFetchingExceptionRecords': function(newVal, oldVal) {
+            let that = this;
+            if (oldVal === false && newVal === true) {
+                // 开始获取
+            } else if (oldVal === true && newVal === false) {
+                // 获取结束
+                if (that.fetchExceptionRecordsTimeout != null) {
+                    clearTimeout(that.fetchExceptionRecordsTimeout);
+                }
+                that.fetchExceptionRecordsTimeout = setTimeout(function() {
+                    that.fetchExceptionRecords();
+                }, 1000);
+            } else {
+                console.warn('watch isFetchingExceptionRecords into extra case.');
+            }
+        },
+        'taskRecordsPagedList': function(newVal, oldVal) {
+            let that = this;
+            let tasks = _.map(newVal, function(item) { return item.declaringClass + '#' + item.method; })
+            that.allFilterTasks = _.uniq(tasks);
+        }
+    },
+    computed: {
+        logCount: function() {
+            let that = this;
+            return 0;
+        },
+        fetchedMessage: function() {
+            let that = this;
+            return that.currFetchHasNew ? '' : '找不到与当前过滤条件相符的更新的记录。';
+        },
+        fetchedButtonValue: function() {
+            let that = this;
+            if (that.isFetchingData) {
+                return ' loading...';
+            } else {
+                return '' + that.fetchedTick + '秒后自动加载较新记录';
+            }
+        },
+        filteredTaskRecordsPagedList: function() {
+            let that = this;
+            if (that.selectedFilterTask === '') {
+                return that.taskRecordsPagedList;
+            } else {
+                return _.filter(that.taskRecordsPagedList, function(item) {
+                    return (item.declaringClass + '#' + item.method) === that.selectedFilterTask
+                });
+            }
+        }
+    },
+    methods: {
+        loadFromLocalDb: function() {
+            let that = this;
+            if (window.localStorage) {
+                try {
+                    let jsonStr = localStorage.getItem("requestcapture_taskrecords_logTbShow");
+                    if (jsonStr && jsonStr.length > 0) {
+                        let jsonObj = JSON.parse(jsonStr);
+                        that.logTbShow = jsonObj;
+                        console.info('requestcapture_taskrecords_logTbShow:加载本地保存的配置');
+                    }
+                } catch (parseError) {
+                    console.error(parseError);
+                    console.info('requestcapture_taskrecords_logTbShow:使用的默认配置');
+                }
+
+                try {
+                    let jsonStr = localStorage.getItem("requestcapture_settingsShowExceptionRecords_levels");
+                    if (jsonStr && jsonStr.length > 0) {
+                        let jsonObj = JSON.parse(jsonStr);
+                        that.queryLevels = jsonObj.join(',');
+                        console.info('settingsShowExceptionRecords:加载本地保存的配置');
+                    }
+                } catch (parseError) {
+                    console.error(parseError);
+                    console.info('settingsShowExceptionRecords:使用的默认配置');
+                }
+            } else {
+                alert(NOT_SUPPORT_LOCALSTORAGE);
+            }
+        },
+        saveLogTbShowConfigToLocalDb: function(obj) {
+            let that = this;
+            if (window.localStorage) {
+                window.localStorage.setItem("requestcapture_taskrecords_logTbShow", JSON.stringify(obj));
+            } else {
+                alert(NOT_SUPPORT_LOCALSTORAGE);
+            }
+        },
+        fetchData: function() {
+            let that = this;
+
+            that.isFetchingData = true;
+            jQuery.ajax({
+                type: 'GET',
+                url: PATH_PREFIX + '/alltaskrecords.json',
+                timeout: 123000,
+                //contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                //data: { t: Date.now() },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        that.lastRecordIndex = res.data.lastIndex;
+                        that.taskRecordsPagedList = res.data.list;
+
+                        that.serverstat = res.serverstat;
+                        that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                    } else {
+                        that.taskRecordsPagedList = [];
+                        that.currFetchHasNew = false;
+                    }
+                    //that.isFetchingData = false;
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    that.taskRecordsPagedList = [];
+                    that.currFetchHasNew = false;
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingData = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('alltaskrecords.json:' + textStatus);
+                }
+            });
+        },
+        showLogs: function(recordId, event) {
+            let that = this;
+            var $btn = $(event.target).button('loading');
+            $('[data-toggle="tooltip"]').tooltip('destroy');
+
+            that.taskRecordLogsQueryId = recordId;
+            $.getJSON(PATH_PREFIX + '/taskrecordlogs.json?callback=?', { id: recordId }, function(res) {
+                if (res && res.code == 1) {
+                    that.taskRecordLogs = res.data;
+                } else {
+                    that.taskRecordLogs = [];
+                }
+                that.$nextTick(function() {
+                    $('[data-toggle="tooltip"]').tooltip();
+                });
+                $btn.button('reset');
+                $('.bs-example-modal-lg').modal();
+            });
+        },
+        fetchNextData: function() {
+            let that = this;
+
+            let start = that.lastRecordIndex;
+            let end = that.lastRecordIndex + that.pageSize;
+
+            that.isFetchingData = true;
+            jQuery.ajax({
+                type: 'GET',
+                url: PATH_PREFIX + '/taskrecords.json',
+                timeout: 123000,
+                //contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                data: { startIndex: start, endIndex: end },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        that.lastRecordIndex = res.data.lastIndex;
+                        if (res.data.list && res.data.list.length > 0) {
+                            for (let i = 0, len = res.data.list.length; i < len; i++) {
+                                that.taskRecordsPagedList.push(res.data.list[i]);
+                            }
+                        }
+
+                        that.serverstat = res.serverstat;
+                        that.currFetchHasNew = res.data.list && res.data.list.length > 0;
+                    } else {
+                        that.currFetchHasNew = false;
+                    }
+                    //that.isFetchingData = false;
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    that.currFetchHasNew = false;
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingData = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('taskrecords.json:' + textStatus);
+                }
+            });
+        },
+        switchExpandMessage: function(item) {
+            if (typeof item.isExpandMessage === 'undefined') {
+                Vue.set(item, 'isExpandMessage', true);
+            } else {
+                item.isExpandMessage = item.isExpandMessage ? false : true;
+            }
+        },
+        fetchExceptionRecords: function() {
+            let that = this;
+
+            that.isFetchingExceptionRecords = true;
+            jQuery.ajax({
+                type: 'GET',
+                url: PATH_PREFIX + '/exceptionTaskRecords.json',
+                timeout: 123000,
+                data: { levels: that.queryLevels },
+                dataType: 'jsonp',
+                success: function(res, textStatus, jqXHR) {
+                    if (res && res.code == 1) {
+                        // TODO: 优化clone
+                        for (let i = 0, len = ORDERED_LEVELS.length; i < len; i++) {
+                            let level = ORDERED_LEVELS[i];
+                            let recordIds = res.data[level];
+                            if (recordIds && recordIds.length > 0) {
+                                for (let j = 0, jlen = recordIds.length; j < jlen; j++) {
+                                    let oldVal = that.exceptionRecords[recordIds[j]];
+                                    if (oldVal) {
+                                        if (ORDERED_LEVELS_RANK[level] > ORDERED_LEVELS_RANK[oldVal]) {
+                                            that.exceptionRecords[recordIds[j]] = level;
+                                        }
+                                    } else {
+                                        Vue.set(that.exceptionRecords, recordIds[j], level);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+
+                },
+                complete: function(jqXHR, textStatus) {
+                    that.isFetchingExceptionRecords = false;
+                    // "success", "notmodified", "nocontent", "error", "timeout", "abort", or "parsererror"
+                    console.log('exceptionRecords.json:' + textStatus);
+                }
+            });
+        },
+        taskRecordExceptionLogLevelClassFormater: function(value) {
+            let val = '';
+            if (typeof value === 'undefined') {
+                value = '';
+            }
+            switch (value) {
+                case 'FATAL':
+                case 'ERROR':
+                    val = 'alert-danger';
+                    break;
+                case 'WARN':
+                    val = 'alert-warning';
+                    break;
+                case 'INFO':
+                    val = 'alert-info';
+                    break;
+                case 'DEBUG':
+                    val = 'alert-success';
+                    break;
+                case 'TRACE':
+                default:
+                    val = '';
+                    break;
+            }
+            return val;
+        }
+    }
+};
+const taskLogs = {
+    template: '#taskLogs',
+    data: function() {
+        return {
+
+        }
+    },
+    route: {
+        data: function(transition) {
+            //transition.next({
+            //    currentPath: transition.to.path
+            //})
+        }
+    },
+    created: function() {
+        let that = this;
+        console.log('taskLogs created');
+    },
+    mounted: function() {
+        this.$nextTick(function() {
+            // Code that will run only after the entire view has been rendered
+            $('body').css({ 'padding-top': '0px' });
+            $('nav').removeClass('navbar-fixed-top').addClass('navbar-static-top');
+            $('#linkTaskLogs').removeClass('none');
+            $('[data-toggle="tooltip"]').tooltip();
+        });
+    },
+    updated: function() {
+        //console.log('apiLogs updated');
+    },
+    destroyed: function() {
+        console.log('taskLogs destroyed');
+        $('#linkTaskLogs').addClass('none');
+        $('[data-toggle="tooltip"]').tooltip('destroy');
+    },
+    watch: {
+        'isFetchingData': {
+            handler: function(val, oldVal) {
+                let that = this;
+
+            },
+            deep: true
+        }
+    },
+    methods: {
+        fetchData: function() {
+            let that = this;
+        },
+        queryApiRecord: function(apiRecordId) {
+            let that = this;
+        },
+        queryApiRecordLogs: function(apiRecordId) {
+            let that = this;
         }
     }
 };
@@ -997,6 +1433,8 @@ const router = new VueRouter({
     routes: [
         { path: PATH_PREFIX + '/apirecords.html', component: apiRecords },
         { path: PATH_PREFIX + '/apilogs.html', component: apiLogs },
+        { path: PATH_PREFIX + '/taskrecords.html', component: taskRecords },
+        { path: PATH_PREFIX + '/tasklogs.html', component: taskLogs },
         { path: PATH_PREFIX + '/alllogs/:level.html', component: allLogs },
         { path: PATH_PREFIX + '/settings/replay.html', component: settingsReplay },
         { path: PATH_PREFIX + '/settings/show_exception_records.html', component: settingsShowExceptionRecords },

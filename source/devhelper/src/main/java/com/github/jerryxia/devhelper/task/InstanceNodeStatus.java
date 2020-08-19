@@ -18,6 +18,5 @@ public class InstanceNodeStatus {
 //    private final Long processMaxMemory;
 //    private final Long processFreeMemory;
 //    private final Long processAllocatedMemory;
-//
 
 }

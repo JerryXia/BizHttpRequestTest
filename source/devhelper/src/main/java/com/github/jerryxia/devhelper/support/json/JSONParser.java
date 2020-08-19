@@ -1,4 +1,4 @@
-package com.github.jerryxia.devhelper.requestcapture.support.json;
+package com.github.jerryxia.devhelper.support.json;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;

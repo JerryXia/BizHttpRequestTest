@@ -7,17 +7,17 @@ package com.github.jerryxia.devhelper.requestcapture;
 public enum HttpRequestRecordType {
 
     /**
-     * 未知
+     ** 未知
      */
     UNKNOWN("未知", 0), 
 
     /**
-     * 常规请求
+     **常规请求
      */
     NORMAL("常规请求", 1), 
 
     /**
-     * 重放请求
+     ** 重放请求
      */
     REPLAY("重放请求", 2);
 
