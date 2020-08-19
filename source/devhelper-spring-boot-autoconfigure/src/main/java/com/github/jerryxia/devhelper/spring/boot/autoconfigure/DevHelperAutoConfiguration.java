@@ -20,6 +20,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletListenerRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -29,7 +30,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 
 import com.github.jerryxia.devhelper.elmah.support.servlet.ElmahServlet;
 import com.github.jerryxia.devhelper.requestcapture.support.servlet.RequestCaptureFilter;
-import com.github.jerryxia.devhelper.support.spring.SpringTools;
 import com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledAnnotationPointcutAdvisorFactory;
 import com.github.jerryxia.devhelper.support.spring.scheduling.ScheduledTaskRunRecordAutoInjectInterceptor;
 import com.github.jerryxia.devhelper.support.spring.web.interceptor.RequestResponseLogInterceptor;
@@ -52,6 +52,8 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
 
     @Autowired
     private DevHelperProperties properties;
+    @Autowired
+    private ApplicationContext applicationContext;
 
     @Bean
     public ServletListenerRegistrationBean<BootstrapperContextListener> bootstrapperContextListener() {
@@ -247,7 +249,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         if (config.getLazyMode() != null) {
             interceptpr.setLazyMode(config.getLazyMode().booleanValue());
         }
-        interceptpr.setInstanceName(SpringTools.getApplicationContext().getId());
+        interceptpr.setInstanceName(applicationContext.getId());
         return interceptpr;
     }
 
