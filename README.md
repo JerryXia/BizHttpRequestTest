@@ -14,22 +14,21 @@ By default, this library will working with zero configuration. In servlet-api su
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper</artifactId>
-      <version>1.0.27</version>
+      <version>1.1.0</version>
     </dependency>
 
 if you use spring boot, Add the following dependency.
 
     <dependency>
       <groupId>com.github.jerryxia</groupId>
-      <artifactId>devhelper-spring-boot-autoconfigure</artifactId>
-      <version>1.0.27</version>
+      <artifactId>devhelper-spring-boot</artifactId>
+      <version>1.1.0</version>
     </dependency>
 
 
 ## Dashboard
 
 [demo](https://res4gqk.appspot.com/)
-[spring-boot demo](http://openshift-quickstarts-requestcapture.1d35.starter-us-east-1.openshiftapps.com/)
 
 ![sample01](doc/sample01.gif)
 
