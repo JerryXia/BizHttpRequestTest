@@ -1,0 +1,30 @@
+name: Gitee repos mirror periodic job
+
+on:
+  pull_request:
+    paths:
+    - '.github/workflows/gitee-repos-mirror.yml'
+    # Runs at every pull requests submitted in master branch 
+    branches: [ master ]
+  schedule:
+    # Runs at 01:00 UTC (9:00 AM Beijing) every day
+    - cron:  '0 20 * * *'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Mirror the Github organization repos to Gitee.
+      uses: Yikun/hub-mirror-action@master
+      with:
+        src: github/JerryXia
+        dst: gitee/jackchen007
+        dst_key: ${{ secrets.SYNC_TO_GITEE }}
+        dst_token:  ${{ secrets.GITEE_TOKEN }}
+        clone_style: "ssh"
+        timeout: 600
+        force_update: true
+        white_list: "BizHttpRequestTest"
