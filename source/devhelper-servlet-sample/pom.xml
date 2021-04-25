@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.guqiankun</groupId>
   <artifactId>devhelper-servlet-sample</artifactId>
@@ -13,7 +13,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <junit-version>4.13.1</junit-version>
     <!-- project -->
-    <org.springframework-version>4.3.10.RELEASE</org.springframework-version>
+    <org.springframework-version>4.3.20.RELEASE</org.springframework-version>
     <spring-data-redis-version>1.8.6.RELEASE</spring-data-redis-version>
     <jedis-version>2.9.0</jedis-version>
     <org.slf4j-version>1.7.25</org.slf4j-version>
