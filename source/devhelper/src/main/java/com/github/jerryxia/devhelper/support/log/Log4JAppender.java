@@ -61,7 +61,7 @@ public class Log4JAppender extends AppenderSkeleton {
         String[] throwableStrRep = event.getThrowableStrRep();
         if (throwableStrRep != null && throwableStrRep.length > 0) {
             // 1024 * 16
-            StringBuffer sb = new StringBuffer(16384);
+            StringBuilder sb = new StringBuilder(16384);
             sb.append(event.getRenderedMessage()).append(System.lineSeparator()).append(System.lineSeparator());
             for (String line : throwableStrRep) {
                 sb.append(line).append(System.lineSeparator());

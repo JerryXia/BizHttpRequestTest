@@ -53,7 +53,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         IThrowableProxy throwableProxy = event.getThrowableProxy();
         if (throwableProxy != null) {
             // 1024 * 16
-            StringBuffer sb = new StringBuffer(16384);
+            StringBuilder sb = new StringBuilder(16384);
             sb.append(event.getFormattedMessage()).append(System.lineSeparator()).append(System.lineSeparator());
             log.setMessage(formatException(throwableProxy, sb));
         } else {
@@ -66,7 +66,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         Constants.EVENT_WORKING_GROUP.allocEventProducer().tryPublish(log);
     }
 
-    private String formatException(IThrowableProxy error, StringBuffer sb) {
+    private String formatException(IThrowableProxy error, StringBuilder sb) {
         formatTopLevelError(error, sb);
         formatStackTraceElements(error, sb);
         sb.append(System.lineSeparator());
@@ -81,11 +81,11 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
         return sb.toString();
     }
 
-    private void formatTopLevelError(IThrowableProxy error, StringBuffer sb) {
+    private void formatTopLevelError(IThrowableProxy error, StringBuilder sb) {
         sb.append(error.getClassName()).append(':').append(' ').append(error.getMessage());
     }
 
-    private void formatStackTraceElements(IThrowableProxy error, StringBuffer sb) {
+    private void formatStackTraceElements(IThrowableProxy error, StringBuilder sb) {
         StackTraceElementProxy[] elements = error.getStackTraceElementProxyArray();
         if (elements != null) {
             for (StackTraceElementProxy e : elements) {

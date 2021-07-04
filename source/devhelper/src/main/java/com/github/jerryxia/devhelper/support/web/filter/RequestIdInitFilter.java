@@ -5,6 +5,7 @@ package com.github.jerryxia.devhelper.support.web.filter;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
@@ -15,6 +16,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import com.github.jerryxia.devhelper.support.web.WebConstants;
+import com.vip.vjtools.vjkit.id.IdUtil;
 
 /**
  * <p>请求唯一ID，请求一旦到达API后，API就会生成请求ID并通过响应头返回给客户端。 </p>
@@ -45,7 +47,8 @@ public class RequestIdInitFilter implements Filter {
             throws IOException, ServletException {
         // if convert fail, throw exception
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        String requestId = UUID.randomUUID().toString();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        String requestId = new UUID(random.nextLong(), random.nextLong()).toString();
         request.setAttribute(WebConstants.REQUEST_ID_INIT_FILTER_ID, requestId);
         httpResponse.setHeader(requestIdResponseHeaderName, requestId);
         chain.doFilter(request, response);
