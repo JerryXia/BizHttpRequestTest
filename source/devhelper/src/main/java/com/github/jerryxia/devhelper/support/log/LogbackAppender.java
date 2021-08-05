@@ -25,7 +25,7 @@ public class LogbackAppender extends UnsynchronizedAppenderBase<ILoggingEvent> {
     private String      ip;
 
     /**
-     * Constructeur.
+     * Constructor.
      */
     public LogbackAppender() {
         super();

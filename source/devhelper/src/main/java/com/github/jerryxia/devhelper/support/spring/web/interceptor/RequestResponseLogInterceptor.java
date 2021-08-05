@@ -33,7 +33,7 @@ public class RequestResponseLogInterceptor extends HandlerInterceptorAdapter imp
     /**
      ** 只要加入了interceptors中默认启用
      */
-    private boolean enabled = true;
+    private boolean enabled = false;
 
     /**
      ** 额外要记录的请求头

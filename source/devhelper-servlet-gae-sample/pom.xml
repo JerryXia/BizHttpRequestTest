@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>com.github.jerryxia</groupId>
   <artifactId>devhelper-servlet-gae-sample</artifactId>
-  <version>1.1.0</version>
+  <version>1.1.1</version>
   <packaging>war</packaging>
 
   <name>devhelper-servlet-gae-sample</name>
@@ -45,12 +45,17 @@
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper</artifactId>
-      <version>1.1.0</version>
+      <version>1.1.1</version>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
       <version>1.2.3</version>
+    </dependency>
+    <dependency>
+      <groupId>com.vip.vjtools</groupId>
+      <artifactId>vjkit</artifactId>
+      <version>1.0.8</version>
     </dependency>
   </dependencies>
   <build>

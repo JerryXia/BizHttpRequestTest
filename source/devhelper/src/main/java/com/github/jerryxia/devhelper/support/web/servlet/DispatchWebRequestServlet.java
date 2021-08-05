@@ -28,6 +28,7 @@ import com.github.jerryxia.devhelper.snoop.MemoryPoolMXBeanInfo;
 import com.github.jerryxia.devhelper.snoop.Monitor;
 import com.github.jerryxia.devhelper.support.json.JSONWriter;
 import com.github.jerryxia.devhelper.support.json.RuntimeJsonComponentProviderFactory;
+import com.github.jerryxia.devhelper.support.log.LogProvider;
 import com.github.jerryxia.devhelper.support.spring.SpringConstants;
 import com.github.jerryxia.devhelper.support.web.WebConstants;
 import com.github.jerryxia.devhelper.task.TaskRunRecord;
@@ -35,13 +36,12 @@ import com.github.jerryxia.devhelper.task.TaskRunRecordStorageQueryResult;
 
 /**
  * @author guqk
- *
  */
 @SuppressWarnings("serial")
 public class DispatchWebRequestServlet extends AbstractResourceServlet {
 
     private final static int RESULT_CODE_SUCCESS = 1;
-    private final static int RESULT_CODE_ERROR   = -1;
+    private final static int RESULT_CODE_ERROR = -1;
 
     public DispatchWebRequestServlet() {
         super("com/github/jerryxia/devhelper/support/web/servlet/resources");
@@ -52,6 +52,14 @@ public class DispatchWebRequestServlet extends AbstractResourceServlet {
         getServletContext().log("devhelper DispatchWebServlet     : init");
         getServletContext().log("devhelper log_ext_enabled_status : " + Constants.LOG_EXT_ENABLED);
         getServletContext().log("devhelper log_ext_enabled_map    : " + Constants.LOG_EXT_ENABLED_MAP.toString());
+        if (Constants.LOG_EXT_ENABLED) {
+            if (Constants.LOG_EXT_ENABLED_MAP.get(LogProvider.log4j.name())) {
+                getServletContext().log("Please add setting: log4j.logger.com.github.jerryxia.devhelper=DEBUG />");
+            }
+            if (Constants.LOG_EXT_ENABLED_MAP.get(LogProvider.logback.name())) {
+                getServletContext().log("Please add setting: <logger name=\"com.github.jerryxia.devhelper\" level=\"DEBUG\" />");
+            }
+        }
     }
 
     @Override
@@ -226,12 +234,12 @@ public class DispatchWebRequestServlet extends AbstractResourceServlet {
 
     private Map<String, String> getParameters(String url) {
         if (url == null || (url = url.trim()).length() == 0) {
-            return Collections.<String, String> emptyMap();
+            return Collections.<String, String>emptyMap();
         }
 
         String parametersStr = subString(url, "?", null);
         if (parametersStr == null || parametersStr.length() == 0) {
-            return Collections.<String, String> emptyMap();
+            return Collections.<String, String>emptyMap();
         }
 
         String[] parametersArray = parametersStr.split("&");
@@ -272,7 +280,7 @@ public class DispatchWebRequestServlet extends AbstractResourceServlet {
     }
 
     private String returnJsonpResult(String jsonpCallback, int resultCode, Object content,
-            Map<String, Long> serverStat) {
+                                     Map<String, Long> serverStat) {
         Map<String, Object> dataMap = new HashMap<String, Object>();
         dataMap.put("code", resultCode);
         dataMap.put("data", content);
@@ -291,7 +299,7 @@ public class DispatchWebRequestServlet extends AbstractResourceServlet {
     private String toJSONString(Object o) {
         try {
             return RuntimeJsonComponentProviderFactory.tryFindImplementation().toJson(o);
-        } catch(NoClassDefFoundError error) {
+        } catch (NoClassDefFoundError error) {
             JSONWriter writer = new JSONWriter();
             writer.writeObject(o);
             return writer.toString();
@@ -349,18 +357,18 @@ public class DispatchWebRequestServlet extends AbstractResourceServlet {
             for (String level : levels) {
                 level = level.toUpperCase();
                 switch (level) {
-                case "TRACE":
-                case "DEBUG":
-                case "INFO":
-                case "WARN":
-                case "ERROR":
-                case "FATAL":
-                    if (distinctedLevels.indexOf(level) == -1) {
-                        distinctedLevels.add(level);
-                    }
-                    break;
-                default:
-                    break;
+                    case "TRACE":
+                    case "DEBUG":
+                    case "INFO":
+                    case "WARN":
+                    case "ERROR":
+                    case "FATAL":
+                        if (distinctedLevels.indexOf(level) == -1) {
+                            distinctedLevels.add(level);
+                        }
+                        break;
+                    default:
+                        break;
                 }
             }
 

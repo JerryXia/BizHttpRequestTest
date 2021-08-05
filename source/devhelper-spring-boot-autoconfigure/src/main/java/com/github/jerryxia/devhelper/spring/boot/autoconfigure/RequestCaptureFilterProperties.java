@@ -8,6 +8,8 @@ package com.github.jerryxia.devhelper.spring.boot.autoconfigure;
  *
  */
 public class RequestCaptureFilterProperties {
+    public static final String DEFAULT_STATIC_RESOURCE_EXCLUSIONS = "*.js,*.gif,*.jpg,*.png,*.css,*.ico";
+
     private Boolean enabled;
     private String  exclusions;
     private String  replayRequestIdRequestHeaderName;

@@ -3,8 +3,6 @@
  */
 package com.github.jerryxia.devhelper.elmah;
 
-import com.github.pagehelper.PageInfo;
-
 /**
  * @author Administrator
  *

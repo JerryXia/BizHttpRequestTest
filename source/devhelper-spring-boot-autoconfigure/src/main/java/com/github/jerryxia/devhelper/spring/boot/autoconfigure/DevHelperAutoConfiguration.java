@@ -1,10 +1,9 @@
 /**
- * 
+ *
  */
 package com.github.jerryxia.devhelper.spring.boot.autoconfigure;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import javax.servlet.DispatcherType;
 import javax.servlet.FilterRegistration;
@@ -15,6 +14,7 @@ import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -45,10 +45,11 @@ import com.github.jerryxia.devhelper.support.web.servlet.DispatchWebRequestServl
 @EnableConfigurationProperties(DevHelperProperties.class)
 @ConditionalOnWebApplication
 public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
-    public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME       = "devhelper-requestIdInitFilter-registration";
-    public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME       = "devhelper-requestCaptureFilter-registration";
+    public static final String REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME = "devhelper-requestIdInitFilter-registration";
+    public static final String REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME = "devhelper-requestCaptureFilter-registration";
     public static final String DISPATCH_WEB_REQUEST_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-dispatchWebRequestServlet-registration";
-    public static final String ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME            = "devhelper-elmahWebServlet-registration";
+    public static final String ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME = "devhelper-elmahWebServlet-registration";
+    public static final String SCHEDULED_TASK_RUN_RECORD_AUTO_INJECT_INTERCEPTOR_BEAN_NAME = "devhelper-scheduledTaskRunRecordAutoInjectInterceptor";
 
     @Autowired
     private DevHelperProperties properties;
@@ -63,14 +64,15 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
 
         BootstrapperContextListener listener = new BootstrapperContextListener();
         registrationBean.setListener(listener);
-        registrationBean.setName(listenerName);
+        // registrationBean.setName(listenerName);
 
         return registrationBean;
     }
 
     @Bean(name = REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME)
     @ConditionalOnMissingBean(name = REQUEST_ID_INIT_FILTER_REGISTRATION_BEAN_NAME)
-    public FilterRegistrationBean requestIdInitFilter(DevHelperProperties properties, ServletContext servletContext) {
+    @ConditionalOnProperty(name = "devhelper.request-id-init.enabled", havingValue = "true")
+    public FilterRegistrationBean requestIdInitFilter(ServletContext servletContext) {
         String filterName = "requestIdInitFilter";
         RequestIdInitFilterProperties config = properties.getRequestIdInit();
 
@@ -85,7 +87,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             registrationBean.addInitParameter(RequestIdInitFilter.PARAM_NAME_REQUEST_ID_RESPONSE_HEADER_NAME, config.getRequestIdResponseHeaderName());
         }
 
-        registrationBean.addUrlPatterns("/*");
+        registrationBean.addUrlPatterns(RequestIdInitFilterProperties.FILTERED_ALL_URL_PATTERN);
         registrationBean.setDispatcherTypes(DispatcherType.REQUEST);
 
         FilterRegistration filterRegistration = servletContext.getFilterRegistration(filterName);
@@ -93,16 +95,15 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             // if webapp deployed as war in a container with MonitoringFilter already added by web-fragment.xml,
             // do not try to add it again
             registrationBean.setEnabled(false);
-            for (Map.Entry<String, String> entry : registrationBean.getInitParameters().entrySet()) {
-                filterRegistration.setInitParameter(entry.getKey(), entry.getValue());
-            }
+            filterRegistration.setInitParameters(registrationBean.getInitParameters());
         }
         return registrationBean;
     }
 
     @Bean(name = REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME)
     @ConditionalOnMissingBean(name = REQUEST_CAPTURE_FILTER_REGISTRATION_BEAN_NAME)
-    public FilterRegistrationBean requestCaptureFilter(DevHelperProperties properties, ServletContext servletContext) {
+    @ConditionalOnProperty(name = "devhelper.request-capture.enabled", havingValue = "true")
+    public FilterRegistrationBean requestCaptureFilter(ServletContext servletContext) {
         String filterName = "requestCaptureFilter";
         RequestCaptureFilterProperties config = properties.getRequestCapture();
 
@@ -118,6 +119,14 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         }
         if (config.getExclusions() != null) {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_EXCLUSIONS, config.getExclusions());
+        } else {
+            if (StringUtils.hasText(properties.getRequestCaptureServlet().getUrlPattern())) {
+                registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_EXCLUSIONS,
+                        RequestCaptureFilterProperties.DEFAULT_STATIC_RESOURCE_EXCLUSIONS + "," + properties.getRequestCaptureServlet().getUrlPattern());
+            } else {
+                registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_EXCLUSIONS,
+                        RequestCaptureFilterProperties.DEFAULT_STATIC_RESOURCE_EXCLUSIONS + "," + RequestCaptureWebServletProperties.DEFAULT_URL_PATTERN);
+            }
         }
         if (config.getReplayRequestIdRequestHeaderName() != null) {
             registrationBean.addInitParameter(RequestCaptureFilter.PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME, config.getReplayRequestIdRequestHeaderName());
@@ -134,16 +143,15 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             // if webapp deployed as war in a container with MonitoringFilter already added by web-fragment.xml,
             // do not try to add it again
             registrationBean.setEnabled(false);
-            for (Map.Entry<String, String> entry : registrationBean.getInitParameters().entrySet()) {
-                filterRegistration.setInitParameter(entry.getKey(), entry.getValue());
-            }
+            filterRegistration.setInitParameters(registrationBean.getInitParameters());
         }
         return registrationBean;
     }
 
     @Bean(name = DISPATCH_WEB_REQUEST_SERVLET_REGISTRATION_BEAN_NAME)
     @ConditionalOnMissingBean(name = DISPATCH_WEB_REQUEST_SERVLET_REGISTRATION_BEAN_NAME)
-    public ServletRegistrationBean dispatchWebRequestServlet(DevHelperProperties properties, ServletContext servletContext) {
+    @ConditionalOnProperty(name = "devhelper.request-capture-servlet.enabled", havingValue = "true")
+    public ServletRegistrationBean dispatchWebRequestServlet(ServletContext servletContext) {
         String servletName = "dispatchWebServlet";
         RequestCaptureWebServletProperties config = properties.getRequestCaptureServlet();
 
@@ -154,10 +162,10 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         registrationBean.setName(servletName);
         registrationBean.setLoadOnStartup(1);
 
-        if (config.getUrlPattern() != null) {
+        if (StringUtils.hasText(config.getUrlPattern())) {
             registrationBean.addUrlMappings(config.getUrlPattern());
         } else {
-            registrationBean.addUrlMappings("/admin/requestcapture/*");
+            registrationBean.addUrlMappings(RequestCaptureWebServletProperties.DEFAULT_URL_PATTERN);
         }
 
         ServletRegistration servletRegistration = servletContext.getServletRegistration(servletName);
@@ -166,16 +174,15 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             // web-fragment.xml,
             // do not add again
             registrationBean.setEnabled(false);
-            for (Map.Entry<String, String> entry : registrationBean.getInitParameters().entrySet()) {
-                servletRegistration.setInitParameter(entry.getKey(), entry.getValue());
-            }
+            servletRegistration.setInitParameters(registrationBean.getInitParameters());
         }
         return registrationBean;
     }
 
     @Bean(name = ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME)
     @ConditionalOnMissingBean(name = ELMAH_WEB_SERVLET_REGISTRATION_BEAN_NAME)
-    public ServletRegistrationBean elmahWebServlet(DevHelperProperties properties, ServletContext servletContext) {
+    @ConditionalOnProperty(name = "devhelper.elmah-servlet.enabled", havingValue = "true")
+    public ServletRegistrationBean elmahWebServlet(ServletContext servletContext) {
         String servletName = "elmahWebServlet";
         ElmahServletProperties config = properties.getElmahServlet();
 
@@ -186,10 +193,10 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         registrationBean.setName(servletName);
         registrationBean.setLoadOnStartup(1);
 
-        if (config.getUrlPattern() != null) {
+        if (StringUtils.hasText(config.getUrlPattern())) {
             registrationBean.addUrlMappings(config.getUrlPattern());
         } else {
-            registrationBean.addUrlMappings("/admin/elmah/*");
+            registrationBean.addUrlMappings(ElmahServletProperties.DEFAULT_URL_PATTERN);
         }
 
         if (config.getErrorRecordStorage() != null) {
@@ -205,9 +212,7 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
             // web-fragment.xml,
             // do not add again
             registrationBean.setEnabled(false);
-            for (Map.Entry<String, String> entry : registrationBean.getInitParameters().entrySet()) {
-                servletRegistration.setInitParameter(entry.getKey(), entry.getValue());
-            }
+            servletRegistration.setInitParameters(registrationBean.getInitParameters());
         }
         return registrationBean;
     }
@@ -241,19 +246,20 @@ public class DevHelperAutoConfiguration extends WebMvcConfigurerAdapter {
         registry.addInterceptor(requestResponseLogInterceptor()).addPathPatterns("/**");
     }
 
-    @Bean
-    @ConditionalOnClass(Scheduled.class)
+    @Bean(name = SCHEDULED_TASK_RUN_RECORD_AUTO_INJECT_INTERCEPTOR_BEAN_NAME)
+    @ConditionalOnMissingBean(name = SCHEDULED_TASK_RUN_RECORD_AUTO_INJECT_INTERCEPTOR_BEAN_NAME)
     public ScheduledTaskRunRecordAutoInjectInterceptor scheduledTaskRunRecordAutoInjectInterceptor() {
         TaskRunProperties config = properties.getTaskRun();
-        ScheduledTaskRunRecordAutoInjectInterceptor interceptpr = new ScheduledTaskRunRecordAutoInjectInterceptor();
+        ScheduledTaskRunRecordAutoInjectInterceptor interceptor = new ScheduledTaskRunRecordAutoInjectInterceptor();
         if (config.getLazyMode() != null) {
-            interceptpr.setLazyMode(config.getLazyMode().booleanValue());
+            interceptor.setLazyMode(config.getLazyMode().booleanValue());
         }
-        interceptpr.setInstanceName(applicationContext.getId());
-        return interceptpr;
+        interceptor.setInstanceName(applicationContext.getId());
+        return interceptor;
     }
 
     @Bean
+    @ConditionalOnClass(Scheduled.class)
     public DefaultPointcutAdvisor scheduledAdvisor() {
         DefaultPointcutAdvisor scheduledAdvisor = ScheduledAnnotationPointcutAdvisorFactory.getScheduledAdvisor();
         scheduledAdvisor.setAdvice(scheduledTaskRunRecordAutoInjectInterceptor());

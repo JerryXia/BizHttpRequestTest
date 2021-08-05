@@ -5,7 +5,7 @@
   <parent>
     <groupId>com.github.jerryxia</groupId>
     <artifactId>devhelper-spring-boot</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
   </parent>
   <artifactId>devhelper-spring-boot-autoconfigure</artifactId>
   <name>devhelper-spring-boot-autoconfigure</name>
@@ -41,6 +41,20 @@
           <artifactId>commons-logging</artifactId>
         </exclusion>
       </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>ch.qos.logback</groupId>
+      <artifactId>logback-classic</artifactId>
+      <version>1.2.2</version>
+      <scope>provided</scope>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>log4j</groupId>
+      <artifactId>log4j</artifactId>
+      <version>1.2.17</version>
+      <scope>provided</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
 </project>

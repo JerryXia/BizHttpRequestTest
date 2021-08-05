@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.github.jerryxia.devhelper.support.json.RuntimeJsonComponentProviderFactory;
-import com.github.pagehelper.Page;
-import com.github.pagehelper.PageInfo;
 import com.vip.vjtools.vjkit.io.FilePathUtil;
 import com.vip.vjtools.vjkit.io.FileUtil;
 
@@ -74,7 +72,6 @@ public class ErrorRecordFileStorage implements ErrorRecordStorage {
             }
         }
         PageInfo<ErrorInfo> pageInfo = pagedErrorInfos.toPageInfo();
-        pagedErrorInfos.close();
         return pageInfo;
     }
 

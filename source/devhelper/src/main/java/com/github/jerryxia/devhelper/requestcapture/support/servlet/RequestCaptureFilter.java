@@ -45,7 +45,7 @@ public class RequestCaptureFilter implements Filter {
     public static final String PARAM_NAME_REPLAY_REQUEST_ID_REQUEST_HEADER_NAME = "replayRequestIdRequestHeaderName";
     public static final String PARAM_NAME_MAX_PAYLOAD_LENGTH                    = "maxPayloadLength";
 
-    private boolean         enabled = true;
+    private boolean         enabled = false;
     private String          contextPath;
     private HashSet<String> excludesPattern;
     private String          replayRequestIdRequestHeaderName;

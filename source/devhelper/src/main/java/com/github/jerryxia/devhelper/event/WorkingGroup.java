@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import com.github.jerryxia.devutil.CustomNameThreadFactory;
 import com.lmax.disruptor.EventHandler;
 import com.lmax.disruptor.SleepingWaitStrategy;
+import com.lmax.disruptor.LiteTimeoutBlockingWaitStrategy;
 import com.lmax.disruptor.TimeoutException;
 import com.lmax.disruptor.dsl.Disruptor;
 import com.lmax.disruptor.dsl.ProducerType;
@@ -26,7 +27,7 @@ public class WorkingGroup {
     private final ValueWrapperEventFactory                           eventFactory;
     private final int                                                ringBufferSize;
     private final CustomNameThreadFactory                            threadFactory;
-    private final SleepingWaitStrategy                               waitStrategy;
+    private final LiteTimeoutBlockingWaitStrategy                    waitStrategy;
     private ValueWrapperEventDispatchHandler                         consumer;
     private Disruptor<ValueWrapperEvent>                             disruptor;
     private WorkingValueWrapperEventProducer                         producer;
@@ -39,8 +40,8 @@ public class WorkingGroup {
         this.ringBufferSize = DEFAULT_RINGBUFFER_SIZE;
         this.threadFactory = new CustomNameThreadFactory("devhelper", "EventGroup");
         // Processor instruction(such as: a + b), need 2 - 4 ns
-        this.waitStrategy = new SleepingWaitStrategy();
-        // new TimeoutBlockingWaitStrategy(0, TimeUnit.MILLISECONDS);
+        // this.waitStrategy = new SleepingWaitStrategy();
+        this.waitStrategy = new LiteTimeoutBlockingWaitStrategy(10, TimeUnit.MILLISECONDS);
     }
 
     public void registerHandler(Class<?> source, EventHandler<ValueWrapperEvent> eventHandler) {

@@ -22,6 +22,9 @@ public class Log4JAppender extends AppenderSkeleton {
     private String      hostName;
     private String      ip;
 
+    /**
+     * Constructor.
+     */
     public Log4JAppender() {
         super();
         try {

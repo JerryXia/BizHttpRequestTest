@@ -16,7 +16,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletResponse;
 
 import com.github.jerryxia.devhelper.support.web.WebConstants;
-import com.vip.vjtools.vjkit.id.IdUtil;
 
 /**
  * <p>请求唯一ID，请求一旦到达API后，API就会生成请求ID并通过响应头返回给客户端。 </p>

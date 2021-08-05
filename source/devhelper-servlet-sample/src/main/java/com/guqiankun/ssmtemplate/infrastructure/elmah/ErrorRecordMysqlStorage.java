@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import com.github.jerryxia.devhelper.elmah.ErrorInfo;
 import com.github.jerryxia.devhelper.elmah.ErrorRecordStorage;
-import com.github.pagehelper.PageInfo;
+import com.github.jerryxia.devhelper.elmah.PageInfo;
 
 /**
  * @author Administrator

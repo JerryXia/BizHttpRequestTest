@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.jerryxia.devhelper.spring.boot.autoconfigure.DevHelperAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.github.jerryxia.devhelper.spring.boot.autoconfigure.DevHelperAutoConfiguration,\
+com.github.jerryxia.devhelper.spring.boot.autoconfigure.DevHelperLogbackLoggingAutoConfiguration
