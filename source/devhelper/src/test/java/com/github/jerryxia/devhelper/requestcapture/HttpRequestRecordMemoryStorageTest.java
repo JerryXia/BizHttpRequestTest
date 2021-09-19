@@ -32,7 +32,7 @@ public class HttpRequestRecordMemoryStorageTest {
         HttpRequestRecord record = buildRecord(1);
         boolean saveSuccess = storage.save(record);
         Assert.assertTrue(saveSuccess);
-        Assert.assertEquals("1", storage.getBuffer()[0].getId());
+        Assert.assertEquals("1", storage.getBuffer()[0].get().getId());
     }
 
     @Test
@@ -46,8 +46,8 @@ public class HttpRequestRecordMemoryStorageTest {
 
         HttpRequestRecordStorageQueryResult allResult = storage.queryAll();
         // 1025
-        Assert.assertEquals(String.valueOf(count), storage.getBuffer()[0].getId());
-        Assert.assertEquals("2", storage.getBuffer()[1].getId());
+        Assert.assertEquals(String.valueOf(count), storage.getBuffer()[0].get().getId());
+        Assert.assertEquals("2", storage.getBuffer()[1].get().getId());
         Assert.assertEquals(count, storage.getTail());
         Assert.assertEquals(count, allResult.getLastIndex());
 
@@ -72,8 +72,8 @@ public class HttpRequestRecordMemoryStorageTest {
 
         HttpRequestRecordStorageQueryResult allResult = storage.queryAll();
         // 1025
-        Assert.assertEquals(String.valueOf(2049), storage.getBuffer()[0].getId());
-        Assert.assertEquals("1027", storage.getBuffer()[2].getId());
+        Assert.assertEquals(String.valueOf(2049), storage.getBuffer()[0].get().getId());
+        Assert.assertEquals("1027", storage.getBuffer()[2].get().getId());
         Assert.assertEquals(count, storage.getTail());
         Assert.assertEquals(count, allResult.getLastIndex());
 

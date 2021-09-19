@@ -6,7 +6,7 @@
   <parent>
     <groupId>com.github.jerryxia</groupId>
     <artifactId>devhelper-spring-boot</artifactId>
-    <version>1.1.1</version>
+    <version>1.1.2</version>
   </parent>
   <artifactId>devhelper-spring-boot-starter</artifactId>
   <name>devhelper-spring-boot-starter</name>

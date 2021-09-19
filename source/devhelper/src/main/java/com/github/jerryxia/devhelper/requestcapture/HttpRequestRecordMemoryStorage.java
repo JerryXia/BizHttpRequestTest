@@ -13,14 +13,14 @@ public class HttpRequestRecordMemoryStorage implements HttpRequestRecordStorage 
     private static final int          DEFAULT_CAPACITY = 1024;
     private final int                 capacity;
     private final int                 mask;
-    private final HttpRequestRecord[] buffer;
+    private final HttpRequestRecordWeakReference[] buffer;
 
     private volatile long tail = 0;
 
     public HttpRequestRecordMemoryStorage() {
         this.capacity = findNextPositivePowerOfTwo(DEFAULT_CAPACITY);
         this.mask = this.capacity - 1;
-        this.buffer = new HttpRequestRecord[this.capacity];
+        this.buffer = new HttpRequestRecordWeakReference[this.capacity];
     }
 
     private int findNextPositivePowerOfTwo(int value) {
@@ -30,7 +30,7 @@ public class HttpRequestRecordMemoryStorage implements HttpRequestRecordStorage 
     @Override
     public boolean save(HttpRequestRecord record) {
         final long currentTail = tail;
-        buffer[(int) (currentTail & mask)] = record;
+        buffer[(int) (currentTail & mask)] = new HttpRequestRecordWeakReference(record);
         tail = currentTail + 1;
         return true;
     }
@@ -43,24 +43,24 @@ public class HttpRequestRecordMemoryStorage implements HttpRequestRecordStorage 
             int index = (int) (currentTail & mask);
             if (index == 0) {
                 for (int i = 0; i < capacity; i++) {
-                    list.add(buffer[i]);
+                    add(list, buffer[i]);
                 }
             } else if (index == 1) {
                 for (int i = index; i < capacity; i++) {
-                    list.add(buffer[i]);
+                    add(list, buffer[i]);
                 }
-                list.add(buffer[0]);
+                add(list, buffer[0]);
             } else {
                 for (int i = index; i < capacity; i++) {
-                    list.add(buffer[i]);
+                    add(list, buffer[i]);
                 }
                 for (int i = 0; i < index; i++) {
-                    list.add(buffer[i]);
+                    add(list, buffer[i]);
                 }
             }
         } else {
             for (int i = 0; i < currentTail; i++) {
-                list.add(buffer[i]);
+                add(list, buffer[i]);
             }
         }
         HttpRequestRecordStorageQueryResult result = new HttpRequestRecordStorageQueryResult(currentTail, list);
@@ -83,14 +83,14 @@ public class HttpRequestRecordMemoryStorage implements HttpRequestRecordStorage 
                     // 以endIndex坐标结束
                     for (long i = startIndex; i < endIndex; i++) {
                         int index = (int) (i & mask);
-                        list.add(buffer[index]);
+                        add(list, buffer[index]);
                     }
                     result = new HttpRequestRecordStorageQueryResult(endIndex, list);
                 } else {
                     // 以currentTail坐标结束
                     for (long i = startIndex; i < currentTail; i++) {
                         int index = (int) (i & mask);
-                        list.add(buffer[index]);
+                        add(list, buffer[index]);
                     }
                     result = new HttpRequestRecordStorageQueryResult(currentTail, list);
                 }
@@ -102,7 +102,7 @@ public class HttpRequestRecordMemoryStorage implements HttpRequestRecordStorage 
                 } else {
                     for (long i = (currentTail - this.capacity); i < endIndex; i++) {
                         int index = (int) (i & mask);
-                        list.add(buffer[index]);
+                        add(list, buffer[index]);
                     }
                     result = new HttpRequestRecordStorageQueryResult(endIndex, list);
                 }
@@ -111,13 +111,20 @@ public class HttpRequestRecordMemoryStorage implements HttpRequestRecordStorage 
         return result;
     }
 
+    private void add(ArrayList<HttpRequestRecord> list, HttpRequestRecordWeakReference item) {
+        HttpRequestRecord record = item.get();
+        if(record != null) {
+            list.add(record);
+        }
+    }
+
     public int getCapacity() {
         return capacity;
     }
     public int getMask() {
         return mask;
     }
-    public HttpRequestRecord[] getBuffer() {
+    public HttpRequestRecordWeakReference[] getBuffer() {
         return buffer;
     }
     public long getTail() {
