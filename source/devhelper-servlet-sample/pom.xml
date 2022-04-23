@@ -13,7 +13,7 @@
     <maven.compiler.source>1.7</maven.compiler.source>
     <junit-version>4.13.1</junit-version>
     <!-- project -->
-    <org.springframework-version>4.3.20.RELEASE</org.springframework-version>
+    <org.springframework-version>5.3.19</org.springframework-version>
     <spring-data-redis-version>1.8.6.RELEASE</spring-data-redis-version>
     <jedis-version>2.9.0</jedis-version>
     <org.slf4j-version>1.7.25</org.slf4j-version>
