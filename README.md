@@ -14,7 +14,7 @@ By default, this library will working with zero configuration. In servlet-api su
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper</artifactId>
-      <version>1.1.2</version>
+      <version>1.1.3</version>
     </dependency>
 
 if you use spring boot, Add the following dependency.
@@ -22,7 +22,7 @@ if you use spring boot, Add the following dependency.
     <dependency>
       <groupId>com.github.jerryxia</groupId>
       <artifactId>devhelper-spring-boot</artifactId>
-      <version>1.1.2</version>
+      <version>1.1.3</version>
     </dependency>
 
 	#devhelper.request-id-init.request-id-response-header-name=X-Call-RequestId
