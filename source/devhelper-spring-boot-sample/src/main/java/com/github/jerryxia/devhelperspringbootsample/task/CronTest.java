@@ -1,11 +1,12 @@
 /**
- * 
+ *
  */
 package com.github.jerryxia.devhelperspringbootsample.task;
 
 import java.util.Date;
 
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.scheduling.annotation.Schedules;
 import org.springframework.stereotype.Component;
 
 import com.github.jerryxia.devutil.SystemClock;
@@ -27,7 +28,9 @@ public class CronTest {
         log.info("result: {}", i);
     }
 
-    @Scheduled(cron = "0/7 * * * * ?")
+    @Schedules(value = {
+            @Scheduled(cron = "0/7 * * * * ?")
+    })
     public void jobTwo() {
         ThreadUtil.sleep(RandomUtil.nextLong(5, 10) * 1000);
 
