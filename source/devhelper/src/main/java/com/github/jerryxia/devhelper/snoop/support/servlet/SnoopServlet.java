@@ -34,7 +34,7 @@ public class SnoopServlet extends HttpServlet {
         sb.append("<title>");
         sb.append("Servlet Snoop Page");
         sb.append("</title>");
-        sb.append("<link href=\"https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css\" rel=\"stylesheet\">");
+        sb.append("<link href=\"https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css\" rel=\"stylesheet\">");
         sb.append("</head>");
         sb.append("<body>");
         sb.append("<h2>JVM Memory Monitor</h2>");
@@ -204,7 +204,7 @@ public class SnoopServlet extends HttpServlet {
         }
         sb.append("</table>");
 
-        sb.append("<script src=\"https://cdn.bootcss.com/jquery/2.2.4/jquery.min.js\"></script>");
+        sb.append("<script src=\"https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.2/jquery.js\"></script>");
         sb.append("<script>$('table').addClass('table').addClass('table-bordered').addClass('table-condensed');");
         sb.append("$('table tr th').css({'text-align':'center'});");
         sb.append("</script>");
